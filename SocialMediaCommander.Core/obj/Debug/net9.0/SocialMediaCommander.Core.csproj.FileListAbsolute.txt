@@ -1,0 +1,11 @@
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\bin\Debug\net9.0\SocialMediaCommander.Core.deps.json
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\bin\Debug\net9.0\SocialMediaCommander.Core.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\bin\Debug\net9.0\SocialMediaCommander.Core.pdb
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.AssemblyInfoInputs.cache
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.AssemblyInfo.cs
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.csproj.CoreCompileInputs.cache
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\refint\SocialMediaCommander.Core.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\SocialMediaCommander.Core.pdb
+C:\repos\SocialMediaCommander\SocialMediaCommander.Core\obj\Debug\net9.0\ref\SocialMediaCommander.Core.dll
