@@ -5,7 +5,9 @@ import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
 import { PostEditor } from '@/components/post-editor';
 import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost, getPlatformById } from '@/lib/platform-utils';
-import { Rocket, StackSimple } from '@phosphor-icons/react';
+import { Rocket, StackSimple, Atom } from '@phosphor-icons/react';
+import { CompactView } from '@/components/compact-view';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 function App() {
   // State management with persistence
@@ -17,6 +19,7 @@ function App() {
   const [isThread, setIsThread] = useKV('is-thread', false);
   const [threadsOnlyMode, setThreadsOnlyMode] = useKV('threads-only-mode', false);
   const [threadPosts, setThreadPosts] = useKV<ThreadPost[]>('thread-posts', []);
+  const [viewMode, setViewMode] = useKV('view-mode', 'standard');
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -65,7 +68,12 @@ function App() {
       return;
     }
     
-    if (!content.trim() || selectedPlatforms.length === 0) return;
+    if ((!content.trim() && threadPosts.length === 0) || selectedPlatforms.length === 0) {
+      toast.error('Missing content', {
+        description: 'Please add content and select at least one platform before posting'
+      });
+      return;
+    }
     
     setIsPosting(true);
     
@@ -132,7 +140,18 @@ function App() {
         </AnimatePresence>
         
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Mode Selection</h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-xl font-semibold">Mode Selection</h2>
+            <Tabs value={viewMode} onValueChange={setViewMode} className="w-auto">
+              <TabsList>
+                <TabsTrigger value="standard">Standard View</TabsTrigger>
+                <TabsTrigger value="compact" className="flex items-center gap-1">
+                  <Atom size={16} />
+                  <span>Compact View</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
           <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
             <button 
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
@@ -154,21 +173,44 @@ function App() {
           </div>
         </div>
         
-        <div className="grid gap-8 grid-cols-1">
+        {viewMode === 'standard' ? (
+          <div className="grid gap-8 grid-cols-1">
+            <section>
+              <h2 className="text-xl font-semibold mb-4">Target Platforms</h2>
+              <PlatformSelectors 
+                platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
+                selectedPlatforms={selectedPlatforms}
+                onPlatformsChange={handlePlatformsChange}
+              />
+            </section>
+            
+            <section>
+              <PostEditor 
+                content={content}
+                onContentChange={setContent}
+                selectedPlatforms={selectedPlatforms}
+                hashtags={hashtags}
+                onHashtagsChange={setHashtags}
+                promoMode={promoMode}
+                onPromoModeChange={setPromoMode}
+                onPost={handlePost}
+                media={media}
+                onMediaChange={setMedia}
+                isThread={threadsOnlyMode || isThread}
+                onThreadChange={threadsOnlyMode ? () => {} : setIsThread}
+                threadPosts={threadPosts}
+                onThreadPostsChange={setThreadPosts}
+                threadsOnlyMode={threadsOnlyMode}
+              />
+            </section>
+          </div>
+        ) : (
           <section>
-            <h2 className="text-xl font-semibold mb-4">Target Platforms</h2>
-            <PlatformSelectors 
-              platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
-              selectedPlatforms={selectedPlatforms}
-              onPlatformsChange={handlePlatformsChange}
-            />
-          </section>
-          
-          <section>
-            <PostEditor 
+            <CompactView
               content={content}
               onContentChange={setContent}
               selectedPlatforms={selectedPlatforms}
+              onPlatformsChange={handlePlatformsChange}
               hashtags={hashtags}
               onHashtagsChange={setHashtags}
               promoMode={promoMode}
@@ -183,7 +225,7 @@ function App() {
               threadsOnlyMode={threadsOnlyMode}
             />
           </section>
-        </div>
+        )}
       </main>
       
       <footer className="bg-muted/30 py-6 px-4 border-t">
@@ -198,3 +240,4 @@ function App() {
 }
 
 export default App;
+

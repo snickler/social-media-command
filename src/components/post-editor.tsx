@@ -270,7 +270,7 @@ export function PostEditor({
           </div>
           <Button 
             onClick={onPost} 
-            disabled={!content.trim() || !platformsSelected || (threadsOnlyMode && threadPosts.length === 0)}
+            disabled={(!content.trim() && threadPosts.length === 0) || !platformsSelected}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
             <PaperPlaneRight size={18} weight="bold" className="mr-2" />

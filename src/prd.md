@@ -17,6 +17,7 @@
   1. The unified composition experience
   2. The platform selection and preview
   3. The successful multi-platform posting confirmation
+  4. Monitoring feeds while creating content
 
 ## Essential Features
 1. **Unified Post Composer**
@@ -48,6 +49,11 @@
    - What: Create connected series of posts (threads) for supported platforms
    - Why: Allows for longer-form content that exceeds character limits
    - Success: Multiple related posts are published in sequence as a coherent thread
+
+7. **Compact View with Feeds**
+   - What: Split-screen interface showing post composer alongside feeds from platforms
+   - Why: Enables monitoring platform activity while creating content
+   - Success: Users can view feeds and compose posts without switching contexts
 
 ## Design Direction
 
@@ -87,6 +93,7 @@
 - **Grid System**: 12-column responsive grid with consistent gutters
 - **Responsive Approach**: Component-first design that reflows based on available space rather than device breakpoints
 - **Content Density**: Moderate density that prioritizes clarity over information volume
+- **View Modes**: Standard view with focused composer, compact view with split-screen layout
 
 ### Animations
 - **Purposeful Meaning**: Subtle transitions that indicate state changes and guide users through the posting flow
