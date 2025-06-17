@@ -6,6 +6,8 @@ export interface SocialPlatformConfig {
   color: string;
   characterLimit?: number;
   hashtagSupport: boolean;
+  mediaSupport: boolean;
+  threadSupport: boolean;
 }
 
 export const PLATFORMS: SocialPlatformConfig[] = [
@@ -14,41 +16,67 @@ export const PLATFORMS: SocialPlatformConfig[] = [
     name: 'BlueSky',
     color: '#1285FE',
     characterLimit: 300,
-    hashtagSupport: true
+    hashtagSupport: true,
+    mediaSupport: true,
+    threadSupport: true
   },
   {
     id: 'x',
     name: 'X',
     color: '#000000',
     characterLimit: 280,
-    hashtagSupport: true
+    hashtagSupport: true,
+    mediaSupport: true,
+    threadSupport: true
   },
   {
     id: 'linkedin',
     name: 'LinkedIn',
     color: '#0077B5',
-    hashtagSupport: true
+    hashtagSupport: true,
+    mediaSupport: true,
+    threadSupport: false
   },
   {
     id: 'threads',
     name: 'Threads',
     color: '#000000',
     characterLimit: 500,
-    hashtagSupport: true
+    hashtagSupport: true,
+    mediaSupport: true,
+    threadSupport: true
   },
   {
     id: 'facebook',
     name: 'Facebook',
     color: '#1877F2',
-    hashtagSupport: true
+    hashtagSupport: true,
+    mediaSupport: true,
+    threadSupport: false
   }
 ];
+
+export interface Media {
+  id: string;
+  file: File;
+  previewUrl: string;
+  type: 'image' | 'video';
+}
 
 export interface Post {
   content: string;
   platforms: SocialPlatform[];
   hashtags: string[];
   promoMode: boolean;
+  media: Media[];
+  isThread: boolean;
+  threadPosts?: ThreadPost[];
+}
+
+export interface ThreadPost {
+  id: string;
+  content: string;
+  media: Media[];
 }
 
 export const DEFAULT_HASHTAGS = [
@@ -71,6 +99,17 @@ export function formatPostForPlatform(post: Post, platform: SocialPlatformConfig
   if (post.promoMode && post.hashtags.length > 0 && platform.hashtagSupport) {
     const hashtagString = post.hashtags.map(tag => `#${tag}`).join(' ');
     formattedContent = `${formattedContent}\n\n${hashtagString}`;
+  }
+  
+  // Add media indicators
+  if (post.media.length > 0 && platform.mediaSupport) {
+    const mediaCount = post.media.length;
+    formattedContent = `${formattedContent}\n\n[${mediaCount} media attachment${mediaCount > 1 ? 's' : ''}]`;
+  }
+  
+  // Indicate if this is a thread
+  if (post.isThread && platform.threadSupport && post.threadPosts?.length) {
+    formattedContent = `${formattedContent}\n\n[Thread with ${post.threadPosts.length + 1} posts]`;
   }
   
   // Truncate if over character limit

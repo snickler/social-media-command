@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
 import { PostEditor } from '@/components/post-editor';
-import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform } from '@/lib/platform-utils';
+import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost } from '@/lib/platform-utils';
 import { Rocket } from '@phosphor-icons/react';
 
 function App() {
@@ -13,6 +13,9 @@ function App() {
   const [selectedPlatforms, setSelectedPlatforms] = useKV<SocialPlatform[]>('selected-platforms', []);
   const [hashtags, setHashtags] = useKV('hashtags', DEFAULT_HASHTAGS.slice(0, 5));
   const [promoMode, setPromoMode] = useKV('promo-mode', false);
+  const [media, setMedia] = useKV<Media[]>('media', []);
+  const [isThread, setIsThread] = useKV('is-thread', false);
+  const [threadPosts, setThreadPosts] = useKV<ThreadPost[]>('thread-posts', []);
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -28,6 +31,11 @@ function App() {
       
       // Reset form
       setContent('');
+      setMedia([]);
+      if (isThread) {
+        setThreadPosts([]);
+        setIsThread(false);
+      }
       
       // Show success toast
       toast.success('Post published successfully!', {
@@ -67,7 +75,10 @@ function App() {
               </div>
               <div>
                 <h3 className="font-medium">Post published successfully!</h3>
-                <p className="text-sm opacity-80">Your content is now live on your selected platforms.</p>
+                <p className="text-sm opacity-80">Your content is now live on your selected platforms.
+                  {isThread && threadPosts.length > 0 ? ` ${threadPosts.length + 1} posts published as a thread.` : ''}
+                  {media.length > 0 ? ` ${media.length} media file${media.length > 1 ? 's' : ''} uploaded.` : ''}
+                </p>
               </div>
             </motion.div>
           )}
@@ -93,6 +104,12 @@ function App() {
               promoMode={promoMode}
               onPromoModeChange={setPromoMode}
               onPost={handlePost}
+              media={media}
+              onMediaChange={setMedia}
+              isThread={isThread}
+              onThreadChange={setIsThread}
+              threadPosts={threadPosts}
+              onThreadPostsChange={setThreadPosts}
             />
           </section>
         </div>

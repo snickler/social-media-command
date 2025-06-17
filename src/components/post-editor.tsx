@@ -6,8 +6,21 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HashtagInput } from '@/components/platform-controls';
-import { SocialPlatform, formatPostForPlatform, getPlatformById } from '@/lib/platform-utils';
-import { Copy, PaperPlaneRight } from '@phosphor-icons/react';
+import { MediaUploader } from '@/components/media-uploader';
+import { ThreadComposer } from '@/components/thread-composer';
+import { 
+  SocialPlatform, 
+  formatPostForPlatform, 
+  getPlatformById,
+  Media,
+  ThreadPost
+} from '@/lib/platform-utils';
+import { 
+  Copy, 
+  PaperPlaneRight, 
+  Images,
+  ListBullets
+} from '@phosphor-icons/react';
 
 interface PostEditorProps {
   content: string;
@@ -18,6 +31,12 @@ interface PostEditorProps {
   promoMode: boolean;
   onPromoModeChange: (enabled: boolean) => void;
   onPost: () => void;
+  media?: Media[];
+  onMediaChange?: (media: Media[]) => void;
+  isThread?: boolean;
+  onThreadChange?: (isThread: boolean) => void;
+  threadPosts?: ThreadPost[];
+  onThreadPostsChange?: (posts: ThreadPost[]) => void;
 }
 
 export function PostEditor({
@@ -28,7 +47,13 @@ export function PostEditor({
   onHashtagsChange,
   promoMode,
   onPromoModeChange,
-  onPost
+  onPost,
+  media = [],
+  onMediaChange = () => {},
+  isThread = false,
+  onThreadChange = () => {},
+  threadPosts = [],
+  onThreadPostsChange = () => {}
 }: PostEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [activeTab, setActiveTab] = useState<string>("editor");
@@ -49,28 +74,57 @@ export function PostEditor({
 
   const platformsSelected = selectedPlatforms.length > 0;
   
+  // Check if any selected platform supports threads
+  const threadSupported = selectedPlatforms.some(platformId => {
+    const platform = getPlatformById(platformId);
+    return platform.threadSupport;
+  });
+  
+  // Check if any selected platform supports media
+  const mediaSupported = selectedPlatforms.some(platformId => {
+    const platform = getPlatformById(platformId);
+    return platform.mediaSupport;
+  });
+  
   return (
     <Card className="w-full shadow-sm">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold text-primary">Compose Post</CardTitle>
-          <div className="flex items-center gap-2">
-            <Switch 
-              id="promo-mode" 
-              checked={promoMode} 
-              onCheckedChange={onPromoModeChange}
-            />
-            <Label htmlFor="promo-mode" className="cursor-pointer text-sm">
-              Promo Mode
-            </Label>
+          <div className="flex items-center gap-4">
+            {threadSupported && (
+              <div className="flex items-center gap-2">
+                <Switch 
+                  id="thread-mode" 
+                  checked={isThread} 
+                  onCheckedChange={onThreadChange}
+                />
+                <Label htmlFor="thread-mode" className="cursor-pointer text-sm">
+                  Thread
+                </Label>
+              </div>
+            )}
+            <div className="flex items-center gap-2">
+              <Switch 
+                id="promo-mode" 
+                checked={promoMode} 
+                onCheckedChange={onPromoModeChange}
+              />
+              <Label htmlFor="promo-mode" className="cursor-pointer text-sm">
+                Promo Mode
+              </Label>
+            </div>
           </div>
         </div>
       </CardHeader>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-6">
-          <TabsList className="w-full grid grid-cols-2">
+          <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="editor">Editor</TabsTrigger>
+            {isThread && threadSupported && (
+              <TabsTrigger value="thread">Thread</TabsTrigger>
+            )}
             <TabsTrigger value="preview" disabled={!platformsSelected}>
               Preview
             </TabsTrigger>
@@ -86,6 +140,14 @@ export function PostEditor({
               value={content}
               onChange={handleContentChange}
             />
+            
+            {mediaSupported && (
+              <MediaUploader 
+                media={media}
+                onMediaChange={onMediaChange}
+                maxFiles={4}
+              />
+            )}
             
             {promoMode && (
               <div className="bg-muted/50 p-3 rounded-md">
@@ -104,6 +166,17 @@ export function PostEditor({
           </CardContent>
         </TabsContent>
         
+        {isThread && threadSupported && (
+          <TabsContent value="thread" className="p-0 mt-0">
+            <CardContent className="pt-4">
+              <ThreadComposer
+                threadPosts={threadPosts}
+                onThreadPostsChange={onThreadPostsChange}
+              />
+            </CardContent>
+          </TabsContent>
+        )}
+        
         <TabsContent value="preview" className="p-0 mt-0">
           <CardContent className="pt-4 space-y-4">
             {selectedPlatforms.map(platformId => {
@@ -112,7 +185,10 @@ export function PostEditor({
                 content,
                 platforms: [platformId],
                 hashtags,
-                promoMode
+                promoMode,
+                media,
+                isThread,
+                threadPosts
               }, platform);
               
               return (
@@ -133,6 +209,18 @@ export function PostEditor({
                   </div>
                   <div className="whitespace-pre-wrap bg-muted/30 p-3 rounded text-sm">
                     {formattedContent}
+                    {media.length > 0 && platform.mediaSupport && (
+                      <div className="mt-2 pt-2 border-t flex items-center gap-1 text-xs">
+                        <Images size={14} />
+                        <span>{media.length} media attachment{media.length > 1 ? 's' : ''}</span>
+                      </div>
+                    )}
+                    {isThread && platform.threadSupport && threadPosts.length > 0 && (
+                      <div className="mt-2 pt-2 border-t flex items-center gap-1 text-xs">
+                        <ListBullets size={14} />
+                        <span>Thread with {threadPosts.length + 1} post{threadPosts.length > 0 ? 's' : ''}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

@@ -39,6 +39,16 @@
    - Why: Ensures content meets platform requirements and will display as intended
    - Success: Accurate representation of how post will appear before publishing
 
+5. **Media Upload**
+   - What: Ability to upload images and videos with posts
+   - Why: Visual content increases engagement and impact
+   - Success: Media files are correctly attached to posts for platforms that support them
+
+6. **Thread Creation**
+   - What: Create connected series of posts (threads) for supported platforms
+   - Why: Allows for longer-form content that exceeds character limits
+   - Success: Multiple related posts are published in sequence as a coherent thread
+
 ## Design Direction
 
 ### Visual Tone & Identity
