@@ -41,6 +41,7 @@ interface PostEditorProps {
   threadPosts?: ThreadPost[];
   onThreadPostsChange?: (posts: ThreadPost[]) => void;
   threadsOnlyMode?: boolean;
+  compact?: boolean;
 }
 
 export function PostEditor({
@@ -58,7 +59,8 @@ export function PostEditor({
   onThreadChange = () => {},
   threadPosts = [],
   onThreadPostsChange = () => {},
-  threadsOnlyMode = false
+  threadsOnlyMode = false,
+  compact = false
 }: PostEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [activeTab, setActiveTab] = useState<string>("editor");

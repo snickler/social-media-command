@@ -60,28 +60,33 @@
    - Why: Enables monitoring platform activity while creating content
    - Success: Users can view feeds and compose posts without switching contexts
 
+9. **Documentation and Help System**
+   - What: Integrated user guide and technical documentation
+   - Why: Provides on-demand help and guidance for users
+   - Success: Users can quickly find answers to questions without leaving the application
+
 ## Design Direction
 
 ### Visual Tone & Identity
 - **Emotional Response**: Confidence, efficiency, professionalism with a touch of creativity
-- **Design Personality**: Elegant, cutting-edge, and streamlined
+- **Design Personality**: Native-like, elegant, cutting-edge, and streamlined
 - **Visual Metaphors**: Connected nodes, broadcasting waves, unified streams
 - **Simplicity Spectrum**: Clean and minimal interface that puts content creation first, with powerful features accessible but not cluttering the experience
 
 ### Color Strategy
 - **Color Scheme Type**: Analogous with accent
-- **Primary Color**: Deep indigo blue (oklch(0.3 0.2 265)) - professional, trustworthy, associated with communication
-- **Secondary Colors**: Soft lavender (oklch(0.85 0.1 285)) and slate gray (oklch(0.55 0.03 250))
-- **Accent Color**: Vibrant teal (oklch(0.7 0.15 195)) for CTAs and important actions
+- **Primary Color**: Refined indigo blue (oklch(0.35 0.18 265)) - professional, trustworthy, associated with communication
+- **Secondary Colors**: Subtle lavender (oklch(0.88 0.08 270)) and slate gray (oklch(0.55 0.03 250))
+- **Accent Color**: Vibrant teal (oklch(0.65 0.15 195)) for CTAs and important actions
 - **Color Psychology**: Blue conveys reliability and professionalism; teal adds a creative, fresh dimension
 - **Color Accessibility**: All color combinations meet WCAG AA standards
 - **Foreground/Background Pairings**: 
-  - Background (oklch(0.98 0.01 240)) with foreground (oklch(0.25 0.02 265))
-  - Card (oklch(0.99 0.01 240)) with card-foreground (oklch(0.3 0.03 265))
-  - Primary (oklch(0.3 0.2 265)) with primary-foreground (oklch(0.98 0.01 240))
-  - Secondary (oklch(0.85 0.1 285)) with secondary-foreground (oklch(0.25 0.02 265))
-  - Accent (oklch(0.7 0.15 195)) with accent-foreground (oklch(0.2 0.02 265))
-  - Muted (oklch(0.93 0.03 265)) with muted-foreground (oklch(0.4 0.05 265))
+  - Background (oklch(0.98 0.01 240)) with foreground (oklch(0.22 0.02 265))
+  - Card (oklch(0.99 0.015 240)) with card-foreground (oklch(0.25 0.03 265))
+  - Primary (oklch(0.35 0.18 265)) with primary-foreground (oklch(0.98 0.01 240))
+  - Secondary (oklch(0.88 0.08 270)) with secondary-foreground (oklch(0.22 0.03 265))
+  - Accent (oklch(0.65 0.15 195)) with accent-foreground (oklch(0.18 0.02 265))
+  - Muted (oklch(0.95 0.02 265)) with muted-foreground (oklch(0.45 0.04 265))
 
 ### Typography System
 - **Font Pairing Strategy**: Sans-serif for both headings and body, but with distinct weight differences
@@ -106,9 +111,9 @@
 - **Contextual Appropriateness**: Quick, subtle animations for routine interactions; more noticeable for important state changes
 
 ### UI Elements & Component Selection
-- **Component Usage**: Cards for platform selection, dialog for hashtag mode, toast notifications for confirmations
-- **Component Customization**: Rounded corners (var(--radius)) for all components, subtle shadows for cards and buttons
-- **Component States**: Clear hover/focus states with subtle scale transforms and color shifts
+- **Component Usage**: Cards for platform selection and content sections, sheet for documentation, dialog for hashtag mode, toast notifications for confirmations
+- **Component Customization**: Rounded corners (var(--radius)) for all components, subtle shadows for cards and buttons, native-like scrollbars
+- **Component States**: Clear hover/focus states with subtle scale transforms and color shifts, iOS-like focus styling
 - **Icon Selection**: Platform logos for network selection, familiar action icons (send, edit, preview)
 - **Component Hierarchy**: Primary action (Post) button uses accent color, secondary actions use secondary color
 - **Spacing System**: Consistent 4px base unit (Tailwind's default spacing scale)
@@ -118,7 +123,8 @@
 - **Design System Approach**: Component-based with shared properties
 - **Style Guide Elements**: Color palette, typography scale, component variants
 - **Visual Rhythm**: Consistent spacing between sections and related elements
-- **Brand Alignment**: Professional appearance that reflects the efficiency of the tool
+- **Brand Alignment**: Professional, native-like appearance that reflects the efficiency of the tool
+- **Native Application Feel**: Mac OS-inspired design elements including translucent header, refined cards, subtle shadows
 
 ### Accessibility & Readability
 - **Contrast Goal**: WCAG AA compliance for all text and UI elements

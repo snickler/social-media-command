@@ -5,42 +5,76 @@
   * {
     @apply border-border;
   }
+  
+  /* Improve overall font rendering */
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Native-like scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: var(--muted);
+    border-radius: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border-radius: 8px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+  }
+  
+  /* iOS-like focus styling */
+  *:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    transition: outline-offset 0.1s ease;
+  }
 }
 
 :root {
-  /* Base colors */
+  /* Base colors - macOS inspired palette */
   --background: oklch(0.98 0.01 240);
-  --foreground: oklch(0.25 0.02 265);
+  --foreground: oklch(0.22 0.02 265);
   
-  --card: oklch(0.99 0.01 240);
-  --card-foreground: oklch(0.3 0.03 265);
+  --card: oklch(0.99 0.015 240);
+  --card-foreground: oklch(0.25 0.03 265);
   
   --popover: oklch(0.99 0.01 240);
-  --popover-foreground: oklch(0.3 0.03 265);
+  --popover-foreground: oklch(0.25 0.03 265);
   
   /* Action colors */
-  --primary: oklch(0.3 0.2 265); /* Deep indigo */
+  --primary: oklch(0.35 0.18 265); /* Refined indigo */
   --primary-foreground: oklch(0.98 0.01 240);
   
-  --secondary: oklch(0.85 0.1 285); /* Soft lavender */
-  --secondary-foreground: oklch(0.25 0.02 265);
+  --secondary: oklch(0.88 0.08 270); /* Subtle lavender */
+  --secondary-foreground: oklch(0.22 0.03 265);
   
-  --accent: oklch(0.7 0.15 195); /* Vibrant teal */
-  --accent-foreground: oklch(0.2 0.02 265);
+  --accent: oklch(0.65 0.15 195); /* Vibrant teal */
+  --accent-foreground: oklch(0.18 0.02 265);
   
-  --destructive: oklch(0.7 0.2 25);
+  --destructive: oklch(0.65 0.18 25);
   --destructive-foreground: oklch(0.98 0.01 240);
   
   /* Supporting UI colors */
-  --muted: oklch(0.93 0.03 265);
-  --muted-foreground: oklch(0.4 0.05 265);
+  --muted: oklch(0.95 0.02 265);
+  --muted-foreground: oklch(0.45 0.04 265);
   
-  --border: oklch(0.85 0.03 265);
-  --input: oklch(0.85 0.03 265);
-  --ring: oklch(0.3 0.2 265);
+  --border: oklch(0.90 0.02 265);
+  --input: oklch(0.90 0.02 265);
+  --ring: oklch(0.35 0.18 265);
   
-  /* Border radius */
-  --radius: 0.5rem;
+  /* Border radius - more macOS-like */
+  --radius: 0.625rem;
 }
 
 @theme {
