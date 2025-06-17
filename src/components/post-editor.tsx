@@ -19,7 +19,8 @@ import {
   Copy, 
   PaperPlaneRight, 
   Images,
-  ListBullets
+  ListBullets,
+  StackSimple
 } from '@phosphor-icons/react';
 
 interface PostEditorProps {
@@ -37,6 +38,7 @@ interface PostEditorProps {
   onThreadChange?: (isThread: boolean) => void;
   threadPosts?: ThreadPost[];
   onThreadPostsChange?: (posts: ThreadPost[]) => void;
+  threadsOnlyMode?: boolean;
 }
 
 export function PostEditor({
@@ -53,10 +55,20 @@ export function PostEditor({
   isThread = false,
   onThreadChange = () => {},
   threadPosts = [],
-  onThreadPostsChange = () => {}
+  onThreadPostsChange = () => {},
+  threadsOnlyMode = false
 }: PostEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [activeTab, setActiveTab] = useState<string>("editor");
+  // Effect to auto-switch to thread tab when entering threads-only mode
+  const [prevThreadsOnlyMode, setPrevThreadsOnlyMode] = useState(threadsOnlyMode);
+  
+  if (threadsOnlyMode && !prevThreadsOnlyMode && threadSupported) {
+    setActiveTab("thread");
+    setPrevThreadsOnlyMode(true);
+  } else if (!threadsOnlyMode && prevThreadsOnlyMode) {
+    setPrevThreadsOnlyMode(false);
+  }
   
   const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onContentChange(e.target.value);
@@ -80,6 +92,9 @@ export function PostEditor({
     return platform.threadSupport;
   });
   
+  // Force thread mode if threadsOnlyMode is true
+  const effectiveIsThread = threadsOnlyMode || isThread;
+  
   // Check if any selected platform supports media
   const mediaSupported = selectedPlatforms.some(platformId => {
     const platform = getPlatformById(platformId);
@@ -92,16 +107,21 @@ export function PostEditor({
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold text-primary">Compose Post</CardTitle>
           <div className="flex items-center gap-4">
-            {threadSupported && (
+            {threadSupported && !threadsOnlyMode && (
               <div className="flex items-center gap-2">
                 <Switch 
                   id="thread-mode" 
-                  checked={isThread} 
+                  checked={effectiveIsThread} 
                   onCheckedChange={onThreadChange}
                 />
                 <Label htmlFor="thread-mode" className="cursor-pointer text-sm">
                   Thread
                 </Label>
+              </div>
+            )}
+            {threadsOnlyMode && (
+              <div className="bg-secondary/20 text-secondary-foreground px-2 py-1 rounded-md text-xs font-medium">
+                Threads Only Mode
               </div>
             )}
             <div className="flex items-center gap-2">
@@ -122,7 +142,7 @@ export function PostEditor({
         <div className="px-6">
           <TabsList className="w-full grid grid-cols-3">
             <TabsTrigger value="editor">Editor</TabsTrigger>
-            {isThread && threadSupported && (
+            {effectiveIsThread && threadSupported && (
               <TabsTrigger value="thread">Thread</TabsTrigger>
             )}
             <TabsTrigger value="preview" disabled={!platformsSelected}>
@@ -163,15 +183,25 @@ export function PostEditor({
                 />
               </div>
             )}
+            
+            {threadsOnlyMode && (
+              <div className="bg-primary/10 border border-primary/30 rounded-md p-3 text-sm flex items-center gap-2">
+                <StackSimple size={18} className="text-primary" />
+                <span>
+                  <strong>Threads Only Mode:</strong> Don't forget to add thread posts in the Thread tab.
+                </span>
+              </div>
+            )}
           </CardContent>
         </TabsContent>
         
-        {isThread && threadSupported && (
+        {effectiveIsThread && threadSupported && (
           <TabsContent value="thread" className="p-0 mt-0">
             <CardContent className="pt-4">
               <ThreadComposer
                 threadPosts={threadPosts}
                 onThreadPostsChange={onThreadPostsChange}
+                isThreadsOnlyMode={threadsOnlyMode}
               />
             </CardContent>
           </TabsContent>
@@ -187,8 +217,9 @@ export function PostEditor({
                 hashtags,
                 promoMode,
                 media,
-                isThread,
-                threadPosts
+                isThread: effectiveIsThread,
+                threadPosts,
+                threadsOnlyMode
               }, platform);
               
               return (
@@ -215,7 +246,7 @@ export function PostEditor({
                         <span>{media.length} media attachment{media.length > 1 ? 's' : ''}</span>
                       </div>
                     )}
-                    {isThread && platform.threadSupport && threadPosts.length > 0 && (
+                    {effectiveIsThread && platform.threadSupport && threadPosts.length > 0 && (
                       <div className="mt-2 pt-2 border-t flex items-center gap-1 text-xs">
                         <ListBullets size={14} />
                         <span>Thread with {threadPosts.length + 1} post{threadPosts.length > 0 ? 's' : ''}</span>
@@ -235,14 +266,15 @@ export function PostEditor({
             {platformsSelected 
               ? `Posting to ${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}` 
               : 'Select at least one platform to post'}
+            {threadsOnlyMode && ' (threads only)'}
           </div>
           <Button 
             onClick={onPost} 
-            disabled={!content.trim() || !platformsSelected}
+            disabled={!content.trim() || !platformsSelected || (threadsOnlyMode && threadPosts.length === 0)}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
             <PaperPlaneRight size={18} weight="bold" className="mr-2" />
-            Post Now
+            {threadsOnlyMode ? 'Post Thread' : 'Post Now'}
           </Button>
         </div>
       </CardFooter>

@@ -5,7 +5,7 @@ import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
 import { PostEditor } from '@/components/post-editor';
 import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost } from '@/lib/platform-utils';
-import { Rocket } from '@phosphor-icons/react';
+import { Rocket, StackSimple } from '@phosphor-icons/react';
 
 function App() {
   // State management with persistence
@@ -15,11 +15,56 @@ function App() {
   const [promoMode, setPromoMode] = useKV('promo-mode', false);
   const [media, setMedia] = useKV<Media[]>('media', []);
   const [isThread, setIsThread] = useKV('is-thread', false);
+  const [threadsOnlyMode, setThreadsOnlyMode] = useKV('threads-only-mode', false);
   const [threadPosts, setThreadPosts] = useKV<ThreadPost[]>('thread-posts', []);
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
+  const handlePlatformsChange = (platforms: SocialPlatform[]) => {
+    // Filter out platforms that don't support threads when in threads-only mode
+    if (threadsOnlyMode) {
+      const threadSupportedPlatforms = platforms.filter(platformId => {
+        const platform = getPlatformById(platformId);
+        return platform.threadSupport;
+      });
+      
+      if (threadSupportedPlatforms.length !== platforms.length) {
+        toast.info('Platform compatibility', {
+          description: 'Some selected platforms do not support threads and were removed in threads-only mode.'
+        });
+      }
+      
+      setSelectedPlatforms(threadSupportedPlatforms);
+    } else {
+      setSelectedPlatforms(platforms);
+    }
+  };
+  
+  // Effect to update selected platforms when entering threads-only mode
+  const updatePlatformsForThreadMode = () => {
+    if (threadsOnlyMode && selectedPlatforms.length > 0) {
+      const filteredPlatforms = selectedPlatforms.filter(platformId => {
+        const platform = getPlatformById(platformId);
+        return platform.threadSupport;
+      });
+      
+      if (filteredPlatforms.length !== selectedPlatforms.length) {
+        toast.info('Platform compatibility', {
+          description: 'Some previously selected platforms do not support threads and were removed.'
+        });
+        setSelectedPlatforms(filteredPlatforms);
+      }
+    }
+  };
+
   const handlePost = () => {
+    if (threadsOnlyMode && threadPosts.length === 0) {
+      toast.error('Thread required', {
+        description: 'You must add at least one thread post in threads-only mode'
+      });
+      return;
+    }
+    
     if (!content.trim() || selectedPlatforms.length === 0) return;
     
     setIsPosting(true);
@@ -32,9 +77,11 @@ function App() {
       // Reset form
       setContent('');
       setMedia([]);
-      if (isThread) {
+      if (isThread || threadsOnlyMode) {
         setThreadPosts([]);
-        setIsThread(false);
+        if (!threadsOnlyMode) {
+          setIsThread(false);
+        }
       }
       
       // Show success toast
@@ -76,7 +123,7 @@ function App() {
               <div>
                 <h3 className="font-medium">Post published successfully!</h3>
                 <p className="text-sm opacity-80">Your content is now live on your selected platforms.
-                  {isThread && threadPosts.length > 0 ? ` ${threadPosts.length + 1} posts published as a thread.` : ''}
+                  {(isThread || threadsOnlyMode) && threadPosts.length > 0 ? ` ${threadPosts.length + 1} posts published as a thread.` : ''}
                   {media.length > 0 ? ` ${media.length} media file${media.length > 1 ? 's' : ''} uploaded.` : ''}
                 </p>
               </div>
@@ -84,13 +131,36 @@ function App() {
           )}
         </AnimatePresence>
         
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-semibold">Mode Selection</h2>
+          <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
+            <button 
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
+              onClick={() => setThreadsOnlyMode(false)}
+            >
+              Single/Thread Posts
+            </button>
+            <button 
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
+              onClick={() => {
+                setThreadsOnlyMode(true);
+                setIsThread(true);
+                updatePlatformsForThreadMode();
+              }}
+            >
+              <StackSimple size={16} />
+              Threads Only
+            </button>
+          </div>
+        </div>
+        
         <div className="grid gap-8 grid-cols-1">
           <section>
             <h2 className="text-xl font-semibold mb-4">Target Platforms</h2>
             <PlatformSelectors 
-              platforms={PLATFORMS} 
+              platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
               selectedPlatforms={selectedPlatforms}
-              onPlatformsChange={setSelectedPlatforms}
+              onPlatformsChange={handlePlatformsChange}
             />
           </section>
           
@@ -106,10 +176,11 @@ function App() {
               onPost={handlePost}
               media={media}
               onMediaChange={setMedia}
-              isThread={isThread}
-              onThreadChange={setIsThread}
+              isThread={threadsOnlyMode || isThread}
+              onThreadChange={threadsOnlyMode ? () => {} : setIsThread}
               threadPosts={threadPosts}
               onThreadPostsChange={setThreadPosts}
+              threadsOnlyMode={threadsOnlyMode}
             />
           </section>
         </div>

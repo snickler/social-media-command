@@ -71,6 +71,7 @@ export interface Post {
   media: Media[];
   isThread: boolean;
   threadPosts?: ThreadPost[];
+  threadsOnlyMode?: boolean;
 }
 
 export interface ThreadPost {
@@ -108,7 +109,7 @@ export function formatPostForPlatform(post: Post, platform: SocialPlatformConfig
   }
   
   // Indicate if this is a thread
-  if (post.isThread && platform.threadSupport && post.threadPosts?.length) {
+  if ((post.isThread || post.threadsOnlyMode) && platform.threadSupport && post.threadPosts?.length) {
     formattedContent = `${formattedContent}\n\n[Thread with ${post.threadPosts.length + 1} posts]`;
   }
   

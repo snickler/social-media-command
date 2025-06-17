@@ -19,12 +19,14 @@ interface ThreadComposerProps {
   threadPosts: ThreadPost[];
   onThreadPostsChange: (posts: ThreadPost[]) => void;
   disabled?: boolean;
+  isThreadsOnlyMode?: boolean;
 }
 
 export function ThreadComposer({ 
   threadPosts, 
   onThreadPostsChange,
-  disabled = false
+  disabled = false,
+  isThreadsOnlyMode = false
 }: ThreadComposerProps) {
   
   const addThreadPost = () => {
@@ -90,6 +92,12 @@ export function ThreadComposer({
           Add Post
         </Button>
       </div>
+      
+      {isThreadsOnlyMode && threadPosts.length === 0 && (
+        <div className="bg-primary/10 border border-primary/30 rounded-md p-3 text-sm">
+          <strong>Threads Only Mode:</strong> You must add at least one thread post to publish.
+        </div>
+      )}
       
       {threadPosts.length === 0 ? (
         <div className="text-center py-6 border border-dashed rounded-md text-muted-foreground">
