@@ -62,7 +62,7 @@ public class InMemoryFeedService : IFeedService
         }
 
         var result = query.Take(configuration.MaxItemsPerPlatform * configuration.EnabledPlatforms.Count);
-        return Task.FromResult(result);
+        return Task.FromResult(result.AsEnumerable());
     }
 
     public Task RefreshFeedAsync(IEnumerable<SocialPlatform> platforms)
@@ -122,7 +122,7 @@ public class InMemoryFeedService : IFeedService
             item.Hashtags.Any(tag => tag.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ).OrderByDescending(item => item.PostedAt);
 
-        return Task.FromResult(searchResults);
+        return Task.FromResult(searchResults.AsEnumerable());
     }
 
     public Task<IEnumerable<SocialFeedItem>> GetFeedItemsByHashtagsAsync(IEnumerable<string> hashtags, IEnumerable<SocialPlatform>? platforms = null)
@@ -139,7 +139,7 @@ public class InMemoryFeedService : IFeedService
             item.Hashtags.Any(tag => hashtagsList.Contains(tag.ToLowerInvariant()))
         ).OrderByDescending(item => item.PostedAt);
 
-        return Task.FromResult(results);
+        return Task.FromResult(results.AsEnumerable());
     }
 
     public Task<Dictionary<SocialPlatform, IEnumerable<string>>> GetTrendingHashtagsAsync()

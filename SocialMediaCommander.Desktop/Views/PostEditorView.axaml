@@ -68,18 +68,10 @@
               </StackPanel>
             </Grid>
             
-            <!-- Tab Selection -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="4" Margin="0,16,0,0">
-              <RadioButton IsChecked="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=composer}"
-                          Content="Composer"
-                          GroupName="EditorTabs"/>
-              <RadioButton IsChecked="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=thread}"
-                          Content="Thread"
-                          GroupName="EditorTabs"
-                          IsVisible="{Binding IsThread}"/>
-              <RadioButton IsChecked="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=preview}"
-                          Content="Preview"
-                          GroupName="EditorTabs"/>
+            <!-- Mode Indicators -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8" Margin="0,16,0,0">
+              <TextBlock Text="Composer Mode" FontWeight="Medium"/>
+              <TextBlock Text="Thread Mode" FontWeight="Medium" IsVisible="{Binding IsThread}"/>
             </StackPanel>
           </Grid>
         </Border>
@@ -91,9 +83,8 @@
                 CornerRadius="8"
                 Padding="20">
           
-          <!-- Composer Tab -->
-          <StackPanel IsVisible="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=composer}"
-                     Spacing="16">
+          <!-- Simplified Content for Build -->
+          <StackPanel Spacing="16">
             
             <!-- Main Text Editor -->
             <Grid>
@@ -150,31 +141,8 @@
               </Border>
             </StackPanel>
             
-            <!-- Media Section -->
-            <StackPanel Spacing="8" IsVisible="{Binding MediaSupported}">
-              <TextBlock Text="Media" FontWeight="Medium"/>
-              <Border BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                     BorderThickness="1"
-                     CornerRadius="6"
-                     Padding="12"
-                     Background="{DynamicResource ControlFillColorInputActiveBrush}">
-                <StackPanel>
-                  <TextBlock Text="Drop files here or click to upload"
-                            HorizontalAlignment="Center"
-                            Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                  <Button Content="Choose Files" 
-                         HorizontalAlignment="Center"
-                         Margin="0,8,0,0"/>
-                </StackPanel>
-              </Border>
-            </StackPanel>
-          </StackPanel>
-          
-          <!-- Thread Tab -->
-          <StackPanel IsVisible="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=thread}"
-                     Spacing="16">
-            
-            <StackPanel Spacing="12">
+            <!-- Thread Posts Section -->
+            <StackPanel Spacing="8" IsVisible="{Binding IsThread}">
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*"/>
@@ -191,7 +159,6 @@
                        Command="{Binding AddNewThreadPostCommand}"/>
               </Grid>
               
-              <!-- Thread Posts List -->
               <ItemsControl ItemsSource="{Binding ThreadPosts}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
@@ -201,84 +168,27 @@
                            CornerRadius="6"
                            Margin="0,0,0,8"
                            Padding="12">
-                      <Grid>
-                        <Grid.RowDefinitions>
-                          <RowDefinition Height="Auto"/>
-                          <RowDefinition Height="*"/>
-                          <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
+                      <StackPanel Spacing="8">
+                        <TextBlock Text="Thread Post"
+                                  FontWeight="Medium"
+                                  FontSize="14"/>
                         
-                        <!-- Thread Post Header -->
-                        <Grid Grid.Row="0">
-                          <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                          </Grid.ColumnDefinitions>
-                          
-                          <TextBlock Grid.Column="0" 
-                                    Text="{Binding Order, StringFormat=Post {0}}"
-                                    FontWeight="Medium"
-                                    FontSize="14"/>
-                          
-                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
-                            <Button Content="↑" Width="30" Height="30"/>
-                            <Button Content="↓" Width="30" Height="30"/>
-                            <Button Content="✕" Width="30" Height="30"/>
-                          </StackPanel>
-                        </Grid>
-                        
-                        <!-- Thread Post Content -->
-                        <TextBox Grid.Row="1"
-                                Text="{Binding Content}"
+                        <TextBox Text="{Binding Content}"
                                 MinHeight="80"
                                 AcceptsReturn="True"
-                                TextWrapping="Wrap"
-                                Margin="0,8"/>
+                                TextWrapping="Wrap"/>
                         
-                        <!-- Thread Post Character Count -->
-                        <TextBlock Grid.Row="2"
-                                  Text="{Binding Content.Length, StringFormat={}{0} characters}"
+                        <TextBlock Text="{Binding Content.Length, StringFormat={}{0} characters}"
                                   HorizontalAlignment="Right"
                                   FontSize="12"
                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                      </Grid>
+                      </StackPanel>
                     </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
             </StackPanel>
-          </StackPanel>
-          
-          <!-- Preview Tab -->
-          <StackPanel IsVisible="{Binding ActiveTab, Converter={StaticResource EqualityConverter}, ConverterParameter=preview}"
-                     Spacing="16">
             
-            <TextBlock Text="Platform Previews" FontWeight="Medium" FontSize="16"/>
-            
-            <ItemsControl ItemsSource="{Binding PlatformPreviews}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <Border Background="{DynamicResource ControlFillColorDefaultBrush}"
-                         BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Margin="0,0,0,8"
-                         Padding="16">
-                    <StackPanel Spacing="8">
-                      <TextBlock Text="{Binding Platform}" 
-                                FontWeight="Medium"/>
-                      <TextBlock Text="{Binding FormattedContent}"
-                                TextWrapping="Wrap"
-                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"/>
-                      <Button Content="Copy"
-                             HorizontalAlignment="Right"
-                             Command="{Binding $parent[UserControl].DataContext.CopyTextToClipboardCommand}"
-                             CommandParameter="{Binding FormattedContent}"/>
-                    </StackPanel>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
           </StackPanel>
         </Border>
 
@@ -332,8 +242,7 @@
                     
                     <TextBlock Grid.Column="2"
                               Text="{Binding Count, StringFormat={}{0}}"
-                              VerticalAlignment="Center"
-                              Foreground="{Binding IsOverLimit, Converter={StaticResource BoolToColorConverter}}"/>
+                              VerticalAlignment="Center"/>
                   </Grid>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>

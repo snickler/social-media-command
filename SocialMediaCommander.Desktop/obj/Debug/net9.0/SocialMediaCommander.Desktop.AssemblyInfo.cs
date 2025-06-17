@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SocialMediaCommander.Desktop")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9d8256c9e116957e2e4679048157ad19e5471083")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+50776aedb32c54fe0bab308eac1e23fb5a5e2f04")]
 [assembly: System.Reflection.AssemblyProductAttribute("SocialMediaCommander.Desktop")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SocialMediaCommander.Desktop")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

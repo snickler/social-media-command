@@ -13,7 +13,9 @@
           "Avalonia.Diagnostics": "11.2.6",
           "Avalonia.Fonts.Inter": "11.2.6",
           "Avalonia.Themes.Fluent": "11.2.6",
-          "CommunityToolkit.Mvvm": "8.2.1"
+          "CommunityToolkit.Mvvm": "8.2.1",
+          "SocialMediaCommander.Core": "1.0.0",
+          "SocialMediaCommander.Services": "1.0.0"
         },
         "runtime": {
           "SocialMediaCommander.Desktop.dll": {}
@@ -411,6 +413,25 @@
             "fileVersion": "0.20.0.0"
           }
         }
+      },
+      "SocialMediaCommander.Core/1.0.0": {
+        "runtime": {
+          "SocialMediaCommander.Core.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "SocialMediaCommander.Services/1.0.0": {
+        "dependencies": {
+          "SocialMediaCommander.Core": "1.0.0"
+        },
+        "runtime": {
+          "SocialMediaCommander.Services.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
       }
     }
   },
@@ -601,6 +622,16 @@
       "sha512": "sha512-2gkt2kuYPhDKd8gtl34jZSJOnn4nRJfFngCDcTZT/uySbK++ua0YQx2418l9Rn1Y4dE5XNq6zG9ZsE5ltLlNNw==",
       "path": "tmds.dbus.protocol/0.20.0",
       "hashPath": "tmds.dbus.protocol.0.20.0.nupkg.sha512"
+    },
+    "SocialMediaCommander.Core/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "SocialMediaCommander.Services/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
     }
   }
 }
