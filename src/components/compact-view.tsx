@@ -72,52 +72,54 @@ export function CompactView({
         />
       </div>
       
-      <TabsContent value="split" className="m-0 p-0">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="lg:order-1">
-            <PostEditor
-              content={content}
-              onContentChange={onContentChange}
-              selectedPlatforms={selectedPlatforms}
-              hashtags={hashtags}
-              onHashtagsChange={onHashtagsChange}
-              promoMode={promoMode}
-              onPromoModeChange={onPromoModeChange}
-              onPost={onPost}
-              media={media}
-              onMediaChange={onMediaChange}
-              isThread={isThread}
-              onThreadChange={onThreadChange}
-              threadPosts={threadPosts}
-              onThreadPostsChange={onThreadPostsChange}
-              threadsOnlyMode={threadsOnlyMode}
-            />
+      <Tabs value={activeView} className="w-full">
+        <TabsContent value="split" className="m-0 p-0">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="lg:order-1">
+              <PostEditor
+                content={content}
+                onContentChange={onContentChange}
+                selectedPlatforms={selectedPlatforms}
+                hashtags={hashtags}
+                onHashtagsChange={onHashtagsChange}
+                promoMode={promoMode}
+                onPromoModeChange={onPromoModeChange}
+                onPost={onPost}
+                media={media}
+                onMediaChange={onMediaChange}
+                isThread={isThread}
+                onThreadChange={onThreadChange}
+                threadPosts={threadPosts}
+                onThreadPostsChange={onThreadPostsChange}
+                threadsOnlyMode={threadsOnlyMode}
+              />
+            </div>
+            <div className="lg:order-2">
+              <SocialFeed platformConfig={PLATFORMS} />
+            </div>
           </div>
-          <div className="lg:order-2">
-            <SocialFeed platformConfig={PLATFORMS} />
-          </div>
-        </div>
-      </TabsContent>
-      
-      <TabsContent value="compose" className="m-0 p-0">
-        <PostEditor
-          content={content}
-          onContentChange={onContentChange}
-          selectedPlatforms={selectedPlatforms}
-          hashtags={hashtags}
-          onHashtagsChange={onHashtagsChange}
-          promoMode={promoMode}
-          onPromoModeChange={onPromoModeChange}
-          onPost={onPost}
-          media={media}
-          onMediaChange={onMediaChange}
-          isThread={isThread}
-          onThreadChange={onThreadChange}
-          threadPosts={threadPosts}
-          onThreadPostsChange={onThreadPostsChange}
-          threadsOnlyMode={threadsOnlyMode}
-        />
-      </TabsContent>
+        </TabsContent>
+        
+        <TabsContent value="compose" className="m-0 p-0">
+          <PostEditor
+            content={content}
+            onContentChange={onContentChange}
+            selectedPlatforms={selectedPlatforms}
+            hashtags={hashtags}
+            onHashtagsChange={onHashtagsChange}
+            promoMode={promoMode}
+            onPromoModeChange={onPromoModeChange}
+            onPost={onPost}
+            media={media}
+            onMediaChange={onMediaChange}
+            isThread={isThread}
+            onThreadChange={onThreadChange}
+            threadPosts={threadPosts}
+            onThreadPostsChange={onThreadPostsChange}
+            threadsOnlyMode={threadsOnlyMode}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
