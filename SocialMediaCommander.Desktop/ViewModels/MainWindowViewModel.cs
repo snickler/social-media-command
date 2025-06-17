@@ -26,6 +26,32 @@ public partial class MainWindowViewModel : ViewModelBase
         
         PostEditor = new PostEditorViewModel(postService, accountService, mediaService);
         SocialFeed = new SocialFeedViewModel(feedService, accountService);
+        
+        // Subscribe to error events for user notifications
+        PostEditor.OnError += (message) => HandleError("Post Editor", message);
+        PostEditor.OnPostPublished += () => HandlePostPublished();
+        PostEditor.OnDraftSaved += () => HandleDraftSaved();
+        
+        SocialFeed.OnError += (message) => HandleError("Social Feed", message);
+    }
+    
+    private void HandleError(string source, string message)
+    {
+        // In a real implementation, this would show a notification or message box
+        System.Diagnostics.Debug.WriteLine($"{source} Error: {message}");
+    }
+    
+    private void HandlePostPublished()
+    {
+        // Refresh the social feed when a post is published
+        _ = SocialFeed.RefreshFeedCommand.ExecuteAsync(null);
+        
+        System.Diagnostics.Debug.WriteLine("Post published successfully!");
+    }
+    
+    private void HandleDraftSaved()
+    {
+        System.Diagnostics.Debug.WriteLine("Draft saved successfully!");
     }
 }
 

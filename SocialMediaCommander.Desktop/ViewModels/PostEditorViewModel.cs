@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -46,6 +45,12 @@ public partial class PostEditorViewModel : ObservableObject
     [ObservableProperty]
     private int _maxCharacterCount = 280;
     
+    [ObservableProperty]
+    private bool _isPosting = false;
+    
+    [ObservableProperty]
+    private string _newHashtag = string.Empty;
+    
     public PostEditorViewModel(
         IPostService postService,
         IAccountService accountService,
@@ -59,21 +64,36 @@ public partial class PostEditorViewModel : ObservableObject
         SelectedPlatforms = new ObservableCollection<SocialPlatform>();
         Hashtags = new ObservableCollection<string>();
         Media = new ObservableCollection<Media>();
-        ThreadPosts = new ObservableCollection<ThreadPost>();
+        ThreadPosts = new ObservableCollection<ThreadPostViewModel>();
         PlatformPreviews = new ObservableCollection<PlatformPreview>();
         CharacterCounts = new ObservableCollection<PlatformCharacterCount>();
         
-        // Set up collection change notifications for computed properties
-        SelectedPlatforms.CollectionChanged += (s, e) => {
-            OnPropertyChanged(nameof(CanPost));
-            OnPropertyChanged(nameof(ThreadSupported));
-            OnPropertyChanged(nameof(MediaSupported));
+        // Initialize available platforms
+        AvailablePlatforms = new ObservableCollection<PlatformViewModel>
+        {
+            new PlatformViewModel { Platform = SocialPlatform.BlueSky, Name = "BlueSky", Color = "#0085FF", CharacterLimit = 300, IsSelected = true },
+            new PlatformViewModel { Platform = SocialPlatform.X, Name = "X", Color = "#000000", CharacterLimit = 280, IsSelected = false },
+            new PlatformViewModel { Platform = SocialPlatform.LinkedIn, Name = "LinkedIn", Color = "#0A66C2", CharacterLimit = null, IsSelected = true },
+            new PlatformViewModel { Platform = SocialPlatform.Threads, Name = "Threads", Color = "#000000", CharacterLimit = 500, IsSelected = false },
+            new PlatformViewModel { Platform = SocialPlatform.Facebook, Name = "Facebook", Color = "#1877F2", CharacterLimit = null, IsSelected = true }
         };
         
-        ThreadPosts.CollectionChanged += (s, e) => {
-            OnPropertyChanged(nameof(HasContent));
-            OnPropertyChanged(nameof(CanPost));
-        };
+        // Initialize default hashtags
+        foreach (var tag in new[] { "socialmedia", "digitalmarketing", "marketing", "socialmediamarketing", "somehashtag" })
+        {
+            Hashtags.Add(tag);
+        }
+        
+        // Update selected platforms collection
+        UpdateSelectedPlatforms();
+        
+        // Initialize with main post if thread mode
+        if (IsThread && ThreadPosts.Count == 0)
+        {
+            AddThreadPost();
+        }
+        
+        PropertyChanged += OnPropertyChanged;
     }
     
     #region Computed Properties
@@ -96,63 +116,49 @@ public partial class PostEditorViewModel : ObservableObject
     public ObservableCollection<SocialPlatform> SelectedPlatforms { get; }
     public ObservableCollection<string> Hashtags { get; }
     public ObservableCollection<Media> Media { get; }
-    public ObservableCollection<ThreadPost> ThreadPosts { get; }
+    public ObservableCollection<ThreadPostViewModel> ThreadPosts { get; }
     public ObservableCollection<PlatformPreview> PlatformPreviews { get; }
     public ObservableCollection<PlatformCharacterCount> CharacterCounts { get; }
+    public ObservableCollection<PlatformViewModel> AvailablePlatforms { get; }
     
     #endregion
     
     #region Commands
     
-    [RelayCommand(CanExecute = nameof(CanPost))]
-    private async Task PublishPostAsync()
+    [RelayCommand]
+    private async Task PostAsync()
     {
+        if (IsPosting) return;
+        
         try
         {
-            IsPublishing = true;
+            IsPosting = true;
             
             var post = CreatePostFromViewModel();
+            var result = await _postService.PublishPostAsync(post);
             
-            // Validate post before publishing
-            var validationResults = await _postService.ValidatePostAsync(post);
-            
-            var failedValidations = validationResults.Where(vr => !vr.Value.IsValid).ToList();
-            if (failedValidations.Any())
+            // Reset form after successful post
+            Content = string.Empty;
+            Media.Clear();
+            if (IsThread)
             {
-                // Handle validation errors
-                var errors = string.Join("\n", failedValidations.Select(fv => 
-                    $"{fv.Key}: {string.Join(", ", fv.Value.Errors)}"));
-                
-                // In a real implementation, show validation errors to user
-                throw new InvalidOperationException($"Validation failed:\n{errors}");
+                ThreadPosts.Clear();
+                if (!ThreadsOnlyMode)
+                {
+                    IsThread = false;
+                }
             }
             
-            // Publish to selected platforms
-            var publishResults = await _postService.PublishPostToPlatformsAsync(post, SelectedPlatforms);
-            
-            // Handle publish results
-            var failedPublishes = publishResults.Where(pr => !pr.Value.Success).ToList();
-            if (failedPublishes.Any())
-            {
-                // Handle partial failures
-                var failures = string.Join("\n", failedPublishes.Select(fp => 
-                    $"{fp.Key}: {fp.Value.ErrorMessage}"));
-                
-                // In a real implementation, show publish errors to user
-                throw new InvalidOperationException($"Publishing failed for some platforms:\n{failures}");
-            }
-            
-            // Clear form on successful publish
-            ClearForm();
+            // Notify success
+            OnPostPublished?.Invoke();
         }
         catch (Exception ex)
         {
-            // Handle errors - in real implementation, show to user
-            System.Diagnostics.Debug.WriteLine($"Post publishing failed: {ex.Message}");
+            OnError?.Invoke($"Failed to publish post: {ex.Message}");
         }
         finally
         {
-            IsPublishing = false;
+            IsPosting = false;
         }
     }
     
@@ -163,36 +169,101 @@ public partial class PostEditorViewModel : ObservableObject
         {
             var post = CreatePostFromViewModel();
             post.Status = PostStatus.Draft;
-            
             await _postService.SaveDraftAsync(post);
-            
-            // In real implementation, show success message to user
+            OnDraftSaved?.Invoke();
         }
         catch (Exception ex)
         {
-            // Handle errors
-            System.Diagnostics.Debug.WriteLine($"Save draft failed: {ex.Message}");
+            OnError?.Invoke($"Failed to save draft: {ex.Message}");
         }
     }
     
     [RelayCommand]
-    private void AddNewThreadPost()
+    private void AddThreadPost()
     {
-        var newPost = new ThreadPost
+        var newPost = new ThreadPostViewModel
         {
-            Id = $"thread-{DateTime.Now.Ticks}-{Guid.NewGuid().ToString("N")[..8]}",
             Content = string.Empty,
-            Media = new List<Media>()
+            OrderIndex = ThreadPosts.Count,
+            Media = new ObservableCollection<Media>()
         };
-        
         ThreadPosts.Add(newPost);
     }
     
     [RelayCommand]
-    private void CopyTextToClipboard(string text)
+    private void RemoveThreadPost(ThreadPostViewModel threadPost)
     {
-        // In a real Avalonia implementation, use the clipboard service
-        System.Diagnostics.Debug.WriteLine($"Copying to clipboard: {text}");
+        if (threadPost != null)
+        {
+            ThreadPosts.Remove(threadPost);
+            UpdateThreadPostIndices();
+        }
+    }
+    
+    [RelayCommand]
+    private void MoveThreadPostUp(ThreadPostViewModel threadPost)
+    {
+        var index = ThreadPosts.IndexOf(threadPost);
+        if (index > 0)
+        {
+            ThreadPosts.RemoveAt(index);
+            ThreadPosts.Insert(index - 1, threadPost);
+            UpdateThreadPostIndices();
+        }
+    }
+    
+    [RelayCommand]
+    private void MoveThreadPostDown(ThreadPostViewModel threadPost)
+    {
+        var index = ThreadPosts.IndexOf(threadPost);
+        if (index < ThreadPosts.Count - 1)
+        {
+            ThreadPosts.RemoveAt(index);
+            ThreadPosts.Insert(index + 1, threadPost);
+            UpdateThreadPostIndices();
+        }
+    }
+    
+    [RelayCommand]
+    private void AddHashtag()
+    {
+        if (!string.IsNullOrWhiteSpace(NewHashtag))
+        {
+            var tag = NewHashtag.Trim().TrimStart('#').ToLower();
+            if (!Hashtags.Contains(tag))
+            {
+                Hashtags.Add(tag);
+                NewHashtag = string.Empty;
+            }
+        }
+    }
+    
+    [RelayCommand]
+    private void RemoveHashtag(string hashtag)
+    {
+        if (!string.IsNullOrEmpty(hashtag))
+        {
+            Hashtags.Remove(hashtag);
+        }
+    }
+    
+    [RelayCommand]
+    private void TogglePlatform(PlatformViewModel platform)
+    {
+        if (platform != null)
+        {
+            platform.IsSelected = !platform.IsSelected;
+            UpdateSelectedPlatforms();
+            UpdateCharacterCounts();
+        }
+    }
+    
+    [RelayCommand]
+    private async Task UploadMediaAsync()
+    {
+        // This would typically open a file picker
+        // For now, this is a placeholder
+        OnMediaUploadRequested?.Invoke();
     }
     
     #endregion
@@ -201,96 +272,132 @@ public partial class PostEditorViewModel : ObservableObject
     
     private Post CreatePostFromViewModel()
     {
-        return new Post
+        var post = new Post
         {
             Id = Guid.NewGuid().ToString(),
             Content = Content,
-            Media = Media.ToList(),
-            ThreadPosts = IsThread ? ThreadPosts.ToList() : new List<ThreadPost>(),
-            Hashtags = Hashtags.ToList(),
             TargetPlatforms = SelectedPlatforms.ToList(),
-            Status = PostStatus.Draft,
+            Media = Media.ToList(),
+            Hashtags = Hashtags.ToList(),
             CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            PromoMode = PromoMode,
-            IsThread = IsThread,
-            ThreadsOnlyMode = ThreadsOnlyMode
+            Status = PostStatus.Draft
+        };
+        
+        if (IsThread && ThreadPosts.Any())
+        {
+            post.ThreadPosts = ThreadPosts.Select(tp => new ThreadPost
+            {
+                Id = Guid.NewGuid().ToString(),
+                Content = tp.Content,
+                Order = tp.OrderIndex,
+                Media = tp.Media.ToList()
+            }).ToList();
+        }
+        
+        return post;
+    }
+    
+    private void UpdateSelectedPlatforms()
+    {
+        SelectedPlatforms.Clear();
+        foreach (var platform in AvailablePlatforms.Where(p => p.IsSelected))
+        {
+            SelectedPlatforms.Add(platform.Platform);
+        }
+    }
+    
+    private void FilterPlatformsForThreadSupport()
+    {
+        foreach (var platform in AvailablePlatforms)
+        {
+            // Only keep platforms that support threads in threads-only mode
+            if (ThreadsOnlyMode && !PlatformSupportsThreads(platform.Platform))
+            {
+                platform.IsSelected = false;
+            }
+        }
+        UpdateSelectedPlatforms();
+    }
+    
+    private bool PlatformSupportsThreads(SocialPlatform platform)
+    {
+        return platform switch
+        {
+            SocialPlatform.X => true,
+            SocialPlatform.Threads => true,
+            SocialPlatform.BlueSky => true,
+            _ => false
         };
     }
     
-    private void ClearForm()
+    private void UpdateCharacterCounts()
     {
-        Content = string.Empty;
-        Media.Clear();
-        ThreadPosts.Clear();
-        Hashtags.Clear();
+        CharacterCounts.Clear();
         
-        // Reset modes if not sticky
-        if (!ThreadsOnlyMode)
+        foreach (var platform in AvailablePlatforms.Where(p => p.IsSelected))
         {
-            IsThread = false;
-        }
-        
-        ActiveTab = "composer";
-    }
-    
-    private async Task UpdatePlatformPreviewsAsync()
-    {
-        if (!SelectedPlatforms.Any()) return;
-        
-        try
-        {
-            var post = CreatePostFromViewModel();
-            var previews = await _postService.GetPostPreviewsAsync(post);
-            
-            // Update collection on UI thread
-            PlatformPreviews.Clear();
-            foreach (var preview in previews)
+            var count = CalculateCharacterCount(Content, platform.Platform);
+            CharacterCounts.Add(new PlatformCharacterCount
             {
-                PlatformPreviews.Add(new PlatformPreview
-                {
-                    Platform = preview.Key,
-                    FormattedContent = preview.Value
-                });
-            }
-        }
-        catch (Exception ex)
-        {
-            System.Diagnostics.Debug.WriteLine($"Preview update failed: {ex.Message}");
+                Platform = platform.Platform,
+                PlatformName = platform.Name,
+                Count = count,
+                Limit = platform.CharacterLimit,
+                IsValid = platform.CharacterLimit == null || count <= platform.CharacterLimit
+            });
         }
     }
     
-    private async Task UpdateCharacterCountsAsync()
+    private int CalculateCharacterCount(string content, SocialPlatform platform)
     {
-        if (!SelectedPlatforms.Any()) return;
+        if (string.IsNullOrEmpty(content)) return 0;
         
-        try
+        // Platform-specific character counting logic
+        return platform switch
         {
-            var post = CreatePostFromViewModel();
-            var counts = await _postService.GetCharacterCountsAsync(post);
-            
-            // Update collection on UI thread
-            CharacterCounts.Clear();
-            foreach (var count in counts)
+            SocialPlatform.X => content.Length, // X has specific URL shortening rules
+            SocialPlatform.BlueSky => content.Length,
+            SocialPlatform.Threads => content.Length,
+            _ => content.Length
+        };
+    }
+    
+    private async void UpdatePreviews()
+    {
+        if (SelectedPlatforms.Any())
+        {
+            try
             {
-                var platformConfig = PlatformConfigurations.GetPlatformConfig(count.Key);
-                CharacterCounts.Add(new PlatformCharacterCount
+                var post = CreatePostFromViewModel();
+                var previews = await _postService.GetPostPreviewsAsync(post);
+                
+                PlatformPreviews.Clear();
+                foreach (var preview in previews)
                 {
-                    Platform = count.Key,
-                    Count = count.Value,
-                    MaxCount = platformConfig.CharacterLimit ?? 280,
-                    IsOverLimit = count.Value > (platformConfig.CharacterLimit ?? 280)
-                });
+                    var platform = AvailablePlatforms.FirstOrDefault(p => p.Platform == preview.Key);
+                    if (platform != null)
+                    {
+                        PlatformPreviews.Add(new PlatformPreview
+                        {
+                            Platform = preview.Key,
+                            PlatformName = platform.Name,
+                            FormattedContent = preview.Value
+                        });
+                    }
+                }
             }
-            
-            // Update maximum character count for main display
-            MaxCharacterCount = CharacterCounts.Any() 
-                ? CharacterCounts.Max(c => c.MaxCount) 
-                : 280;
+            catch (Exception ex)
+            {
+                OnError?.Invoke($"Failed to update previews: {ex.Message}");
+            }
         }
-        catch (Exception ex)
+    }
+    
+    private void UpdateThreadPostIndices()
+    {
+        for (int i = 0; i < ThreadPosts.Count; i++)
         {
-            System.Diagnostics.Debug.WriteLine($"Character count update failed: {ex.Message}");
+            ThreadPosts[i].OrderIndex = i;
         }
     }
     
@@ -304,20 +411,20 @@ public partial class PostEditorViewModel : ObservableObject
         OnPropertyChanged(nameof(CanPost));
         
         // Trigger async updates
-        _ = Task.Run(async () => {
-            await UpdatePlatformPreviewsAsync();
-            await UpdateCharacterCountsAsync();
+        _ = Task.Run(() => {
+            UpdatePreviews();
+            UpdateCharacterCounts();
         });
     }
     
     partial void OnPromoModeChanged(bool value)
     {
-        _ = Task.Run(() => UpdatePlatformPreviewsAsync());
+        _ = Task.Run(() => UpdatePreviews());
     }
     
     partial void OnIsThreadChanged(bool value)
     {
-        _ = Task.Run(() => UpdatePlatformPreviewsAsync());
+        _ = Task.Run(() => UpdatePreviews());
     }
     
     partial void OnThreadsOnlyModeChanged(bool value)
@@ -325,6 +432,7 @@ public partial class PostEditorViewModel : ObservableObject
         if (value)
         {
             IsThread = true;
+            FilterPlatformsForThreadSupport();
             ActiveTab = "thread";
         }
     }
@@ -332,7 +440,34 @@ public partial class PostEditorViewModel : ObservableObject
     partial void OnIsPublishingChanged(bool value)
     {
         OnPropertyChanged(nameof(CanPost));
-        PublishPostCommand.NotifyCanExecuteChanged();
+    }
+    
+    #endregion
+
+    #region Event Handling
+    
+    public event Action? OnPostPublished;
+    public event Action? OnDraftSaved;
+    public event Action<string>? OnError;
+    public event Action? OnMediaUploadRequested;
+    
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(Content):
+            case nameof(IsThread):
+                UpdateCharacterCounts();
+                UpdatePreviews();
+                break;
+            case nameof(ThreadsOnlyMode):
+                if (ThreadsOnlyMode)
+                {
+                    IsThread = true;
+                    FilterPlatformsForThreadSupport();
+                }
+                break;
+        }
     }
     
     #endregion
@@ -344,13 +479,44 @@ public partial class PostEditorViewModel : ObservableObject
 public class PlatformPreview
 {
     public SocialPlatform Platform { get; set; }
+    public string PlatformName { get; set; } = string.Empty;
     public string FormattedContent { get; set; } = string.Empty;
 }
 
 public class PlatformCharacterCount
 {
     public SocialPlatform Platform { get; set; }
+    public string PlatformName { get; set; } = string.Empty;
     public int Count { get; set; }
-    public int MaxCount { get; set; }
-    public bool IsOverLimit { get; set; }
+    public int? Limit { get; set; }
+    public bool IsValid { get; set; }
+}
+
+public partial class PlatformViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private SocialPlatform platform;
+    
+    [ObservableProperty]
+    private string name = string.Empty;
+    
+    [ObservableProperty]
+    private string color = string.Empty;
+    
+    [ObservableProperty]
+    private int? characterLimit;
+    
+    [ObservableProperty]
+    private bool isSelected;
+}
+
+public partial class ThreadPostViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string content = string.Empty;
+    
+    [ObservableProperty]
+    private int orderIndex;
+    
+    public ObservableCollection<Media> Media { get; set; } = new();
 } 

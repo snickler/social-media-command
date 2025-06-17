@@ -11,602 +11,458 @@
     <vm:PostEditorViewModel />
   </Design.DataContext>
 
-  <Border Background="White" 
-          CornerRadius="8" 
-          Padding="0"
-          BoxShadow="0 1 3 0 #19000000">
-    
-    <Grid RowDefinitions="Auto,Auto,*,Auto">
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="20" Margin="0,0,0,20">
       
-      <!-- Header -->
-      <Grid Grid.Row="0" Margin="20,20,20,8">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
+      <!-- Platform Selection -->
+      <Border Background="White" 
+              CornerRadius="8" 
+              Padding="20"
+              BoxShadow="0 1 3 0 #19000000">
         
-        <TextBlock Grid.Column="0" 
-                   Text="Compose Post" 
-                   FontSize="20" 
-                   FontWeight="SemiBold"
-                   Foreground="#4F46E5"
-                   VerticalAlignment="Center"/>
-        
-        <StackPanel Grid.Column="1" 
-                   Orientation="Horizontal" 
-                   Spacing="16"
-                   VerticalAlignment="Center">
+        <StackPanel Spacing="16">
+          <TextBlock Text="Target Platforms" 
+                     FontSize="16" 
+                     FontWeight="SemiBold"
+                     Foreground="#374151"/>
           
-          <!-- Thread Mode Toggle -->
-          <StackPanel Orientation="Horizontal" 
-                     Spacing="8" 
-                     IsVisible="{Binding ThreadSupported}">
-            <ToggleSwitch IsChecked="{Binding IsThread}"
-                         IsEnabled="{Binding !ThreadsOnlyMode}"
-                         OnContent="Thread"
-                         OffContent="Thread"/>
-          </StackPanel>
-          
-          <!-- Threads Only Mode Indicator -->
-          <Border IsVisible="{Binding ThreadsOnlyMode}"
-                 Background="#E0E7FF"
-                 CornerRadius="4"
-                 Padding="8,4">
-            <TextBlock Text="Threads Only Mode" 
-                      FontSize="12" 
-                      FontWeight="Medium"
-                      Foreground="#4F46E5"/>
-          </Border>
-          
-          <!-- Promo Mode Toggle -->
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <ToggleSwitch IsChecked="{Binding PromoMode}"
-                         OnContent="Promo Mode"
-                         OffContent="Promo Mode"/>
-          </StackPanel>
+          <!-- Platform Grid -->
+          <ItemsControl ItemsSource="{Binding AvailablePlatforms}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <Button Command="{Binding $parent[UserControl].((vm:PostEditorViewModel)DataContext).TogglePlatformCommand}"
+                        CommandParameter="{Binding}"
+                        Margin="0,0,8,8"
+                        Padding="12,8"
+                        CornerRadius="6"
+                        BorderThickness="2"
+                        Background="Transparent"
+                        BorderBrush="#E5E7EB"
+                        Foreground="#374151">
+                  
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Border Width="16" Height="16" 
+                            CornerRadius="8"
+                            Background="{Binding Color}">
+                      <TextBlock Text="✓" 
+                                FontSize="10" 
+                                FontWeight="Bold"
+                                Foreground="White"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+                    </Border>
+                    
+                    <TextBlock Text="{Binding Name}" 
+                              FontWeight="Medium"/>
+                    
+                    <TextBlock Text="{Binding CharacterLimit, StringFormat='{}{0} chars'}" 
+                              FontSize="12"
+                              Opacity="0.7"/>
+                  </StackPanel>
+                </Button>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
         </StackPanel>
-      </Grid>
+      </Border>
 
-      <!-- Target Platforms -->
-      <Grid Grid.Row="1" Margin="20,0,20,16">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+      <!-- Compose Post -->
+      <Border Background="White" 
+              CornerRadius="8" 
+              Padding="0"
+              BoxShadow="0 1 3 0 #19000000">
         
-        <TextBlock Grid.Row="0" 
-                   Text="Target Platforms" 
-                   FontSize="16" 
-                   FontWeight="SemiBold"
-                   Margin="0,0,0,12"/>
-        
-        <!-- Platform Selection -->
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+        <Grid RowDefinitions="Auto,Auto,*,Auto">
           
-          <!-- BlueSky -->
-          <Border Background="#0085FF"
-                  CornerRadius="6"
-                  Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <CheckBox IsChecked="True" 
-                       Foreground="White"/>
-              <TextBlock Text="BlueSky" 
-                        Foreground="White"
-                        FontWeight="Medium"/>
-              <TextBlock Text="300 chars" 
-                        Foreground="White"
-                        FontSize="12"/>
-            </StackPanel>
-          </Border>
-          
-          <!-- X -->
-          <Border Background="Transparent"
-                  BorderBrush="#E5E7EB"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <CheckBox IsChecked="False"/>
-              <TextBlock Text="X" 
-                        FontWeight="Medium"/>
-              <TextBlock Text="280 chars" 
-                        FontSize="12"
-                        Foreground="#6B7280"/>
-            </StackPanel>
-          </Border>
-          
-          <!-- LinkedIn -->
-          <Border Background="#0A66C2"
-                  CornerRadius="6"
-                  Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <CheckBox IsChecked="True" 
-                       Foreground="White"/>
-              <TextBlock Text="LinkedIn" 
-                        Foreground="White"
-                        FontWeight="Medium"/>
-            </StackPanel>
-          </Border>
-          
-          <!-- Threads -->
-          <Border Background="Transparent"
-                  BorderBrush="#E5E7EB"
-                  BorderThickness="1"
-                  CornerRadius="6"
-                  Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <CheckBox IsChecked="False"/>
-              <TextBlock Text="Threads" 
-                        FontWeight="Medium"/>
-              <TextBlock Text="500 chars" 
-                        FontSize="12"
-                        Foreground="#6B7280"/>
-            </StackPanel>
-          </Border>
-          
-          <!-- Facebook -->
-          <Border Background="#1877F2"
-                  CornerRadius="6"
-                  Padding="12,8">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <CheckBox IsChecked="True" 
-                       Foreground="White"/>
-              <TextBlock Text="Facebook" 
-                        Foreground="White"
-                        FontWeight="Medium"/>
-            </StackPanel>
-          </Border>
-        </StackPanel>
-      </Grid>
-
-      <!-- Main Content Area with Tabs -->
-      <Grid Grid.Row="2" Margin="20,0,20,0">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        
-        <!-- Tab Headers -->
-        <Border Grid.Row="0" 
-                Background="#F8FAFC" 
-                CornerRadius="8,8,0,0"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1,1,1,0">
-          <Grid>
+          <!-- Header -->
+          <Grid Grid.Row="0" Margin="20,20,20,8">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*"/>
-              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <!-- Composer Tab -->
-            <Button Grid.Column="0" 
-                    Content="Composer" 
-                    Background="#4F46E5"
-                    Foreground="White"
-                    BorderThickness="0"
-                    CornerRadius="6,0,0,0"
-                    Padding="16,12"
-                    FontWeight="Medium"/>
+            <TextBlock Grid.Column="0" 
+                       Text="Compose Post" 
+                       FontSize="20" 
+                       FontWeight="SemiBold"
+                       Foreground="#4F46E5"
+                       VerticalAlignment="Center"/>
             
-            <!-- Preview Tab -->
-            <Button Grid.Column="1" 
-                    Content="Preview" 
-                    Background="Transparent"
-                    Foreground="#6B7280"
-                    BorderThickness="0"
-                    CornerRadius="0,6,0,0"
-                    Padding="16,12"/>
-          </Grid>
-        </Border>
-        
-        <!-- Tab Content -->
-        <Border Grid.Row="1" 
-                Background="White"
-                CornerRadius="0,0,8,8"
-                BorderBrush="#E5E7EB"
-                BorderThickness="1,0,1,1"
-                Padding="20">
-          
-          <!-- Tab Content Container -->
-          <Grid>
-            <!-- Composer Tab Content -->
-            <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="True">
-              <StackPanel Spacing="16">
+            <StackPanel Grid.Column="1" 
+                       Orientation="Horizontal" 
+                       Spacing="16"
+                       VerticalAlignment="Center">
               
-              <!-- Main Post Section -->
-              <StackPanel Spacing="12">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <TextBlock Grid.Column="0" 
-                            Text="Main Post" 
-                            FontSize="16" 
-                            FontWeight="Medium"/>
-                  
-                  <Border Grid.Column="1" 
-                         Background="#E0E7FF"
-                         CornerRadius="4"
-                         Padding="8,4"
-                         IsVisible="{Binding IsThread}">
-                    <TextBlock Text="First post in thread" 
-                              FontSize="12"
-                              Foreground="#4F46E5"/>
-                  </Border>
-                </Grid>
-                
-                <!-- Text Editor -->
-                <Grid>
-                  <Grid.RowDefinitions>
-                    <RowDefinition Height="*"/>
-                    <RowDefinition Height="Auto"/>
-                  </Grid.RowDefinitions>
-                  
-                  <TextBox Grid.Row="0"
-                          Text="{Binding Content}"
-                          MinHeight="120"
-                          AcceptsReturn="True"
-                          TextWrapping="Wrap"
-                          Watermark="What would you like to share today?"
-                          BorderBrush="#E5E7EB"
-                          BorderThickness="1"
-                          CornerRadius="6"
-                          Padding="12"
-                          FontSize="14"/>
-                  
-                  <!-- Character Counter -->
-                  <StackPanel Grid.Row="1" 
-                             Orientation="Horizontal" 
-                             HorizontalAlignment="Right" 
-                             Spacing="8"
-                             Margin="0,8,0,0">
-                    <TextBlock Text="{Binding Content.Length}" 
-                              FontSize="12"
-                              FontWeight="Medium"
-                              Foreground="#10B981"/>
-                    <TextBlock Text="/" 
-                              FontSize="12"
-                              Foreground="#6B7280"/>
-                    <TextBlock Text="500" 
-                              FontSize="12"
-                              Foreground="#6B7280"/>
-                    <TextBlock Text="characters" 
-                              FontSize="12"
-                              Foreground="#6B7280"/>
-                  </StackPanel>
-                </Grid>
-                
-                <!-- Media Upload Placeholder -->
-                <Border BorderBrush="#E5E7EB"
-                       BorderThickness="1"
-                       CornerRadius="6"
-                       Padding="16"
-                       Background="#F8FAFC">
-                  <StackPanel HorizontalAlignment="Center" 
-                             VerticalAlignment="Center"
-                             Spacing="8">
-                    <TextBlock Text="📎" 
-                              FontSize="24" 
-                              HorizontalAlignment="Center"/>
-                    <TextBlock Text="Drop files here or click to upload" 
-                              FontSize="14" 
-                              Foreground="#6B7280"
-                              HorizontalAlignment="Center"/>
-                    <TextBlock Text="Max 4 files" 
-                              FontSize="12" 
-                              Foreground="#9CA3AF"
-                              HorizontalAlignment="Center"/>
-                  </StackPanel>
-                </Border>
+              <!-- Thread Mode Toggle -->
+              <StackPanel Orientation="Horizontal" 
+                         Spacing="8" 
+                         IsVisible="{Binding ThreadSupported}">
+                <ToggleSwitch IsChecked="{Binding IsThread}"
+                             IsEnabled="{Binding !ThreadsOnlyMode}"
+                             OnContent="Thread"
+                             OffContent="Thread"/>
               </StackPanel>
               
-              <!-- Thread Posts Section -->
-              <StackPanel Spacing="12" IsVisible="{Binding IsThread}">
-                <Separator Background="#E5E7EB"/>
+              <!-- Threads Only Mode Indicator -->
+              <Border IsVisible="{Binding ThreadsOnlyMode}"
+                     Background="#E0E7FF"
+                     CornerRadius="4"
+                     Padding="8,4">
+                <TextBlock Text="Threads Only Mode" 
+                          FontSize="12" 
+                          FontWeight="Medium"
+                          Foreground="#4F46E5"/>
+              </Border>
+              
+              <!-- Promo Mode Toggle -->
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <ToggleSwitch IsChecked="{Binding PromoMode}"
+                             OnContent="Promo Mode"
+                             OffContent="Promo Mode"/>
+              </StackPanel>
+            </StackPanel>
+          </Grid>
+
+          <!-- Tab Headers -->
+          <Border Grid.Row="1" 
+                  Background="#F8FAFC" 
+                  CornerRadius="8,8,0,0"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1,1,1,0"
+                  Margin="20,0,20,0">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+              </Grid.ColumnDefinitions>
+              
+              <!-- Composer Tab -->
+              <Button Grid.Column="0" 
+                      Content="Composer" 
+                      Background="#4F46E5"
+                      Foreground="White"
+                      BorderThickness="0"
+                      CornerRadius="6,0,0,0"
+                      Padding="16,12"
+                      FontWeight="Medium"/>
+              
+              <!-- Preview Tab -->
+              <Button Grid.Column="1" 
+                      Content="Preview" 
+                      Background="Transparent"
+                      Foreground="#6B7280"
+                      BorderThickness="0"
+                      CornerRadius="0,6,0,0"
+                      Padding="16,12"/>
+            </Grid>
+          </Border>
+          
+          <!-- Tab Content -->
+          <Border Grid.Row="2" 
+                  Background="White"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1,0,1,1"
+                  CornerRadius="0,0,8,8"
+                  Margin="20,0,20,0">
+            
+            <Grid Margin="20">
+              
+              <!-- Composer Content -->
+              <StackPanel Spacing="20">
                 
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <TextBlock Grid.Column="0" 
-                            Text="Thread Posts" 
+                <!-- Main Post Content -->
+                <StackPanel Spacing="12" IsVisible="{Binding !IsThread}">
+                  <TextBlock Text="Main Post" 
                             FontSize="16" 
-                            FontWeight="Medium"/>
+                            FontWeight="SemiBold"/>
                   
-                  <Button Grid.Column="1" 
-                         Content="➕ Add Post"
-                         Command="{Binding AddNewThreadPostCommand}"
-                         Background="Transparent"
-                         Foreground="#4F46E5"
-                         BorderBrush="#4F46E5"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="12,6"
-                         FontSize="14"/>
-                </Grid>
-                
-                <!-- Thread Posts List -->
-                <StackPanel IsVisible="{Binding ThreadPosts.Count, Converter={x:Static ObjectConverters.IsNull}}">
-                  <Border BorderBrush="#E5E7EB"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="20"
-                         Background="#F8FAFC">
-                    <StackPanel HorizontalAlignment="Center" Spacing="4">
-                      <TextBlock Text="No thread posts added yet" 
-                                FontSize="14" 
+                  <TextBox Text="{Binding Content}" 
+                          Watermark="What's happening?"
+                          TextWrapping="Wrap"
+                          AcceptsReturn="True"
+                          MinHeight="120"
+                          MaxHeight="300"
+                          BorderBrush="#E5E7EB"
+                          CornerRadius="6"
+                          Padding="12"/>
+                  
+                  <!-- Media Upload for Main Post -->
+                  <Border Background="#F9FAFB"
+                          BorderBrush="#E5E7EB"
+                          BorderThickness="2"
+                          CornerRadius="6"
+                          Padding="40,20"
+                          MinHeight="100">
+                    <StackPanel HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               Spacing="8">
+                      <TextBlock Text="📁 📹" 
+                                FontSize="24"
+                                HorizontalAlignment="Center"/>
+                      <TextBlock Text="Drag and drop media here or click to browse" 
+                                FontSize="14"
                                 Foreground="#6B7280"
                                 HorizontalAlignment="Center"/>
-                      <TextBlock Text="Add posts to create a thread" 
-                                FontSize="12" 
+                      <TextBlock Text="Supports images and videos" 
+                                FontSize="12"
                                 Foreground="#9CA3AF"
                                 HorizontalAlignment="Center"/>
+                      <Button Content="📁 Upload" 
+                             Command="{Binding UploadMediaCommand}"
+                             Background="#4F46E5"
+                             Foreground="White"
+                             Padding="12,6"
+                             CornerRadius="4"
+                             Margin="0,8,0,0"/>
                     </StackPanel>
                   </Border>
                 </StackPanel>
                 
-                <ItemsControl ItemsSource="{Binding ThreadPosts}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Border Background="White"
-                             BorderBrush="#E5E7EB"
-                             BorderThickness="1"
-                             CornerRadius="6"
-                             Margin="0,0,0,12"
-                             Padding="16">
-                        <StackPanel Spacing="12">
-                          <Grid>
-                            <Grid.ColumnDefinitions>
-                              <ColumnDefinition Width="*"/>
-                              <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                <!-- Thread Posts -->
+                <StackPanel Spacing="16" IsVisible="{Binding IsThread}">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <TextBlock Grid.Column="0"
+                              Text="Thread Posts" 
+                              FontSize="16" 
+                              FontWeight="SemiBold"/>
+                    
+                    <Button Grid.Column="1"
+                           Content="➕ Add Post" 
+                           Command="{Binding AddThreadPostCommand}"
+                           Background="#10B981"
+                           Foreground="White"
+                           Padding="12,6"
+                           CornerRadius="4"/>
+                  </Grid>
+                  
+                  <!-- Thread Posts List -->
+                  <ItemsControl ItemsSource="{Binding ThreadPosts}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <Border Background="#F8FAFC"
+                               BorderBrush="#E5E7EB"
+                               BorderThickness="1"
+                               CornerRadius="6"
+                               Padding="16"
+                               Margin="0,0,0,12">
+                          
+                          <Grid RowDefinitions="Auto,Auto,Auto">
                             
-                            <TextBlock Grid.Column="0" 
-                                      Text="Thread Post"
-                                      FontWeight="Medium"
-                                      FontSize="14"/>
+                            <!-- Post Header -->
+                            <Grid Grid.Row="0" Margin="0,0,0,8">
+                              <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                              </Grid.ColumnDefinitions>
+                              
+                              <TextBlock Grid.Column="0"
+                                        Text="{Binding OrderIndex, StringFormat='Post {0}'}" 
+                                        FontWeight="Medium"
+                                        Foreground="#374151"/>
+                              
+                              <StackPanel Grid.Column="1" 
+                                         Orientation="Horizontal" 
+                                         Spacing="4">
+                                <Button Content="⬆️" 
+                                       Command="{Binding $parent[UserControl].((vm:PostEditorViewModel)DataContext).MoveThreadPostUpCommand}"
+                                       CommandParameter="{Binding}"
+                                       Width="32" Height="32"
+                                       Padding="0"
+                                       Background="Transparent"
+                                       BorderThickness="1"
+                                       BorderBrush="#D1D5DB"
+                                       CornerRadius="4"/>
+                                <Button Content="⬇️" 
+                                       Command="{Binding $parent[UserControl].((vm:PostEditorViewModel)DataContext).MoveThreadPostDownCommand}"
+                                       CommandParameter="{Binding}"
+                                       Width="32" Height="32"
+                                       Padding="0"
+                                       Background="Transparent"
+                                       BorderThickness="1"
+                                       BorderBrush="#D1D5DB"
+                                       CornerRadius="4"/>
+                                <Button Content="🗑️" 
+                                       Command="{Binding $parent[UserControl].((vm:PostEditorViewModel)DataContext).RemoveThreadPostCommand}"
+                                       CommandParameter="{Binding}"
+                                       Width="32" Height="32"
+                                       Padding="0"
+                                       Background="#EF4444"
+                                       Foreground="White"
+                                       BorderThickness="0"
+                                       CornerRadius="4"/>
+                              </StackPanel>
+                            </Grid>
                             
-                            <StackPanel Grid.Column="1" 
-                                       Orientation="Horizontal" 
-                                       Spacing="4">
-                              <Button Content="⬆️" 
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Padding="4"
-                                     FontSize="12"/>
-                              <Button Content="⬇️" 
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Padding="4"
-                                     FontSize="12"/>
-                              <Button Content="🗑️" 
-                                     Background="Transparent"
-                                     BorderThickness="0"
-                                     Padding="4"
-                                     FontSize="12"/>
-                            </StackPanel>
+                            <!-- Post Content -->
+                            <TextBox Grid.Row="1"
+                                    Text="{Binding Content}" 
+                                    Watermark="Add your content..."
+                                    TextWrapping="Wrap"
+                                    AcceptsReturn="True"
+                                    MinHeight="80"
+                                    BorderBrush="#E5E7EB"
+                                    CornerRadius="4"
+                                    Padding="12"
+                                    Margin="0,0,0,12"/>
+                            
+                            <!-- Thread Post Media Upload -->
+                            <Border Grid.Row="2"
+                                   Background="White"
+                                   BorderBrush="#E5E7EB"
+                                   BorderThickness="2"
+                                   CornerRadius="4"
+                                   Padding="20,12"
+                                   MinHeight="60">
+                              <StackPanel HorizontalAlignment="Center" 
+                                         VerticalAlignment="Center"
+                                         Spacing="4">
+                                <TextBlock Text="📁 📹" 
+                                          FontSize="16"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Drag and drop media here or click to browse" 
+                                          FontSize="12"
+                                          Foreground="#6B7280"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Supports images and videos" 
+                                          FontSize="10"
+                                          Foreground="#9CA3AF"
+                                          HorizontalAlignment="Center"/>
+                                <Button Content="📁 Upload" 
+                                       Background="#4F46E5"
+                                       Foreground="White"
+                                       Padding="8,4"
+                                       CornerRadius="4"
+                                       FontSize="12"
+                                       Margin="0,4,0,0"/>
+                              </StackPanel>
+                            </Border>
                           </Grid>
-                          
-                          <TextBox Text="{Binding Content}"
-                                  MinHeight="80"
-                                  AcceptsReturn="True"
-                                  TextWrapping="Wrap"
-                                  BorderBrush="#E5E7EB"
-                                  BorderThickness="1"
-                                  CornerRadius="6"
-                                  Padding="12"/>
-                          
-                          <TextBlock Text="{Binding Content.Length, StringFormat={}{0} characters}"
-                                    HorizontalAlignment="Right"
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                        </StackPanel>
-                      </Border>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </StackPanel>
-              
-              <!-- Hashtags Section (Promo Mode) -->
-              <StackPanel Spacing="12" IsVisible="{Binding PromoMode}">
-                <Border Background="#FEF3C7"
-                       CornerRadius="6"
-                       Padding="12">
-                  <StackPanel Spacing="8">
-                    <TextBlock Text="Hashtags" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Add hashtags to increase discoverability (shown in promo mode only)" 
-                              FontSize="12" 
-                              Foreground="#92400E"/>
-                    
-                    <!-- Hashtag Display -->
-                    <ItemsControl ItemsSource="{Binding Hashtags}">
-                      <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                          <WrapPanel/>
-                        </ItemsPanelTemplate>
-                      </ItemsControl.ItemsPanel>
-                      <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                          <Border Background="#4F46E5"
-                                 CornerRadius="12"
-                                 Margin="4,2"
-                                 Padding="8,4">
-                            <TextBlock Text="{Binding StringFormat=#{0}}"
-                                      Foreground="White"
-                                      FontSize="12"/>
-                          </Border>
-                        </DataTemplate>
-                      </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                  </StackPanel>
-                </Border>
-              </StackPanel>
-            </StackPanel>
-          </ScrollViewer>
-          
-          <!-- Preview Tab Content -->
-          <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="False">
-            <StackPanel Spacing="16">
-              
-              <!-- BlueSky Preview -->
-              <Border Background="White"
-                      BorderBrush="#E5E7EB"
-                      BorderThickness="1"
-                      CornerRadius="8"
-                      Padding="16">
-                <StackPanel Spacing="12">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*"/>
-                      <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                      <Border Width="16" Height="16" CornerRadius="8" Background="#0085FF"/>
-                      <TextBlock Text="BlueSky Preview" 
-                                FontWeight="Medium" 
-                                Foreground="#0085FF"/>
-                    </StackPanel>
-                    
-                    <Button Grid.Column="1" 
-                           Background="Transparent"
-                           Foreground="#6B7280"
-                           BorderBrush="#D1D5DB"
-                           BorderThickness="1"
-                           Padding="8,4"
-                           CornerRadius="4"
-                           FontSize="12">
-                      <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="📋"/>
-                        <TextBlock Text="Copy"/>
-                      </StackPanel>
-                    </Button>
-                  </Grid>
-                  
-                  <Border Background="#F8FAFC" 
-                         BorderBrush="#E5E7EB"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="12">
-                    <TextBlock Text="{Binding Content}" 
-                              FontSize="14"
-                              TextWrapping="Wrap"
-                              Foreground="#374151"/>
-                  </Border>
+                        </Border>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
                 </StackPanel>
-              </Border>
-              
-              <!-- LinkedIn Preview -->
-              <Border Background="White"
-                      BorderBrush="#E5E7EB"
-                      BorderThickness="1"
-                      CornerRadius="8"
-                      Padding="16">
-                <StackPanel Spacing="12">
-                  <Grid>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="*"/>
-                      <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
-                      <Border Width="16" Height="16" CornerRadius="8" Background="#0A66C2"/>
-                      <TextBlock Text="LinkedIn Preview" 
-                                FontWeight="Medium" 
-                                Foreground="#0A66C2"/>
-                    </StackPanel>
-                    
-                    <Button Grid.Column="1" 
-                           Background="Transparent"
-                           Foreground="#6B7280"
-                           BorderBrush="#D1D5DB"
-                           BorderThickness="1"
-                           Padding="8,4"
-                           CornerRadius="4"
-                           FontSize="12">
-                      <StackPanel Orientation="Horizontal" Spacing="4">
-                        <TextBlock Text="📋"/>
-                        <TextBlock Text="Copy"/>
-                      </StackPanel>
-                    </Button>
-                  </Grid>
-                  
-                  <Border Background="#F8FAFC" 
-                         BorderBrush="#E5E7EB"
-                         BorderThickness="1"
-                         CornerRadius="6"
-                         Padding="12">
-                    <TextBlock Text="{Binding Content}" 
-                              FontSize="14"
-                              TextWrapping="Wrap"
-                              Foreground="#374151"/>
-                  </Border>
-                </StackPanel>
-              </Border>
-            </StackPanel>
-          </ScrollViewer>
-        </Grid>
-        </Border>
-      </Grid>
-
-      <!-- Footer -->
-      <Border Grid.Row="3" 
-              Background="#F8FAFC"
-              BorderBrush="#E5E7EB"
-              BorderThickness="0,1,0,0"
-              Padding="20,16"
-              CornerRadius="0,0,8,8">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          
-          <TextBlock Grid.Column="0" 
-                    Text="Posting to 3 platforms"
-                    FontSize="14" 
-                    Foreground="#6B7280"
-                    VerticalAlignment="Center"/>
-          
-          <StackPanel Grid.Column="1" 
-                     Orientation="Horizontal" 
-                     Spacing="8">
-            <Button Command="{Binding SaveDraftCommand}"
-                   Background="Transparent"
-                   Foreground="#6B7280"
-                   BorderBrush="#D1D5DB"
-                   BorderThickness="1"
-                   Padding="16,8"
-                   CornerRadius="6"
-                   ToolTip.Tip="Save as draft (Ctrl+S)">
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="💾"/>
-                <TextBlock Text="Save Draft"/>
               </StackPanel>
-            </Button>
+            </Grid>
+          </Border>
+          
+          <!-- Footer with Hashtags and Actions -->
+          <StackPanel Grid.Row="3" Margin="20" Spacing="20">
             
-            <Button Command="{Binding PublishPostCommand}"
-                   Background="#10B981"
-                   Foreground="White"
-                   BorderThickness="0"
-                   Padding="16,8"
-                   CornerRadius="6"
-                   FontWeight="SemiBold"
-                   ToolTip.Tip="Publish to selected platforms (Ctrl+Enter)">
-              <StackPanel Orientation="Horizontal" Spacing="4">
-                <TextBlock Text="🚀"/>
-                <TextBlock Text="Publish Post"/>
+            <!-- Hashtags Section -->
+            <StackPanel Spacing="12">
+              <TextBlock Text="Hashtags" 
+                        FontSize="14" 
+                        FontWeight="SemiBold"
+                        Foreground="#374151"/>
+              <TextBlock Text="Add hashtags to increase discoverability (shown in promo mode only)" 
+                        FontSize="12"
+                        Foreground="#6B7280"/>
+              
+              <!-- Hashtag Display -->
+              <ItemsControl ItemsSource="{Binding Hashtags}">
+                <ItemsControl.ItemsPanel>
+                  <ItemsPanelTemplate>
+                    <WrapPanel Orientation="Horizontal" />
+                  </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <Border Background="#E0E7FF"
+                           CornerRadius="12"
+                           Padding="8,4"
+                           Margin="0,0,6,6">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="{Binding, StringFormat='#{0}'}" 
+                                  FontSize="12"
+                                  Foreground="#4F46E5"/>
+                        <Button Content="✖" 
+                               Command="{Binding $parent[UserControl].((vm:PostEditorViewModel)DataContext).RemoveHashtagCommand}"
+                               CommandParameter="{Binding}"
+                               Width="16" Height="16"
+                               Padding="0"
+                               FontSize="10"
+                               Background="Transparent"
+                               BorderThickness="0"
+                               Foreground="#6B7280"/>
+                      </StackPanel>
+                    </Border>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              
+              <!-- Add Hashtag -->
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBox Grid.Column="0"
+                        Text="{Binding NewHashtag}" 
+                        Watermark="Add hashtag..."
+                        BorderBrush="#E5E7EB"
+                        CornerRadius="4"
+                        Padding="8"
+                        Margin="0,0,8,0"/>
+                <Button Grid.Column="1"
+                       Content="Add" 
+                       Command="{Binding AddHashtagCommand}"
+                       Background="#4F46E5"
+                       Foreground="White"
+                       Padding="16,8"
+                       CornerRadius="4"/>
+              </Grid>
+            </StackPanel>
+            
+            <!-- Action Buttons -->
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <TextBlock Grid.Column="0"
+                        Text="{Binding SelectedPlatforms.Count, StringFormat='Posting to {0} platforms'}"
+                        VerticalAlignment="Center"
+                        Foreground="#6B7280"/>
+              
+              <StackPanel Grid.Column="1" 
+                         Orientation="Horizontal" 
+                         Spacing="8">
+                <Button Content="💾 Save Draft" 
+                       Command="{Binding SaveDraftCommand}"
+                       Background="Transparent"
+                       BorderBrush="#D1D5DB"
+                       BorderThickness="1"
+                       Padding="16,8"
+                       CornerRadius="4"/>
+                
+                <Button Background="#06B6D4"
+                       Foreground="White"
+                       BorderThickness="0"
+                       Padding="20,8"
+                       CornerRadius="4"
+                       FontWeight="SemiBold"
+                       Command="{Binding PostCommand}"
+                       IsEnabled="{Binding !IsPosting}">
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="🚀" FontSize="14"/>
+                    <TextBlock Text="Post" />
+                  </StackPanel>
+                </Button>
               </StackPanel>
-            </Button>
+            </Grid>
           </StackPanel>
         </Grid>
       </Border>
-    </Grid>
-  </Border>
+    </StackPanel>
+  </ScrollViewer>
 </UserControl> 
