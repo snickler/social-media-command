@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
 import { PostEditor } from '@/components/post-editor';
-import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost } from '@/lib/platform-utils';
+import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost, getPlatformById } from '@/lib/platform-utils';
 import { Rocket, StackSimple } from '@phosphor-icons/react';
 
 function App() {

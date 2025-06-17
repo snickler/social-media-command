@@ -63,6 +63,12 @@ export function PostEditor({
   // Effect to auto-switch to thread tab when entering threads-only mode
   const [prevThreadsOnlyMode, setPrevThreadsOnlyMode] = useState(threadsOnlyMode);
   
+  // Check if any selected platform supports threads
+  const threadSupported = selectedPlatforms.some(platformId => {
+    const platform = getPlatformById(platformId);
+    return platform.threadSupport;
+  });
+  
   if (threadsOnlyMode && !prevThreadsOnlyMode && threadSupported) {
     setActiveTab("thread");
     setPrevThreadsOnlyMode(true);
@@ -85,12 +91,6 @@ export function PostEditor({
   };
 
   const platformsSelected = selectedPlatforms.length > 0;
-  
-  // Check if any selected platform supports threads
-  const threadSupported = selectedPlatforms.some(platformId => {
-    const platform = getPlatformById(platformId);
-    return platform.threadSupport;
-  });
   
   // Force thread mode if threadsOnlyMode is true
   const effectiveIsThread = threadsOnlyMode || isThread;
