@@ -122,8 +122,8 @@ export function SocialFeed({ platformConfig }: SocialFeedProps) {
   };
 
   return (
-    <Card className="w-full shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="w-full shadow-sm border rounded-lg overflow-hidden">
+      <CardHeader className="pb-2 bg-card border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold">Social Feeds</CardTitle>
           <Button 

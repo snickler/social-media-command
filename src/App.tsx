@@ -170,7 +170,7 @@ function App() {
               <h1 className="text-xl font-bold font-['Inter']">Social Media Management Hub</h1>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -320,7 +320,7 @@ function App() {
             </div>
           </div>
           
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-4">
             <Tabs value={viewMode} onValueChange={setViewMode} className="w-auto">
               <TabsList>
                 <TabsTrigger value="standard">Standard View</TabsTrigger>
@@ -379,8 +379,8 @@ function App() {
         
         {viewMode === 'standard' ? (
           <div className="grid gap-6 grid-cols-1">
-            <section className="bg-card rounded-xl shadow-sm border p-5">
-              <h2 className="text-lg font-semibold mb-4">Target Platforms</h2>
+            <section className="bg-card rounded-xl shadow-sm border p-6">
+              <h2 className="text-lg font-semibold mb-5">Target Platforms</h2>
               <PlatformSelectors 
                 platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
                 selectedPlatforms={selectedPlatforms}

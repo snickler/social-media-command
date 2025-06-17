@@ -18,7 +18,7 @@ export function SelectedAccounts({ platformId, accounts, selectedAccountIds }: S
   
   return (
     <div className="flex -space-x-2 overflow-hidden">
-      <TooltipProvider>
+      <TooltipProvider delayDuration={300}>
         {selectedAccounts.map((account, index) => (
           <Tooltip key={account.id}>
             <TooltipTrigger asChild>
@@ -32,8 +32,8 @@ export function SelectedAccounts({ platformId, accounts, selectedAccountIds }: S
                 </AvatarFallback>
               </Avatar>
             </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              <p>{account.displayName}</p>
+            <TooltipContent side="bottom" className="text-xs p-2">
+              <p className="font-medium">{account.displayName}</p>
               <p className="text-muted-foreground">@{account.username}</p>
             </TooltipContent>
           </Tooltip>

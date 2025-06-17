@@ -25,12 +25,12 @@ export function PlatformSelector({
       className={cn(
         "flex items-center gap-2 px-4 py-3 rounded-md transition-all",
         "border-2 hover:shadow-md",
-        selected ? "border-primary bg-primary/10" : "border-border"
+        selected ? "border-primary bg-primary/10" : "border-border hover:bg-muted/20"
       )}
       aria-pressed={selected}
     >
       <div 
-        className="w-4 h-4 rounded-full flex items-center justify-center"
+        className="w-5 h-5 rounded-full flex items-center justify-center"
         style={{ backgroundColor: platform.color }}
       >
         {selected && <Check size={12} weight="bold" className="text-white" />}
@@ -88,7 +88,7 @@ export function PlatformSelectors({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
       {platforms.map(platform => (
         <PlatformSelector
           key={platform.id}

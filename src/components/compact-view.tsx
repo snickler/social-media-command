@@ -68,7 +68,7 @@ export function CompactView({
         </Tabs>
       </div>
       
-      <Card className="p-4 shadow-sm">
+      <Card className="p-5 shadow-sm border rounded-lg">
         <h3 className="text-base font-medium mb-3">Target Platforms</h3>
         <PlatformSelectors 
           platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
@@ -81,8 +81,8 @@ export function CompactView({
       
       <Tabs value={activeView} className="w-full">
         <TabsContent value="split" className="m-0 p-0">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <Card className="p-4 shadow-sm h-full lg:order-1">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <Card className="p-4 shadow-sm h-full lg:order-1 border rounded-lg">
               <PostEditor
                 content={content}
                 onContentChange={onContentChange}
@@ -102,7 +102,7 @@ export function CompactView({
                 compact={true}
               />
             </Card>
-            <Card className="p-4 shadow-sm h-full lg:order-2">
+            <Card className="p-5 shadow-sm h-full lg:order-2 border rounded-lg">
               <h3 className="text-base font-medium mb-3">Feeds</h3>
               <Separator className="mb-4" />
               <div className="h-[600px] overflow-y-auto pr-2">
@@ -113,7 +113,7 @@ export function CompactView({
         </TabsContent>
         
         <TabsContent value="compose" className="m-0 p-0">
-          <Card className="p-4 shadow-sm">
+          <Card className="p-5 shadow-sm border rounded-lg">
             <PostEditor
               content={content}
               onContentChange={onContentChange}

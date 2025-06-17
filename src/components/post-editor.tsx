@@ -104,6 +104,9 @@ export function PostEditor({
   // Force thread mode if threadsOnlyMode is true
   const effectiveIsThread = threadsOnlyMode || isThread;
   
+  // Check if there's valid content to enable post button
+  const hasValidContent = content.trim().length > 0 || threadPosts.some(post => post.content.trim().length > 0);
+  
   // Check if any selected platform supports media
   const mediaSupported = selectedPlatforms.some(platformId => {
     const platform = getPlatformById(platformId);
@@ -159,11 +162,9 @@ export function PostEditor({
     onThreadPostsChange(updatedPosts);
   };
   
-  const hasContent = content.trim().length > 0 || threadPosts.some(post => post.content.trim().length > 0);
-  
   return (
-    <Card className="w-full shadow-sm">
-      <CardHeader className="pb-2">
+    <Card className="w-full shadow-sm border rounded-lg overflow-hidden">
+      <CardHeader className="pb-2 bg-card border-b">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl font-semibold text-primary">Compose Post</CardTitle>
           <div className="flex items-center gap-4">
@@ -397,7 +398,7 @@ export function PostEditor({
           </div>
           <Button 
             onClick={onPost} 
-            disabled={!hasContent || !platformsSelected || (threadsOnlyMode && threadPosts.length === 0)}
+            disabled={!hasValidContent || !platformsSelected || (threadsOnlyMode && threadPosts.length === 0)}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
             <PaperPlaneRight size={18} weight="bold" className="mr-2" />
@@ -438,7 +439,7 @@ function ThreadPostCard({
   };
   
   return (
-    <Card className="border shadow-sm transition-all">
+    <Card className="border shadow-sm transition-all rounded-lg overflow-hidden">
       <div className="px-4 py-2 bg-muted/30 border-b flex items-center justify-between">
         <div className="font-medium text-sm">Post {index + 1}</div>
         <div className="flex items-center gap-1">
