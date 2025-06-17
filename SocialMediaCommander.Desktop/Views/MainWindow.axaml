@@ -118,6 +118,7 @@
         <Grid Grid.Row="2" Background="#F8FAFC" Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
@@ -155,8 +156,55 @@
                 </StackPanel>
             </Grid>
             
+            <!-- Status Bar -->
+            <Border Grid.Row="1" 
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="16,12"
+                    Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Status Info -->
+                    <StackPanel Grid.Column="0" 
+                               Orientation="Horizontal" 
+                               Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Border Width="8" Height="8" CornerRadius="4" Background="#10B981"/>
+                            <TextBlock Text="3 accounts connected" 
+                                      FontSize="14" 
+                                      Foreground="#374151"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📝" FontSize="14"/>
+                            <TextBlock Text="2 drafts saved" 
+                                      FontSize="14" 
+                                      Foreground="#6B7280"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="🚀" FontSize="14"/>
+                            <TextBlock Text="15 posts published today" 
+                                      FontSize="14" 
+                                      Foreground="#6B7280"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Last Updated -->
+                    <TextBlock Grid.Column="1" 
+                              Text="Last updated: 2 min ago" 
+                              FontSize="12" 
+                              Foreground="#9CA3AF"
+                              VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+            
             <!-- Main Content Grid -->
-            <Grid Grid.Row="1">
+            <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="2*"/>
                     <ColumnDefinition Width="20"/>

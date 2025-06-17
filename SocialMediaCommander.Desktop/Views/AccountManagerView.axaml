@@ -8,7 +8,7 @@
   <Border Background="White" 
           CornerRadius="8" 
           Padding="0"
-          BoxShadow="0 1 3 0 rgba(0, 0, 0, 0.1)">
+          BoxShadow="0 1 3 0 #19000000">
     
     <Grid RowDefinitions="Auto,Auto,*">
       

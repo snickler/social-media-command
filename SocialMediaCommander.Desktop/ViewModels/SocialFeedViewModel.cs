@@ -169,6 +169,9 @@ public partial class SocialFeedViewModel : ObservableObject
             feedItem.Engagement.Likes = isLiked ? currentLikes - 1 : currentLikes + 1;
             feedItem.Engagement.CustomMetrics["isLiked"] = isLiked ? 0 : 1;
             
+            // Simulate async operation
+            await Task.Delay(100);
+            
             ApplyFilters();
         }
         catch (Exception ex)
@@ -184,6 +187,9 @@ public partial class SocialFeedViewModel : ObservableObject
         {
             // Implement share functionality
             System.Diagnostics.Debug.WriteLine($"Sharing feed item: {feedItem.Id}");
+            
+            // Simulate async operation
+            await Task.Delay(100);
             
             // Update share count
             feedItem.Engagement.Shares += 1;
