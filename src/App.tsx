@@ -97,16 +97,20 @@ function App() {
   };
 
   const handlePost = () => {
-    if (threadsOnlyMode && threadPosts.length === 0) {
-      toast.error('Thread required', {
-        description: 'You must add at least one thread post in threads-only mode'
+    // Check for valid content (either main post or thread posts)
+    const hasContent = content.trim().length > 0 || threadPosts.some(post => post.content.trim().length > 0);
+    
+    if (!hasContent || selectedPlatforms.length === 0) {
+      toast.error('Missing content', {
+        description: 'Please add content and select at least one platform before posting'
       });
       return;
     }
     
-    if ((!content.trim() && threadPosts.length === 0) || selectedPlatforms.length === 0) {
-      toast.error('Missing content', {
-        description: 'Please add content and select at least one platform before posting'
+    // In threads-only mode, verify there's at least one thread post
+    if (threadsOnlyMode && threadPosts.length === 0) {
+      toast.error('Thread required', {
+        description: 'You must add at least one thread post in threads-only mode'
       });
       return;
     }
@@ -209,8 +213,9 @@ function App() {
                               <ol>
                                 <li>Toggle "Thread Mode" in the post editor</li>
                                 <li>Write your first post in the main editor</li>
-                                <li>Click "Add Thread Post" to add additional posts</li>
-                                <li>Arrange posts in the desired order</li>
+                                <li>Click "Add Thread Post" to add additional posts to your thread</li>
+                                <li>Add content to each thread post</li>
+                                <li>Arrange posts in the desired order using the up/down controls</li>
                                 <li>Click "Post Thread" to publish the entire thread</li>
                               </ol>
                               
@@ -248,10 +253,9 @@ function App() {
                               
                               <h4>Key Components</h4>
                               <ul>
-                                <li><strong>PostEditor:</strong> Handles post creation and editing</li>
+                                <li><strong>PostEditor:</strong> Unified interface for post and thread creation</li>
                                 <li><strong>PlatformSelectors:</strong> Manages platform selection</li>
                                 <li><strong>AccountManager:</strong> Handles account management</li>
-                                <li><strong>ThreadComposer:</strong> Creates and manages thread posts</li>
                                 <li><strong>MediaUploader:</strong> Handles media file uploads</li>
                                 <li><strong>CompactView:</strong> Provides the split-screen interface</li>
                                 <li><strong>SocialFeed:</strong> Displays platform feeds</li>

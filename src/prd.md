@@ -51,8 +51,8 @@
    - Success: Media files are correctly attached to posts for platforms that support them
 
 7. **Thread Creation**
-   - What: Create connected series of posts (threads) for supported platforms
-   - Why: Allows for longer-form content that exceeds character limits
+   - What: Create connected series of posts (threads) directly within the main composer interface
+   - Why: Allows for longer-form content that exceeds character limits while maintaining context
    - Success: Multiple related posts are published in sequence as a coherent thread
 
 8. **Compact View with Feeds**

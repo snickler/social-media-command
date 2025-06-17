@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HashtagInput } from '@/components/platform-controls';
 import { MediaUploader } from '@/components/media-uploader';
-import { ThreadComposer } from '@/components/thread-composer';
 import { 
   SocialPlatform, 
   formatPostForPlatform, 
@@ -22,8 +21,15 @@ import {
   PaperPlaneRight, 
   Images,
   ListBullets,
-  StackSimple
+  StackSimple,
+  Plus,
+  X,
+  ArrowUp,
+  ArrowDown,
+  Trash
 } from '@phosphor-icons/react';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 interface PostEditorProps {
   content: string;
@@ -63,7 +69,7 @@ export function PostEditor({
   compact = false
 }: PostEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [activeTab, setActiveTab] = useState<string>("editor");
+  const [activeTab, setActiveTab] = useState<string>("composer");
   // Effect to auto-switch to thread tab when entering threads-only mode
   const [prevThreadsOnlyMode, setPrevThreadsOnlyMode] = useState(threadsOnlyMode);
   
@@ -73,8 +79,7 @@ export function PostEditor({
     return platform.threadSupport;
   });
   
-  if (threadsOnlyMode && !prevThreadsOnlyMode && threadSupported) {
-    setActiveTab("thread");
+  if (threadsOnlyMode && !prevThreadsOnlyMode) {
     setPrevThreadsOnlyMode(true);
   } else if (!threadsOnlyMode && prevThreadsOnlyMode) {
     setPrevThreadsOnlyMode(false);
@@ -104,6 +109,57 @@ export function PostEditor({
     const platform = getPlatformById(platformId);
     return platform.mediaSupport;
   });
+  
+  // Thread post management functions
+  const addThreadPost = () => {
+    const newPost: ThreadPost = {
+      id: `thread-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      content: '',
+      media: []
+    };
+    
+    onThreadPostsChange([...threadPosts, newPost]);
+  };
+  
+  const updateThreadPost = (id: string, updates: Partial<ThreadPost>) => {
+    const updatedPosts = threadPosts.map(post => 
+      post.id === id ? { ...post, ...updates } : post
+    );
+    
+    onThreadPostsChange(updatedPosts);
+  };
+  
+  const removeThreadPost = (id: string) => {
+    // Revoke any object URLs to prevent memory leaks
+    const postToRemove = threadPosts.find(post => post.id === id);
+    if (postToRemove) {
+      postToRemove.media.forEach(media => {
+        URL.revokeObjectURL(media.previewUrl);
+      });
+    }
+    
+    const updatedPosts = threadPosts.filter(post => post.id !== id);
+    onThreadPostsChange(updatedPosts);
+  };
+  
+  const moveThreadPost = (id: string, direction: 'up' | 'down') => {
+    const currentIndex = threadPosts.findIndex(post => post.id === id);
+    if (currentIndex === -1) return;
+    
+    const newIndex = direction === 'up' 
+      ? Math.max(currentIndex - 1, 0)
+      : Math.min(currentIndex + 1, threadPosts.length - 1);
+      
+    if (newIndex === currentIndex) return;
+    
+    const updatedPosts = [...threadPosts];
+    const [removedPost] = updatedPosts.splice(currentIndex, 1);
+    updatedPosts.splice(newIndex, 0, removedPost);
+    
+    onThreadPostsChange(updatedPosts);
+  };
+  
+  const hasContent = content.trim().length > 0 || threadPosts.some(post => post.content.trim().length > 0);
   
   return (
     <Card className="w-full shadow-sm">
@@ -144,35 +200,91 @@ export function PostEditor({
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="px-6">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="editor">Editor</TabsTrigger>
-            {effectiveIsThread && threadSupported && (
-              <TabsTrigger value="thread">Thread</TabsTrigger>
-            )}
+          <TabsList className="w-full grid grid-cols-2">
+            <TabsTrigger value="composer">Composer</TabsTrigger>
             <TabsTrigger value="preview" disabled={!platformsSelected}>
               Preview
             </TabsTrigger>
           </TabsList>
         </div>
         
-        <TabsContent value="editor" className="p-0 mt-0">
+        <TabsContent value="composer" className="p-0 mt-0">
           <CardContent className="pt-4 space-y-4">
-            <Textarea
-              ref={textareaRef}
-              placeholder="What would you like to share today?"
-              className="min-h-[150px] resize-y"
-              value={content}
-              onChange={handleContentChange}
-            />
-            
-            {mediaSupported && (
-              <MediaUploader 
-                media={media}
-                onMediaChange={onMediaChange}
-                maxFiles={4}
+            {/* Main post */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base font-medium">Main Post</h3>
+                {effectiveIsThread && (
+                  <div className="text-xs text-muted-foreground bg-secondary/10 px-2 py-1 rounded">
+                    First post in thread
+                  </div>
+                )}
+              </div>
+              <Textarea
+                ref={textareaRef}
+                placeholder="What would you like to share today?"
+                className="min-h-[120px] resize-y"
+                value={content}
+                onChange={handleContentChange}
               />
+              
+              {mediaSupported && (
+                <MediaUploader 
+                  media={media}
+                  onMediaChange={onMediaChange}
+                  maxFiles={4}
+                />
+              )}
+            </div>
+            
+            {/* Thread posts section */}
+            {effectiveIsThread && threadSupported && (
+              <div className="space-y-4 pt-4">
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <h3 className="text-base font-medium">Thread Posts</h3>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addThreadPost}
+                  >
+                    <Plus size={16} className="mr-1" />
+                    Add Post
+                  </Button>
+                </div>
+                
+                {threadsOnlyMode && threadPosts.length === 0 && (
+                  <div className="bg-primary/10 border border-primary/30 rounded-md p-3 text-sm">
+                    <strong>Threads Only Mode:</strong> You must add at least one thread post to publish.
+                  </div>
+                )}
+                
+                {threadPosts.length === 0 ? (
+                  <div className="text-center py-4 border border-dashed rounded-md text-muted-foreground">
+                    <p>No thread posts added yet</p>
+                    <p className="text-xs mt-1">Add posts to create a thread</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {threadPosts.map((post, index) => (
+                      <ThreadPostCard
+                        key={post.id}
+                        post={post}
+                        index={index}
+                        isFirst={index === 0}
+                        isLast={index === threadPosts.length - 1}
+                        onUpdate={(updates) => updateThreadPost(post.id, updates)}
+                        onRemove={() => removeThreadPost(post.id)}
+                        onMove={(direction) => moveThreadPost(post.id, direction)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
             
+            {/* Hashtags (Promo Mode) */}
             {promoMode && (
               <div className="bg-muted/50 p-3 rounded-md">
                 <div className="mb-2">
@@ -187,29 +299,8 @@ export function PostEditor({
                 />
               </div>
             )}
-            
-            {threadsOnlyMode && (
-              <div className="bg-primary/10 border border-primary/30 rounded-md p-3 text-sm flex items-center gap-2">
-                <StackSimple size={18} className="text-primary" />
-                <span>
-                  <strong>Threads Only Mode:</strong> Don't forget to add thread posts in the Thread tab.
-                </span>
-              </div>
-            )}
           </CardContent>
         </TabsContent>
-        
-        {effectiveIsThread && threadSupported && (
-          <TabsContent value="thread" className="p-0 mt-0">
-            <CardContent className="pt-4">
-              <ThreadComposer
-                threadPosts={threadPosts}
-                onThreadPostsChange={onThreadPostsChange}
-                isThreadsOnlyMode={threadsOnlyMode}
-              />
-            </CardContent>
-          </TabsContent>
-        )}
         
         <TabsContent value="preview" className="p-0 mt-0">
           <CardContent className="pt-4 space-y-4">
@@ -302,18 +393,101 @@ export function PostEditor({
             {platformsSelected 
               ? `Posting to ${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}` 
               : 'Select at least one platform to post'}
-            {threadsOnlyMode && ' (threads only)'}
+            {effectiveIsThread && threadPosts.length > 0 && ' as thread'}
           </div>
           <Button 
             onClick={onPost} 
-            disabled={(!content.trim() && threadPosts.length === 0) || !platformsSelected}
+            disabled={!hasContent || !platformsSelected || (threadsOnlyMode && threadPosts.length === 0)}
             className="bg-accent hover:bg-accent/90 text-accent-foreground"
           >
             <PaperPlaneRight size={18} weight="bold" className="mr-2" />
-            {threadsOnlyMode ? 'Post Thread' : 'Post Now'}
+            {effectiveIsThread ? 'Post Thread' : 'Post Now'}
           </Button>
         </div>
       </CardFooter>
+    </Card>
+  );
+}
+
+interface ThreadPostCardProps {
+  post: ThreadPost;
+  index: number;
+  isFirst: boolean;
+  isLast: boolean;
+  onUpdate: (updates: Partial<ThreadPost>) => void;
+  onRemove: () => void;
+  onMove: (direction: 'up' | 'down') => void;
+}
+
+function ThreadPostCard({
+  post,
+  index,
+  isFirst,
+  isLast,
+  onUpdate,
+  onRemove,
+  onMove
+}: ThreadPostCardProps) {
+  
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onUpdate({ content: e.target.value });
+  };
+  
+  const handleMediaChange = (media: Media[]) => {
+    onUpdate({ media });
+  };
+  
+  return (
+    <Card className="border shadow-sm transition-all">
+      <div className="px-4 py-2 bg-muted/30 border-b flex items-center justify-between">
+        <div className="font-medium text-sm">Post {index + 1}</div>
+        <div className="flex items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onMove('up')}
+            disabled={isFirst}
+          >
+            <ArrowUp size={14} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onMove('down')}
+            disabled={isLast}
+          >
+            <ArrowDown size={14} />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+            onClick={onRemove}
+          >
+            <Trash size={14} />
+          </Button>
+        </div>
+      </div>
+      
+      <CardContent className="p-4 space-y-4">
+        <Textarea
+          placeholder="Write your thread post..."
+          value={post.content}
+          onChange={handleContentChange}
+          className="min-h-[100px] resize-y"
+        />
+        
+        <MediaUploader
+          media={post.media}
+          onMediaChange={handleMediaChange}
+          maxFiles={4}
+        />
+      </CardContent>
     </Card>
   );
 }
