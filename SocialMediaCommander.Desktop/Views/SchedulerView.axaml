@@ -1,0 +1,495 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             x:Class="SocialMediaCommander.Desktop.Views.SchedulerView"
+             x:DataType="vm:SchedulerViewModel">
+
+  <Border Background="White" 
+          CornerRadius="8" 
+          Padding="0"
+          BoxShadow="0 1 3 0 #19000000">
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+      
+      <!-- Header -->
+      <Grid Grid.Row="0" Margin="20,20,20,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <TextBlock Grid.Column="0" 
+                   Text="Post Scheduler" 
+                   FontSize="20" 
+                   FontWeight="SemiBold"
+                   Foreground="#4F46E5"
+                   VerticalAlignment="Center"/>
+        
+        <StackPanel Grid.Column="1" 
+                   Orientation="Horizontal" 
+                   Spacing="8">
+          <Button Content="📅 Calendar View" 
+                 Command="{Binding ToggleCalendarViewCommand}"
+                 Background="Transparent"
+                 Foreground="#4F46E5"
+                 BorderBrush="#4F46E5"
+                 BorderThickness="1"
+                 Padding="12,6"
+                 CornerRadius="6"/>
+          <Button Content="➕ Schedule Post" 
+                 Command="{Binding ScheduleNewPostCommand}"
+                 Background="#4F46E5"
+                 Foreground="White"
+                 BorderThickness="0"
+                 Padding="12,6"
+                 CornerRadius="6"
+                 FontWeight="SemiBold"/>
+        </StackPanel>
+      </Grid>
+      
+      <!-- Main Content -->
+      <ScrollViewer Grid.Row="1" 
+                   Padding="20,0,20,0"
+                   VerticalScrollBarVisibility="Auto">
+        
+        <StackPanel Spacing="24">
+          
+          <!-- Quick Actions -->
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Today's Posts -->
+            <Border Grid.Column="0" 
+                   Background="#E0E7FF"
+                   BorderBrush="#4F46E5"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="0,0,8,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="📅" FontSize="24"/>
+                  <StackPanel>
+                    <TextBlock Text="Today's Posts" 
+                              FontSize="16" 
+                              FontWeight="SemiBold"
+                              Foreground="#4F46E5"/>
+                    <TextBlock Text="3 scheduled" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                </StackPanel>
+                <Button Content="View Schedule" 
+                       Background="Transparent"
+                       Foreground="#4F46E5"
+                       BorderBrush="#4F46E5"
+                       BorderThickness="1"
+                       Padding="8,4"
+                       CornerRadius="4"
+                       FontSize="12"/>
+              </StackPanel>
+            </Border>
+            
+            <!-- This Week -->
+            <Border Grid.Column="1" 
+                   Background="#FEF3C7"
+                   BorderBrush="#F59E0B"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="4,0,4,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="📊" FontSize="24"/>
+                  <StackPanel>
+                    <TextBlock Text="This Week" 
+                              FontSize="16" 
+                              FontWeight="SemiBold"
+                              Foreground="#F59E0B"/>
+                    <TextBlock Text="12 scheduled" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                </StackPanel>
+                <Button Content="Weekly View" 
+                       Background="Transparent"
+                       Foreground="#F59E0B"
+                       BorderBrush="#F59E0B"
+                       BorderThickness="1"
+                       Padding="8,4"
+                       CornerRadius="4"
+                       FontSize="12"/>
+              </StackPanel>
+            </Border>
+            
+            <!-- Templates -->
+            <Border Grid.Column="2" 
+                   Background="#D1FAE5"
+                   BorderBrush="#10B981"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="8,0,0,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="📝" FontSize="24"/>
+                  <StackPanel>
+                    <TextBlock Text="Templates" 
+                              FontSize="16" 
+                              FontWeight="SemiBold"
+                              Foreground="#10B981"/>
+                    <TextBlock Text="8 available" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                </StackPanel>
+                <Button Content="Browse Templates" 
+                       Background="Transparent"
+                       Foreground="#10B981"
+                       BorderBrush="#10B981"
+                       BorderThickness="1"
+                       Padding="8,4"
+                       CornerRadius="4"
+                       FontSize="12"/>
+              </StackPanel>
+            </Border>
+          </Grid>
+          
+          <!-- Upcoming Posts -->
+          <Border Background="White"
+                 BorderBrush="#E5E7EB"
+                 BorderThickness="1"
+                 CornerRadius="8"
+                 Padding="20">
+            <StackPanel Spacing="16">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="Upcoming Posts" 
+                          FontSize="18" 
+                          FontWeight="SemiBold"/>
+                <ComboBox Grid.Column="1" 
+                         MinWidth="120"
+                         Padding="8"
+                         CornerRadius="6">
+                  <ComboBoxItem Content="Next 7 days" IsSelected="True"/>
+                  <ComboBoxItem Content="Next 30 days"/>
+                  <ComboBoxItem Content="All scheduled"/>
+                </ComboBox>
+              </Grid>
+              
+              <!-- Mock Scheduled Posts -->
+              <StackPanel Spacing="12">
+                
+                <!-- Post 1 -->
+                <Border Background="#F8FAFC"
+                       BorderBrush="#E5E7EB"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Time Info -->
+                    <Border Grid.Column="0" 
+                           Background="#E0E7FF"
+                           CornerRadius="6"
+                           Padding="12"
+                           Margin="0,0,16,0">
+                      <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="Dec" 
+                                  FontSize="12" 
+                                  FontWeight="Medium"
+                                  Foreground="#4F46E5"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="15" 
+                                  FontSize="18" 
+                                  FontWeight="Bold"
+                                  Foreground="#4F46E5"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="09:00" 
+                                  FontSize="12" 
+                                  Foreground="#6B7280"
+                                  HorizontalAlignment="Center"/>
+                      </StackPanel>
+                    </Border>
+                    
+                    <!-- Post Content -->
+                    <StackPanel Grid.Column="1" Spacing="8">
+                      <TextBlock Text="Product Launch Announcement" 
+                                FontSize="16" 
+                                FontWeight="SemiBold"/>
+                      <TextBlock Text="Excited to announce our new product launch! Check out the amazing features..." 
+                                FontSize="14" 
+                                Foreground="#6B7280"
+                                TextTrimming="CharacterEllipsis"/>
+                      
+                      <!-- Platform Badges -->
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Background="#0085FF" CornerRadius="4" Padding="6,2">
+                          <TextBlock Text="BlueSky" FontSize="10" Foreground="White" FontWeight="Medium"/>
+                        </Border>
+                        <Border Background="#0A66C2" CornerRadius="4" Padding="6,2">
+                          <TextBlock Text="LinkedIn" FontSize="10" Foreground="White" FontWeight="Medium"/>
+                        </Border>
+                        <Border Background="#1877F2" CornerRadius="4" Padding="6,2">
+                          <TextBlock Text="Facebook" FontSize="10" Foreground="White" FontWeight="Medium"/>
+                        </Border>
+                      </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Status -->
+                    <Border Grid.Column="2" 
+                           Background="#10B981"
+                           CornerRadius="4"
+                           Padding="8,4"
+                           Margin="16,0">
+                      <TextBlock Text="Scheduled" 
+                                FontSize="12" 
+                                Foreground="White"
+                                FontWeight="Medium"/>
+                    </Border>
+                    
+                    <!-- Actions -->
+                    <StackPanel Grid.Column="3" 
+                               Orientation="Horizontal" 
+                               Spacing="4">
+                      <Button Content="✏️" 
+                             Background="Transparent"
+                             Foreground="#4F46E5"
+                             BorderBrush="#4F46E5"
+                             BorderThickness="1"
+                             Padding="8,4"
+                             CornerRadius="4"
+                             FontSize="12"/>
+                      <Button Content="🗑️" 
+                             Background="Transparent"
+                             Foreground="#DC2626"
+                             BorderBrush="#DC2626"
+                             BorderThickness="1"
+                             Padding="8,4"
+                             CornerRadius="4"
+                             FontSize="12"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+                
+                <!-- Post 2 -->
+                <Border Background="#F8FAFC"
+                       BorderBrush="#E5E7EB"
+                       BorderThickness="1"
+                       CornerRadius="8"
+                       Padding="16">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Time Info -->
+                    <Border Grid.Column="0" 
+                           Background="#FEF3C7"
+                           CornerRadius="6"
+                           Padding="12"
+                           Margin="0,0,16,0">
+                      <StackPanel HorizontalAlignment="Center">
+                        <TextBlock Text="Dec" 
+                                  FontSize="12" 
+                                  FontWeight="Medium"
+                                  Foreground="#F59E0B"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="16" 
+                                  FontSize="18" 
+                                  FontWeight="Bold"
+                                  Foreground="#F59E0B"
+                                  HorizontalAlignment="Center"/>
+                        <TextBlock Text="13:00" 
+                                  FontSize="12" 
+                                  Foreground="#6B7280"
+                                  HorizontalAlignment="Center"/>
+                      </StackPanel>
+                    </Border>
+                    
+                    <!-- Post Content -->
+                    <StackPanel Grid.Column="1" Spacing="8">
+                      <TextBlock Text="Weekly Industry Update" 
+                                FontSize="16" 
+                                FontWeight="SemiBold"/>
+                      <TextBlock Text="This week in tech: AI advancements, new frameworks, and market insights..." 
+                                FontSize="14" 
+                                Foreground="#6B7280"
+                                TextTrimming="CharacterEllipsis"/>
+                      
+                      <!-- Platform Badges -->
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Border Background="#0A66C2" CornerRadius="4" Padding="6,2">
+                          <TextBlock Text="LinkedIn" FontSize="10" Foreground="White" FontWeight="Medium"/>
+                        </Border>
+                      </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Status -->
+                    <Border Grid.Column="2" 
+                           Background="#F59E0B"
+                           CornerRadius="4"
+                           Padding="8,4"
+                           Margin="16,0">
+                      <TextBlock Text="Pending" 
+                                FontSize="12" 
+                                Foreground="White"
+                                FontWeight="Medium"/>
+                    </Border>
+                    
+                    <!-- Actions -->
+                    <StackPanel Grid.Column="3" 
+                               Orientation="Horizontal" 
+                               Spacing="4">
+                      <Button Content="✏️" 
+                             Background="Transparent"
+                             Foreground="#4F46E5"
+                             BorderBrush="#4F46E5"
+                             BorderThickness="1"
+                             Padding="8,4"
+                             CornerRadius="4"
+                             FontSize="12"/>
+                      <Button Content="🗑️" 
+                             Background="Transparent"
+                             Foreground="#DC2626"
+                             BorderBrush="#DC2626"
+                             BorderThickness="1"
+                             Padding="8,4"
+                             CornerRadius="4"
+                             FontSize="12"/>
+                    </StackPanel>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+          
+          <!-- Time Zone & Settings -->
+          <Border Background="White"
+                 BorderBrush="#E5E7EB"
+                 BorderThickness="1"
+                 CornerRadius="8"
+                 Padding="20">
+            <StackPanel Spacing="16">
+              <TextBlock Text="Scheduler Settings" 
+                        FontSize="16" 
+                        FontWeight="SemiBold"/>
+              
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Time Zone -->
+                <StackPanel Grid.Column="0" Spacing="8" Margin="0,0,12,0">
+                  <TextBlock Text="Time Zone" 
+                            FontSize="14" 
+                            FontWeight="Medium"/>
+                  <ComboBox MinWidth="200"
+                           Padding="8"
+                           CornerRadius="6">
+                    <ComboBoxItem Content="UTC-8 (Pacific Time)" IsSelected="True"/>
+                    <ComboBoxItem Content="UTC-5 (Eastern Time)"/>
+                    <ComboBoxItem Content="UTC+0 (GMT)"/>
+                    <ComboBoxItem Content="UTC+1 (Central European Time)"/>
+                  </ComboBox>
+                </StackPanel>
+                
+                <!-- Auto-posting -->
+                <StackPanel Grid.Column="1" Spacing="8" Margin="12,0,0,0">
+                  <TextBlock Text="Auto-posting" 
+                            FontSize="14" 
+                            FontWeight="Medium"/>
+                  <ToggleSwitch IsChecked="True"
+                               OnContent="Enabled"
+                               OffContent="Disabled"/>
+                </StackPanel>
+              </Grid>
+              
+              <!-- Optimal Times -->
+              <StackPanel Spacing="8">
+                <TextBlock Text="Suggested Optimal Times" 
+                          FontSize="14" 
+                          FontWeight="Medium"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Background="#E0E7FF" CornerRadius="4" Padding="8,4">
+                    <TextBlock Text="9:00 AM" FontSize="12" Foreground="#4F46E5"/>
+                  </Border>
+                  <Border Background="#E0E7FF" CornerRadius="4" Padding="8,4">
+                    <TextBlock Text="1:00 PM" FontSize="12" Foreground="#4F46E5"/>
+                  </Border>
+                  <Border Background="#E0E7FF" CornerRadius="4" Padding="8,4">
+                    <TextBlock Text="5:00 PM" FontSize="12" Foreground="#4F46E5"/>
+                  </Border>
+                  <Border Background="#E0E7FF" CornerRadius="4" Padding="8,4">
+                    <TextBlock Text="8:00 PM" FontSize="12" Foreground="#4F46E5"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+      
+      <!-- Footer -->
+      <Border Grid.Row="2" 
+              Background="#F8FAFC"
+              BorderBrush="#E5E7EB"
+              BorderThickness="0,1,0,0"
+              Padding="20,16"
+              CornerRadius="0,0,8,8">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          
+          <StackPanel Grid.Column="0" 
+                     Orientation="Horizontal" 
+                     Spacing="16">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="📅" FontSize="14"/>
+              <TextBlock Text="15 posts scheduled" 
+                        FontSize="14" 
+                        Foreground="#6B7280"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Spacing="4">
+              <TextBlock Text="⏰" FontSize="14"/>
+              <TextBlock Text="Next post in 2 hours" 
+                        FontSize="14" 
+                        Foreground="#6B7280"/>
+            </StackPanel>
+          </StackPanel>
+          
+          <Button Grid.Column="1" 
+                 Content="🔄 Bulk Actions" 
+                 Background="Transparent"
+                 Foreground="#4F46E5"
+                 BorderBrush="#4F46E5"
+                 BorderThickness="1"
+                 Padding="16,8"
+                 CornerRadius="6"/>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl> 

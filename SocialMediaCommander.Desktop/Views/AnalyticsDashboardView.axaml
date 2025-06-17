@@ -1,0 +1,568 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             x:Class="SocialMediaCommander.Desktop.Views.AnalyticsDashboardView"
+             x:DataType="vm:AnalyticsDashboardViewModel">
+
+  <Border Background="White" 
+          CornerRadius="8" 
+          Padding="0"
+          BoxShadow="0 1 3 0 #19000000">
+    
+    <Grid RowDefinitions="Auto,*">
+      
+      <!-- Header -->
+      <Grid Grid.Row="0" Margin="20,20,20,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <TextBlock Grid.Column="0" 
+                   Text="Analytics Dashboard" 
+                   FontSize="20" 
+                   FontWeight="SemiBold"
+                   Foreground="#4F46E5"
+                   VerticalAlignment="Center"/>
+        
+        <StackPanel Grid.Column="1" 
+                   Orientation="Horizontal" 
+                   Spacing="8">
+          <ComboBox MinWidth="120"
+                   Padding="8"
+                   CornerRadius="6"
+                   BorderBrush="#E5E7EB">
+            <ComboBoxItem Content="Last 7 days" IsSelected="True"/>
+            <ComboBoxItem Content="Last 30 days"/>
+            <ComboBoxItem Content="Last 90 days"/>
+            <ComboBoxItem Content="This year"/>
+          </ComboBox>
+          <Button Content="📊 Export Report" 
+                 Command="{Binding ExportReportCommand}"
+                 Background="Transparent"
+                 Foreground="#4F46E5"
+                 BorderBrush="#4F46E5"
+                 BorderThickness="1"
+                 Padding="12,6"
+                 CornerRadius="6"/>
+        </StackPanel>
+      </Grid>
+      
+      <!-- Dashboard Content -->
+      <ScrollViewer Grid.Row="1" 
+                   Padding="20,0,20,20"
+                   VerticalScrollBarVisibility="Auto">
+        
+        <StackPanel Spacing="24">
+          
+          <!-- Key Metrics Cards -->
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Total Posts -->
+            <Border Grid.Column="0" 
+                   Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="0,0,8,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#E0E7FF">
+                    <TextBlock Text="📝" 
+                              FontSize="18" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  <StackPanel>
+                    <TextBlock Text="Total Posts" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="247" 
+                              FontSize="24" 
+                              FontWeight="Bold"
+                              Foreground="#374151"/>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="↗️" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="+12%" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="vs last week" FontSize="12" Foreground="#6B7280"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            
+            <!-- Total Engagement -->
+            <Border Grid.Column="1" 
+                   Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="4,0,4,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#FEF3C7">
+                    <TextBlock Text="❤️" 
+                              FontSize="18" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  <StackPanel>
+                    <TextBlock Text="Engagement" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="12.4K" 
+                              FontSize="24" 
+                              FontWeight="Bold"
+                              Foreground="#374151"/>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="↗️" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="+28%" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="vs last week" FontSize="12" Foreground="#6B7280"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            
+            <!-- Reach -->
+            <Border Grid.Column="2" 
+                   Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="4,0,4,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#D1FAE5">
+                    <TextBlock Text="👥" 
+                              FontSize="18" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  <StackPanel>
+                    <TextBlock Text="Reach" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="89.2K" 
+                              FontSize="24" 
+                              FontWeight="Bold"
+                              Foreground="#374151"/>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="↗️" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="+45%" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="vs last week" FontSize="12" Foreground="#6B7280"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+            
+            <!-- Followers -->
+            <Border Grid.Column="3" 
+                   Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20"
+                   Margin="8,0,0,0">
+              <StackPanel Spacing="8">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#FEE2E2">
+                    <TextBlock Text="📈" 
+                              FontSize="18" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  <StackPanel>
+                    <TextBlock Text="Followers" 
+                              FontSize="14" 
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="5.8K" 
+                              FontSize="24" 
+                              FontWeight="Bold"
+                              Foreground="#374151"/>
+                  </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                  <TextBlock Text="↗️" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="+8%" FontSize="12" Foreground="#10B981"/>
+                  <TextBlock Text="vs last week" FontSize="12" Foreground="#6B7280"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Grid>
+          
+          <!-- Charts Section -->
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="2*"/>
+              <ColumnDefinition Width="20"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Engagement Chart -->
+            <Border Grid.Column="0" 
+                   Background="White"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20">
+              <StackPanel Spacing="16">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <TextBlock Grid.Column="0" 
+                            Text="Engagement Over Time" 
+                            FontSize="16" 
+                            FontWeight="SemiBold"/>
+                  <ComboBox Grid.Column="1" 
+                           MinWidth="100"
+                           Padding="6"
+                           CornerRadius="4">
+                    <ComboBoxItem Content="Likes" IsSelected="True"/>
+                    <ComboBoxItem Content="Comments"/>
+                    <ComboBoxItem Content="Shares"/>
+                  </ComboBox>
+                </Grid>
+                
+                <!-- Mock Chart Area -->
+                <Border Background="#F8FAFC"
+                       BorderBrush="#E5E7EB"
+                       BorderThickness="1"
+                       CornerRadius="6"
+                       Height="300"
+                       Padding="20">
+                  <Grid>
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="*"/>
+                      <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- Chart Bars -->
+                    <Grid Grid.Row="0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                      </Grid.ColumnDefinitions>
+                      
+                      <Border Grid.Column="0" Background="#4F46E5" CornerRadius="2,2,0,0" Height="120" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="1" Background="#4F46E5" CornerRadius="2,2,0,0" Height="180" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="2" Background="#4F46E5" CornerRadius="2,2,0,0" Height="140" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="3" Background="#4F46E5" CornerRadius="2,2,0,0" Height="220" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="4" Background="#4F46E5" CornerRadius="2,2,0,0" Height="160" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="5" Background="#4F46E5" CornerRadius="2,2,0,0" Height="200" VerticalAlignment="Bottom" Margin="4"/>
+                      <Border Grid.Column="6" Background="#4F46E5" CornerRadius="2,2,0,0" Height="190" VerticalAlignment="Bottom" Margin="4"/>
+                    </Grid>
+                    
+                    <!-- Chart Labels -->
+                    <Grid Grid.Row="1" Margin="0,8,0,0">
+                      <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                      </Grid.ColumnDefinitions>
+                      
+                      <TextBlock Grid.Column="0" Text="Mon" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="1" Text="Tue" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="2" Text="Wed" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="3" Text="Thu" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="4" Text="Fri" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="5" Text="Sat" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                      <TextBlock Grid.Column="6" Text="Sun" FontSize="12" Foreground="#6B7280" HorizontalAlignment="Center"/>
+                    </Grid>
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+            
+            <!-- Platform Breakdown -->
+            <Border Grid.Column="2" 
+                   Background="White"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="20">
+              <StackPanel Spacing="16">
+                <TextBlock Text="Platform Breakdown" 
+                          FontSize="16" 
+                          FontWeight="SemiBold"/>
+                
+                <!-- Platform Stats -->
+                <StackPanel Spacing="12">
+                  
+                  <!-- BlueSky -->
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" 
+                           Width="12" Height="12" 
+                           CornerRadius="6" 
+                           Background="#0085FF"
+                           Margin="0,0,8,0"/>
+                    <TextBlock Grid.Column="1" 
+                              Text="BlueSky" 
+                              FontSize="14" 
+                              VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" 
+                              Text="45%" 
+                              FontSize="14" 
+                              FontWeight="Medium"
+                              Foreground="#374151"/>
+                  </Grid>
+                  
+                  <!-- Progress Bar -->
+                  <Border Background="#E5E7EB" 
+                         Height="6" 
+                         CornerRadius="3"
+                         Margin="20,0,0,0">
+                    <Border Background="#0085FF" 
+                           Width="180" 
+                           HorizontalAlignment="Left"
+                           CornerRadius="3"/>
+                  </Border>
+                  
+                  <!-- LinkedIn -->
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" 
+                           Width="12" Height="12" 
+                           CornerRadius="6" 
+                           Background="#0A66C2"
+                           Margin="0,0,8,0"/>
+                    <TextBlock Grid.Column="1" 
+                              Text="LinkedIn" 
+                              FontSize="14" 
+                              VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" 
+                              Text="30%" 
+                              FontSize="14" 
+                              FontWeight="Medium"
+                              Foreground="#374151"/>
+                  </Grid>
+                  
+                  <Border Background="#E5E7EB" 
+                         Height="6" 
+                         CornerRadius="3"
+                         Margin="20,0,0,0">
+                    <Border Background="#0A66C2" 
+                           Width="120" 
+                           HorizontalAlignment="Left"
+                           CornerRadius="3"/>
+                  </Border>
+                  
+                  <!-- Facebook -->
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <Border Grid.Column="0" 
+                           Width="12" Height="12" 
+                           CornerRadius="6" 
+                           Background="#1877F2"
+                           Margin="0,0,8,0"/>
+                    <TextBlock Grid.Column="1" 
+                              Text="Facebook" 
+                              FontSize="14" 
+                              VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="2" 
+                              Text="25%" 
+                              FontSize="14" 
+                              FontWeight="Medium"
+                              Foreground="#374151"/>
+                  </Grid>
+                  
+                  <Border Background="#E5E7EB" 
+                         Height="6" 
+                         CornerRadius="3"
+                         Margin="20,0,0,0">
+                    <Border Background="#1877F2" 
+                           Width="100" 
+                           HorizontalAlignment="Left"
+                           CornerRadius="3"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </Grid>
+          
+          <!-- Recent Activity -->
+          <Border Background="White"
+                 BorderBrush="#E5E7EB"
+                 BorderThickness="1"
+                 CornerRadius="8"
+                 Padding="20">
+            <StackPanel Spacing="16">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="Recent Activity" 
+                          FontSize="16" 
+                          FontWeight="SemiBold"/>
+                <Button Grid.Column="1" 
+                       Content="View All" 
+                       Background="Transparent"
+                       Foreground="#4F46E5"
+                       BorderThickness="0"
+                       Padding="8,4"/>
+              </Grid>
+              
+              <!-- Activity Items -->
+              <StackPanel Spacing="12">
+                
+                <!-- Activity Item 1 -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <Border Grid.Column="0" 
+                         Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#E0E7FF"
+                         Margin="0,0,12,0">
+                    <TextBlock Text="🚀" 
+                              FontSize="16" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="Post published successfully" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Your post 'New product launch' was published to 3 platforms" 
+                              FontSize="12" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                  
+                  <TextBlock Grid.Column="2" 
+                            Text="2 min ago" 
+                            FontSize="12" 
+                            Foreground="#9CA3AF"
+                            VerticalAlignment="Center"/>
+                </Grid>
+                
+                <!-- Activity Item 2 -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <Border Grid.Column="0" 
+                         Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#FEF3C7"
+                         Margin="0,0,12,0">
+                    <TextBlock Text="❤️" 
+                              FontSize="16" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="High engagement detected" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Your post is getting 2x more engagement than usual" 
+                              FontSize="12" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                  
+                  <TextBlock Grid.Column="2" 
+                            Text="15 min ago" 
+                            FontSize="12" 
+                            Foreground="#9CA3AF"
+                            VerticalAlignment="Center"/>
+                </Grid>
+                
+                <!-- Activity Item 3 -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <Border Grid.Column="0" 
+                         Width="40" Height="40" 
+                         CornerRadius="20" 
+                         Background="#D1FAE5"
+                         Margin="0,0,12,0">
+                    <TextBlock Text="📊" 
+                              FontSize="16" 
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"/>
+                  </Border>
+                  
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="Weekly report ready" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Your analytics report for this week is now available" 
+                              FontSize="12" 
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                  
+                  <TextBlock Grid.Column="2" 
+                            Text="1 hour ago" 
+                            FontSize="12" 
+                            Foreground="#9CA3AF"
+                            VerticalAlignment="Center"/>
+                </Grid>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl> 
