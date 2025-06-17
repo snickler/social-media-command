@@ -1,0 +1,612 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
+             x:Class="SocialMediaCommander.Desktop.Views.PostEditorView"
+             x:DataType="vm:PostEditorViewModel">
+
+  <Design.DataContext>
+    <vm:PostEditorViewModel />
+  </Design.DataContext>
+
+  <Border Background="White" 
+          CornerRadius="8" 
+          Padding="0"
+          BoxShadow="0 1 3 0 #19000000">
+    
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+      
+      <!-- Header -->
+      <Grid Grid.Row="0" Margin="20,20,20,8">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <TextBlock Grid.Column="0" 
+                   Text="Compose Post" 
+                   FontSize="20" 
+                   FontWeight="SemiBold"
+                   Foreground="#4F46E5"
+                   VerticalAlignment="Center"/>
+        
+        <StackPanel Grid.Column="1" 
+                   Orientation="Horizontal" 
+                   Spacing="16"
+                   VerticalAlignment="Center">
+          
+          <!-- Thread Mode Toggle -->
+          <StackPanel Orientation="Horizontal" 
+                     Spacing="8" 
+                     IsVisible="{Binding ThreadSupported}">
+            <ToggleSwitch IsChecked="{Binding IsThread}"
+                         IsEnabled="{Binding !ThreadsOnlyMode}"
+                         OnContent="Thread"
+                         OffContent="Thread"/>
+          </StackPanel>
+          
+          <!-- Threads Only Mode Indicator -->
+          <Border IsVisible="{Binding ThreadsOnlyMode}"
+                 Background="#E0E7FF"
+                 CornerRadius="4"
+                 Padding="8,4">
+            <TextBlock Text="Threads Only Mode" 
+                      FontSize="12" 
+                      FontWeight="Medium"
+                      Foreground="#4F46E5"/>
+          </Border>
+          
+          <!-- Promo Mode Toggle -->
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <ToggleSwitch IsChecked="{Binding PromoMode}"
+                         OnContent="Promo Mode"
+                         OffContent="Promo Mode"/>
+          </StackPanel>
+        </StackPanel>
+      </Grid>
+
+      <!-- Target Platforms -->
+      <Grid Grid.Row="1" Margin="20,0,20,16">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" 
+                   Text="Target Platforms" 
+                   FontSize="16" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,12"/>
+        
+        <!-- Platform Selection -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+          
+          <!-- BlueSky -->
+          <Border Background="#0085FF"
+                  CornerRadius="6"
+                  Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <CheckBox IsChecked="True" 
+                       Foreground="White"/>
+              <TextBlock Text="BlueSky" 
+                        Foreground="White"
+                        FontWeight="Medium"/>
+              <TextBlock Text="300 chars" 
+                        Foreground="White"
+                        FontSize="12"/>
+            </StackPanel>
+          </Border>
+          
+          <!-- X -->
+          <Border Background="Transparent"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <CheckBox IsChecked="False"/>
+              <TextBlock Text="X" 
+                        FontWeight="Medium"/>
+              <TextBlock Text="280 chars" 
+                        FontSize="12"
+                        Foreground="#6B7280"/>
+            </StackPanel>
+          </Border>
+          
+          <!-- LinkedIn -->
+          <Border Background="#0A66C2"
+                  CornerRadius="6"
+                  Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <CheckBox IsChecked="True" 
+                       Foreground="White"/>
+              <TextBlock Text="LinkedIn" 
+                        Foreground="White"
+                        FontWeight="Medium"/>
+            </StackPanel>
+          </Border>
+          
+          <!-- Threads -->
+          <Border Background="Transparent"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <CheckBox IsChecked="False"/>
+              <TextBlock Text="Threads" 
+                        FontWeight="Medium"/>
+              <TextBlock Text="500 chars" 
+                        FontSize="12"
+                        Foreground="#6B7280"/>
+            </StackPanel>
+          </Border>
+          
+          <!-- Facebook -->
+          <Border Background="#1877F2"
+                  CornerRadius="6"
+                  Padding="12,8">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <CheckBox IsChecked="True" 
+                       Foreground="White"/>
+              <TextBlock Text="Facebook" 
+                        Foreground="White"
+                        FontWeight="Medium"/>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <!-- Main Content Area with Tabs -->
+      <Grid Grid.Row="2" Margin="20,0,20,0">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Tab Headers -->
+        <Border Grid.Row="0" 
+                Background="#F8FAFC" 
+                CornerRadius="8,8,0,0"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1,1,1,0">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            
+            <!-- Composer Tab -->
+            <Button Grid.Column="0" 
+                    Content="Composer" 
+                    Background="#4F46E5"
+                    Foreground="White"
+                    BorderThickness="0"
+                    CornerRadius="6,0,0,0"
+                    Padding="16,12"
+                    FontWeight="Medium"/>
+            
+            <!-- Preview Tab -->
+            <Button Grid.Column="1" 
+                    Content="Preview" 
+                    Background="Transparent"
+                    Foreground="#6B7280"
+                    BorderThickness="0"
+                    CornerRadius="0,6,0,0"
+                    Padding="16,12"/>
+          </Grid>
+        </Border>
+        
+        <!-- Tab Content -->
+        <Border Grid.Row="1" 
+                Background="White"
+                CornerRadius="0,0,8,8"
+                BorderBrush="#E5E7EB"
+                BorderThickness="1,0,1,1"
+                Padding="20">
+          
+          <!-- Tab Content Container -->
+          <Grid>
+            <!-- Composer Tab Content -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="True">
+              <StackPanel Spacing="16">
+              
+              <!-- Main Post Section -->
+              <StackPanel Spacing="12">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <TextBlock Grid.Column="0" 
+                            Text="Main Post" 
+                            FontSize="16" 
+                            FontWeight="Medium"/>
+                  
+                  <Border Grid.Column="1" 
+                         Background="#E0E7FF"
+                         CornerRadius="4"
+                         Padding="8,4"
+                         IsVisible="{Binding IsThread}">
+                    <TextBlock Text="First post in thread" 
+                              FontSize="12"
+                              Foreground="#4F46E5"/>
+                  </Border>
+                </Grid>
+                
+                <!-- Text Editor -->
+                <Grid>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  
+                  <TextBox Grid.Row="0"
+                          Text="{Binding Content}"
+                          MinHeight="120"
+                          AcceptsReturn="True"
+                          TextWrapping="Wrap"
+                          Watermark="What would you like to share today?"
+                          BorderBrush="#E5E7EB"
+                          BorderThickness="1"
+                          CornerRadius="6"
+                          Padding="12"
+                          FontSize="14"/>
+                  
+                  <!-- Character Counter -->
+                  <StackPanel Grid.Row="1" 
+                             Orientation="Horizontal" 
+                             HorizontalAlignment="Right" 
+                             Spacing="8"
+                             Margin="0,8,0,0">
+                    <TextBlock Text="{Binding Content.Length}" 
+                              FontSize="12"
+                              FontWeight="Medium"
+                              Foreground="#10B981"/>
+                    <TextBlock Text="/" 
+                              FontSize="12"
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="500" 
+                              FontSize="12"
+                              Foreground="#6B7280"/>
+                    <TextBlock Text="characters" 
+                              FontSize="12"
+                              Foreground="#6B7280"/>
+                  </StackPanel>
+                </Grid>
+                
+                <!-- Media Upload Placeholder -->
+                <Border BorderBrush="#E5E7EB"
+                       BorderThickness="1"
+                       CornerRadius="6"
+                       Padding="16"
+                       Background="#F8FAFC">
+                  <StackPanel HorizontalAlignment="Center" 
+                             VerticalAlignment="Center"
+                             Spacing="8">
+                    <TextBlock Text="📎" 
+                              FontSize="24" 
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Drop files here or click to upload" 
+                              FontSize="14" 
+                              Foreground="#6B7280"
+                              HorizontalAlignment="Center"/>
+                    <TextBlock Text="Max 4 files" 
+                              FontSize="12" 
+                              Foreground="#9CA3AF"
+                              HorizontalAlignment="Center"/>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+              
+              <!-- Thread Posts Section -->
+              <StackPanel Spacing="12" IsVisible="{Binding IsThread}">
+                <Separator Background="#E5E7EB"/>
+                
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <TextBlock Grid.Column="0" 
+                            Text="Thread Posts" 
+                            FontSize="16" 
+                            FontWeight="Medium"/>
+                  
+                  <Button Grid.Column="1" 
+                         Content="➕ Add Post"
+                         Command="{Binding AddNewThreadPostCommand}"
+                         Background="Transparent"
+                         Foreground="#4F46E5"
+                         BorderBrush="#4F46E5"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="12,6"
+                         FontSize="14"/>
+                </Grid>
+                
+                <!-- Thread Posts List -->
+                <StackPanel IsVisible="{Binding ThreadPosts.Count, Converter={x:Static ObjectConverters.IsNull}}">
+                  <Border BorderBrush="#E5E7EB"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="20"
+                         Background="#F8FAFC">
+                    <StackPanel HorizontalAlignment="Center" Spacing="4">
+                      <TextBlock Text="No thread posts added yet" 
+                                FontSize="14" 
+                                Foreground="#6B7280"
+                                HorizontalAlignment="Center"/>
+                      <TextBlock Text="Add posts to create a thread" 
+                                FontSize="12" 
+                                Foreground="#9CA3AF"
+                                HorizontalAlignment="Center"/>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+                
+                <ItemsControl ItemsSource="{Binding ThreadPosts}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border Background="White"
+                             BorderBrush="#E5E7EB"
+                             BorderThickness="1"
+                             CornerRadius="6"
+                             Margin="0,0,0,12"
+                             Padding="16">
+                        <StackPanel Spacing="12">
+                          <Grid>
+                            <Grid.ColumnDefinitions>
+                              <ColumnDefinition Width="*"/>
+                              <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <TextBlock Grid.Column="0" 
+                                      Text="Thread Post"
+                                      FontWeight="Medium"
+                                      FontSize="14"/>
+                            
+                            <StackPanel Grid.Column="1" 
+                                       Orientation="Horizontal" 
+                                       Spacing="4">
+                              <Button Content="⬆️" 
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="4"
+                                     FontSize="12"/>
+                              <Button Content="⬇️" 
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="4"
+                                     FontSize="12"/>
+                              <Button Content="🗑️" 
+                                     Background="Transparent"
+                                     BorderThickness="0"
+                                     Padding="4"
+                                     FontSize="12"/>
+                            </StackPanel>
+                          </Grid>
+                          
+                          <TextBox Text="{Binding Content}"
+                                  MinHeight="80"
+                                  AcceptsReturn="True"
+                                  TextWrapping="Wrap"
+                                  BorderBrush="#E5E7EB"
+                                  BorderThickness="1"
+                                  CornerRadius="6"
+                                  Padding="12"/>
+                          
+                          <TextBlock Text="{Binding Content.Length, StringFormat={}{0} characters}"
+                                    HorizontalAlignment="Right"
+                                    FontSize="12"
+                                    Foreground="#6B7280"/>
+                        </StackPanel>
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+              
+              <!-- Hashtags Section (Promo Mode) -->
+              <StackPanel Spacing="12" IsVisible="{Binding PromoMode}">
+                <Border Background="#FEF3C7"
+                       CornerRadius="6"
+                       Padding="12">
+                  <StackPanel Spacing="8">
+                    <TextBlock Text="Hashtags" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Add hashtags to increase discoverability (shown in promo mode only)" 
+                              FontSize="12" 
+                              Foreground="#92400E"/>
+                    
+                    <!-- Hashtag Display -->
+                    <ItemsControl ItemsSource="{Binding Hashtags}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                          <WrapPanel/>
+                        </ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Border Background="#4F46E5"
+                                 CornerRadius="12"
+                                 Margin="4,2"
+                                 Padding="8,4">
+                            <TextBlock Text="{Binding StringFormat=#{0}}"
+                                      Foreground="White"
+                                      FontSize="12"/>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </ScrollViewer>
+          
+          <!-- Preview Tab Content -->
+          <ScrollViewer VerticalScrollBarVisibility="Auto" IsVisible="False">
+            <StackPanel Spacing="16">
+              
+              <!-- BlueSky Preview -->
+              <Border Background="White"
+                      BorderBrush="#E5E7EB"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="16">
+                <StackPanel Spacing="12">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                      <Border Width="16" Height="16" CornerRadius="8" Background="#0085FF"/>
+                      <TextBlock Text="BlueSky Preview" 
+                                FontWeight="Medium" 
+                                Foreground="#0085FF"/>
+                    </StackPanel>
+                    
+                    <Button Grid.Column="1" 
+                           Background="Transparent"
+                           Foreground="#6B7280"
+                           BorderBrush="#D1D5DB"
+                           BorderThickness="1"
+                           Padding="8,4"
+                           CornerRadius="4"
+                           FontSize="12">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="📋"/>
+                        <TextBlock Text="Copy"/>
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                  
+                  <Border Background="#F8FAFC" 
+                         BorderBrush="#E5E7EB"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="12">
+                    <TextBlock Text="{Binding Content}" 
+                              FontSize="14"
+                              TextWrapping="Wrap"
+                              Foreground="#374151"/>
+                  </Border>
+                </StackPanel>
+              </Border>
+              
+              <!-- LinkedIn Preview -->
+              <Border Background="White"
+                      BorderBrush="#E5E7EB"
+                      BorderThickness="1"
+                      CornerRadius="8"
+                      Padding="16">
+                <StackPanel Spacing="12">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                      <Border Width="16" Height="16" CornerRadius="8" Background="#0A66C2"/>
+                      <TextBlock Text="LinkedIn Preview" 
+                                FontWeight="Medium" 
+                                Foreground="#0A66C2"/>
+                    </StackPanel>
+                    
+                    <Button Grid.Column="1" 
+                           Background="Transparent"
+                           Foreground="#6B7280"
+                           BorderBrush="#D1D5DB"
+                           BorderThickness="1"
+                           Padding="8,4"
+                           CornerRadius="4"
+                           FontSize="12">
+                      <StackPanel Orientation="Horizontal" Spacing="4">
+                        <TextBlock Text="📋"/>
+                        <TextBlock Text="Copy"/>
+                      </StackPanel>
+                    </Button>
+                  </Grid>
+                  
+                  <Border Background="#F8FAFC" 
+                         BorderBrush="#E5E7EB"
+                         BorderThickness="1"
+                         CornerRadius="6"
+                         Padding="12">
+                    <TextBlock Text="{Binding Content}" 
+                              FontSize="14"
+                              TextWrapping="Wrap"
+                              Foreground="#374151"/>
+                  </Border>
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+        </Border>
+      </Grid>
+
+      <!-- Footer -->
+      <Border Grid.Row="3" 
+              Background="#F8FAFC"
+              BorderBrush="#E5E7EB"
+              BorderThickness="0,1,0,0"
+              Padding="20,16"
+              CornerRadius="0,0,8,8">
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+          </Grid.ColumnDefinitions>
+          
+          <TextBlock Grid.Column="0" 
+                    Text="Posting to 3 platforms"
+                    FontSize="14" 
+                    Foreground="#6B7280"
+                    VerticalAlignment="Center"/>
+          
+          <StackPanel Grid.Column="1" 
+                     Orientation="Horizontal" 
+                     Spacing="8">
+            <Button Command="{Binding SaveDraftCommand}"
+                   Background="Transparent"
+                   Foreground="#6B7280"
+                   BorderBrush="#D1D5DB"
+                   BorderThickness="1"
+                   Padding="16,8"
+                   CornerRadius="6"
+                   ToolTip.Tip="Save as draft (Ctrl+S)">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="💾"/>
+                <TextBlock Text="Save Draft"/>
+              </StackPanel>
+            </Button>
+            
+            <Button Command="{Binding PublishPostCommand}"
+                   Background="#10B981"
+                   Foreground="White"
+                   BorderThickness="0"
+                   Padding="16,8"
+                   CornerRadius="6"
+                   FontWeight="SemiBold"
+                   ToolTip.Tip="Publish to selected platforms (Ctrl+Enter)">
+              <StackPanel Orientation="Horizontal" Spacing="4">
+                <TextBlock Text="🚀"/>
+                <TextBlock Text="Publish Post"/>
+              </StackPanel>
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Border>
+</UserControl> 

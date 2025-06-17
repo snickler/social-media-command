@@ -1,0 +1,316 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             x:Class="SocialMediaCommander.Desktop.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <Border Background="White" 
+          CornerRadius="8" 
+          Padding="0"
+          BoxShadow="0 1 3 0 #19000000">
+    
+    <Grid RowDefinitions="Auto,*">
+      
+      <!-- Header -->
+      <Grid Grid.Row="0" Margin="20,20,20,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+        
+        <TextBlock Grid.Column="0" 
+                   Text="Settings" 
+                   FontSize="20" 
+                   FontWeight="SemiBold"
+                   Foreground="#4F46E5"
+                   VerticalAlignment="Center"/>
+        
+        <Button Grid.Column="1" 
+                Content="✕ Close" 
+                Background="Transparent"
+                Foreground="#6B7280"
+                BorderBrush="#D1D5DB"
+                BorderThickness="1"
+                Padding="12,6"
+                CornerRadius="6"/>
+      </Grid>
+      
+      <!-- Settings Content -->
+      <ScrollViewer Grid.Row="1" 
+                   Padding="20,0,20,20"
+                   VerticalScrollBarVisibility="Auto">
+        
+        <StackPanel Spacing="24">
+          
+          <!-- General Settings -->
+          <StackPanel Spacing="16">
+            <TextBlock Text="General" 
+                      FontSize="16" 
+                      FontWeight="SemiBold"
+                      Foreground="#374151"/>
+            
+            <Border Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="16">
+              <StackPanel Spacing="12">
+                
+                <!-- Auto-save drafts -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Auto-save drafts" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Automatically save your work as you type" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="True"/>
+                </Grid>
+                
+                <Separator Background="#E5E7EB"/>
+                
+                <!-- Default post mode -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Default post mode" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Choose the default mode when creating new posts" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ComboBox Grid.Column="1" 
+                           MinWidth="140"
+                           Padding="8"
+                           CornerRadius="6">
+                    <ComboBoxItem Content="Standard" IsSelected="True"/>
+                    <ComboBoxItem Content="Thread"/>
+                    <ComboBoxItem Content="Promo Mode"/>
+                  </ComboBox>
+                </Grid>
+                
+                <Separator Background="#E5E7EB"/>
+                
+                <!-- Character counter -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Show character counter" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Display real-time character count while typing" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="True"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          
+          <!-- Notifications -->
+          <StackPanel Spacing="16">
+            <TextBlock Text="Notifications" 
+                      FontSize="16" 
+                      FontWeight="SemiBold"
+                      Foreground="#374151"/>
+            
+            <Border Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="16">
+              <StackPanel Spacing="12">
+                
+                <!-- Success notifications -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Success notifications" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Show notifications when posts are published successfully" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="True"/>
+                </Grid>
+                
+                <Separator Background="#E5E7EB"/>
+                
+                <!-- Error notifications -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Error notifications" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Show notifications when errors occur" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="True"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          
+          <!-- Privacy and Security -->
+          <StackPanel Spacing="16">
+            <TextBlock Text="Privacy and Security" 
+                      FontSize="16" 
+                      FontWeight="SemiBold"
+                      Foreground="#374151"/>
+            
+            <Border Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="16">
+              <StackPanel Spacing="12">
+                
+                <!-- Clear drafts -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Clear drafts on exit" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Automatically delete saved drafts when closing the app" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="False"/>
+                </Grid>
+                
+                <Separator Background="#E5E7EB"/>
+                
+                <!-- Data collection -->
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  
+                  <StackPanel Grid.Column="0">
+                    <TextBlock Text="Analytics and usage data" 
+                              FontSize="14" 
+                              FontWeight="Medium"/>
+                    <TextBlock Text="Help improve the app by sharing anonymous usage data" 
+                              FontSize="12" 
+                              Foreground="#6B7280"
+                              Margin="0,2,0,0"/>
+                  </StackPanel>
+                  
+                  <ToggleSwitch Grid.Column="1" 
+                               IsChecked="True"/>
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+          
+          <!-- About -->
+          <StackPanel Spacing="16">
+            <TextBlock Text="About" 
+                      FontSize="16" 
+                      FontWeight="SemiBold"
+                      Foreground="#374151"/>
+            
+            <Border Background="#F8FAFC"
+                   BorderBrush="#E5E7EB"
+                   BorderThickness="1"
+                   CornerRadius="8"
+                   Padding="16">
+              <StackPanel Spacing="12" HorizontalAlignment="Center">
+                <TextBlock Text="🚀" 
+                          FontSize="32" 
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="Social Media Commander" 
+                          FontSize="18" 
+                          FontWeight="SemiBold"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="Version 1.0.0" 
+                          FontSize="14" 
+                          Foreground="#6B7280"
+                          HorizontalAlignment="Center"/>
+                <TextBlock Text="A modern cross-platform social media management tool" 
+                          FontSize="12" 
+                          Foreground="#6B7280"
+                          HorizontalAlignment="Center"
+                          TextWrapping="Wrap"
+                          MaxWidth="300"/>
+                
+                <StackPanel Orientation="Horizontal" 
+                           Spacing="8" 
+                           HorizontalAlignment="Center"
+                           Margin="0,8,0,0">
+                  <Button Content="📋 Release Notes" 
+                         Background="Transparent"
+                         Foreground="#4F46E5"
+                         BorderBrush="#4F46E5"
+                         BorderThickness="1"
+                         Padding="12,6"
+                         CornerRadius="6"
+                         FontSize="12"/>
+                  <Button Content="🌐 Website" 
+                         Background="Transparent"
+                         Foreground="#4F46E5"
+                         BorderBrush="#4F46E5"
+                         BorderThickness="1"
+                         Padding="12,6"
+                         CornerRadius="6"
+                         FontSize="12"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</UserControl> 

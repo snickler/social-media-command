@@ -1,0 +1,225 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+        xmlns:views="using:SocialMediaCommander.Desktop.Views"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="SocialMediaCommander.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Social Media Management Hub"
+        MinWidth="1000"
+        MinHeight="700">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" 
+                Background="#4F46E5" 
+                Padding="16">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Left side - Logo and Title -->
+                <StackPanel Grid.Column="0" 
+                           Orientation="Horizontal" 
+                           VerticalAlignment="Center">
+                    <Border Background="White" 
+                            CornerRadius="6" 
+                            Padding="6" 
+                            Margin="0,0,12,0">
+                        <TextBlock Text="🚀" 
+                                  FontSize="20" 
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Border>
+                    <TextBlock Text="Social Media Management Hub" 
+                              FontSize="20" 
+                              FontWeight="Bold"
+                              Foreground="White"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+                
+                <!-- Right side - View mode and Account Management -->
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal" 
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    
+                    <!-- View Mode Toggle -->
+                    <StackPanel Orientation="Horizontal" Spacing="4">
+                        <Button Content="📱 Standard View" 
+                                Background="Transparent"
+                                Foreground="White"
+                                BorderBrush="White"
+                                BorderThickness="1"
+                                Padding="12,6"
+                                CornerRadius="6"/>
+                        <Button Content="🔗 Compact View" 
+                                Background="Transparent"
+                                Foreground="White"
+                                BorderBrush="White"
+                                BorderThickness="1"
+                                Padding="12,6"
+                                CornerRadius="6"/>
+                    </StackPanel>
+                    
+                    <!-- Manage Accounts Button -->
+                    <Button Content="👤 Manage Accounts" 
+                            Background="White"
+                            Foreground="#4F46E5"
+                            BorderThickness="0"
+                            Padding="16,8"
+                            CornerRadius="6"
+                            FontWeight="SemiBold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+        
+        <!-- Mode Selector -->
+        <Border Grid.Row="1" 
+                Background="#E0E7FF" 
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal" 
+                       HorizontalAlignment="Center"
+                       Spacing="8">
+                <Button Content="Single/Thread Posts" 
+                        Background="#4F46E5"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Padding="16,8"
+                        CornerRadius="20"
+                        FontWeight="SemiBold"/>
+                <Button Content="🧵 Threads Only" 
+                        Background="Transparent"
+                        Foreground="#4F46E5"
+                        BorderThickness="0"
+                        Padding="16,8"
+                        CornerRadius="20"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Row="2" Background="#F8FAFC" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            
+            <!-- Workspace Header -->
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" 
+                          Text="Workspace" 
+                          FontSize="24" 
+                          FontWeight="Bold"
+                          VerticalAlignment="Center"/>
+                
+                <StackPanel Grid.Column="1" 
+                           Orientation="Horizontal" 
+                           Spacing="8"
+                           VerticalAlignment="Center">
+                    <Button Content="🔄 Split View" 
+                            Background="Transparent"
+                            Foreground="#6B7280"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="12,6"
+                            CornerRadius="6"/>
+                    <Button Content="✏️ Compose Only" 
+                            Background="Transparent"
+                            Foreground="#6B7280"
+                            BorderBrush="#D1D5DB"
+                            BorderThickness="1"
+                            Padding="12,6"
+                            CornerRadius="6"/>
+                </StackPanel>
+            </Grid>
+            
+            <!-- Status Bar -->
+            <Border Grid.Row="1" 
+                    Background="White"
+                    BorderBrush="#E5E7EB"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="16,12"
+                    Margin="0,0,0,20">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Status Info -->
+                    <StackPanel Grid.Column="0" 
+                               Orientation="Horizontal" 
+                               Spacing="16">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <Border Width="8" Height="8" CornerRadius="4" Background="#10B981"/>
+                            <TextBlock Text="3 accounts connected" 
+                                      FontSize="14" 
+                                      Foreground="#374151"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="📝" FontSize="14"/>
+                            <TextBlock Text="2 drafts saved" 
+                                      FontSize="14" 
+                                      Foreground="#6B7280"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <TextBlock Text="🚀" FontSize="14"/>
+                            <TextBlock Text="15 posts published today" 
+                                      FontSize="14" 
+                                      Foreground="#6B7280"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
+                    <!-- Last Updated -->
+                    <TextBlock Grid.Column="1" 
+                              Text="Last updated: 2 min ago" 
+                              FontSize="12" 
+                              Foreground="#9CA3AF"
+                              VerticalAlignment="Center"/>
+                </Grid>
+            </Border>
+            
+            <!-- Main Content Grid -->
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Left Panel - Post Editor -->
+                <views:PostEditorView Grid.Column="0" 
+                                     DataContext="{Binding PostEditor}"/>
+                
+                <!-- Right Panel - Social Feed -->
+                <views:SocialFeedView Grid.Column="2" 
+                                     DataContext="{Binding SocialFeed}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+
+</Window>
