@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
+import { useKV } from '@github/spark/hooks';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -13,7 +14,8 @@ import {
   formatPostForPlatform, 
   getPlatformById,
   Media,
-  ThreadPost
+  ThreadPost,
+  Account
 } from '@/lib/platform-utils';
 import { 
   Copy, 
@@ -222,12 +224,27 @@ export function PostEditor({
                 threadsOnlyMode
               }, platform);
               
+              // Get selected accounts for this platform
+              const accounts = window.useKVStorage?.getItem('platform-accounts') || [];
+              const selectedAccounts = window.useKVStorage?.getItem('selected-accounts') || {};
+              const selectedAccountIds = selectedAccounts[platformId] || [];
+              const platformAccounts = accounts.filter(
+                (acc: any) => acc.platformId === platformId && selectedAccountIds.includes(acc.id)
+              );
+              
               return (
                 <div key={platformId} className="border rounded-md p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-medium" style={{ color: platform.color }}>
-                      {platform.name} Preview
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium" style={{ color: platform.color }}>
+                        {platform.name} Preview
+                      </h3>
+                      {platformAccounts.length > 0 && (
+                        <div className="text-xs text-muted-foreground">
+                          ({platformAccounts.length} account{platformAccounts.length > 1 ? 's' : ''})
+                        </div>
+                      )}
+                    </div>
                     <Button 
                       variant="outline" 
                       size="sm" 
@@ -253,6 +270,23 @@ export function PostEditor({
                       </div>
                     )}
                   </div>
+                  
+                  {platformAccounts.length > 0 && (
+                    <div className="mt-2 pt-2 border-t">
+                      <div className="text-xs text-muted-foreground mb-1">Posting as:</div>
+                      <div className="flex flex-wrap gap-2">
+                        {platformAccounts.map((account: any) => (
+                          <div key={account.id} className="flex items-center gap-1 bg-muted/30 px-2 py-1 rounded-md text-xs">
+                            <div 
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: platform.color }}
+                            />
+                            <span>{account.displayName}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })}

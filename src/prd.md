@@ -30,27 +30,32 @@
    - Why: Enables true cross-platform publishing from a single interface
    - Success: Content successfully posts to all selected platforms
 
-3. **Hashtag Management**
+3. **Multi-Account Management**
+   - What: Configure and use multiple accounts for each social media platform
+   - Why: Enables managing personal, professional, brand, and client accounts from one interface
+   - Success: Users can select specific accounts per platform for each post
+
+4. **Hashtag Management**
    - What: Special mode to append platform-appropriate hashtags to posts
    - Why: Increases post discoverability and engagement while saving manual effort
    - Success: Appropriate hashtags are added to posts based on content and selected platforms
 
-4. **Post Preview**
+5. **Post Preview**
    - What: Visual preview of how post will appear on each selected platform
    - Why: Ensures content meets platform requirements and will display as intended
    - Success: Accurate representation of how post will appear before publishing
 
-5. **Media Upload**
+6. **Media Upload**
    - What: Ability to upload images and videos with posts
    - Why: Visual content increases engagement and impact
    - Success: Media files are correctly attached to posts for platforms that support them
 
-6. **Thread Creation**
+7. **Thread Creation**
    - What: Create connected series of posts (threads) for supported platforms
    - Why: Allows for longer-form content that exceeds character limits
    - Success: Multiple related posts are published in sequence as a coherent thread
 
-7. **Compact View with Feeds**
+8. **Compact View with Feeds**
    - What: Split-screen interface showing post composer alongside feeds from platforms
    - Why: Enables monitoring platform activity while creating content
    - Success: Users can view feeds and compose posts without switching contexts

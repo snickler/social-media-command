@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PostEditor } from '@/components/post-editor';
 import { SocialFeed } from '@/components/social-feed';
-import { SocialPlatform, ThreadPost, Media, PLATFORMS } from '@/lib/platform-utils';
+import { SocialPlatform, ThreadPost, Media, PLATFORMS, Account } from '@/lib/platform-utils';
 import { ViewGrid, PencilSimple } from '@phosphor-icons/react';
 import { PlatformSelectors } from '@/components/platform-controls';
+import { useKV } from '@github/spark/hooks';
 
 interface CompactViewProps {
   content: string;
@@ -44,6 +45,8 @@ export function CompactView({
   threadsOnlyMode
 }: CompactViewProps) {
   const [activeView, setActiveView] = useState<string>("split");
+  const [accounts] = useKV<Account[]>('platform-accounts', []);
+  const [selectedAccounts] = useKV<Record<SocialPlatform, string[]>>('selected-accounts', {});
   
   return (
     <div className="w-full space-y-4">
@@ -69,6 +72,8 @@ export function CompactView({
           platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
           selectedPlatforms={selectedPlatforms}
           onPlatformsChange={onPlatformsChange}
+          accounts={accounts}
+          selectedAccounts={selectedAccounts}
         />
       </div>
       

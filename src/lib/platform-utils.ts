@@ -10,6 +10,15 @@ export interface SocialPlatformConfig {
   threadSupport: boolean;
 }
 
+export interface Account {
+  id: string;
+  platformId: SocialPlatform;
+  username: string;
+  displayName: string;
+  avatar?: string;
+  isDefault?: boolean;
+}
+
 export const PLATFORMS: SocialPlatformConfig[] = [
   {
     id: 'bluesky',
@@ -56,6 +65,50 @@ export const PLATFORMS: SocialPlatformConfig[] = [
   }
 ];
 
+// Default accounts for each platform
+export const DEFAULT_ACCOUNTS: Account[] = [
+  {
+    id: 'bluesky-default',
+    platformId: 'bluesky',
+    username: 'default_user',
+    displayName: 'Default BlueSky',
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=bluesky-0',
+    isDefault: true
+  },
+  {
+    id: 'x-default',
+    platformId: 'x',
+    username: 'default_user',
+    displayName: 'Default X',
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=x-0',
+    isDefault: true
+  },
+  {
+    id: 'linkedin-default',
+    platformId: 'linkedin',
+    username: 'default_user',
+    displayName: 'Default LinkedIn',
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=linkedin-0',
+    isDefault: true
+  },
+  {
+    id: 'threads-default',
+    platformId: 'threads',
+    username: 'default_user',
+    displayName: 'Default Threads',
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=threads-0',
+    isDefault: true
+  },
+  {
+    id: 'facebook-default',
+    platformId: 'facebook',
+    username: 'default_user',
+    displayName: 'Default Facebook',
+    avatar: 'https://api.dicebear.com/7.x/personas/svg?seed=facebook-0',
+    isDefault: true
+  }
+];
+
 export interface Media {
   id: string;
   file: File;
@@ -72,6 +125,7 @@ export interface Post {
   isThread: boolean;
   threadPosts?: ThreadPost[];
   threadsOnlyMode?: boolean;
+  selectedAccounts?: Record<SocialPlatform, string[]>; // Map of platform IDs to selected account IDs
 }
 
 export interface ThreadPost {

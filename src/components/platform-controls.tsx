@@ -1,15 +1,24 @@
 import { useState } from 'react';
 import { Check, X } from '@phosphor-icons/react';
 import { cn } from '@/lib/utils';
-import { SocialPlatform, SocialPlatformConfig } from '@/lib/platform-utils';
+import { SocialPlatform, SocialPlatformConfig, Account } from '@/lib/platform-utils';
+import { SelectedAccounts } from '@/components/selected-accounts';
 
 interface PlatformSelectorProps {
   platform: SocialPlatformConfig;
   selected: boolean;
   onToggle: (id: SocialPlatform) => void;
+  accounts?: Account[];
+  selectedAccountIds?: string[];
 }
 
-export function PlatformSelector({ platform, selected, onToggle }: PlatformSelectorProps) {
+export function PlatformSelector({ 
+  platform, 
+  selected, 
+  onToggle, 
+  accounts = [], 
+  selectedAccountIds = []
+}: PlatformSelectorProps) {
   return (
     <button
       onClick={() => onToggle(platform.id)}
@@ -28,6 +37,16 @@ export function PlatformSelector({ platform, selected, onToggle }: PlatformSelec
       </div>
       <span className="font-medium">{platform.name}</span>
       
+      {selected && accounts.length > 0 && (
+        <div className="ml-auto mr-2">
+          <SelectedAccounts 
+            platformId={platform.id}
+            accounts={accounts}
+            selectedAccountIds={selectedAccountIds}
+          />
+        </div>
+      )}
+      
       {platform.characterLimit && (
         <span className="ml-auto text-xs text-muted-foreground">
           {platform.characterLimit} chars
@@ -41,15 +60,31 @@ interface PlatformSelectorsProps {
   selectedPlatforms: SocialPlatform[];
   onPlatformsChange: (platforms: SocialPlatform[]) => void;
   platforms: SocialPlatformConfig[];
+  accounts?: Account[];
+  selectedAccounts?: Record<SocialPlatform, string[]>;
 }
 
-export function PlatformSelectors({ selectedPlatforms, onPlatformsChange, platforms }: PlatformSelectorsProps) {
+export function PlatformSelectors({ 
+  selectedPlatforms, 
+  onPlatformsChange, 
+  platforms,
+  accounts = [],
+  selectedAccounts = {}
+}: PlatformSelectorsProps) {
   const togglePlatform = (id: SocialPlatform) => {
     if (selectedPlatforms.includes(id)) {
       onPlatformsChange(selectedPlatforms.filter(p => p !== id));
     } else {
       onPlatformsChange([...selectedPlatforms, id]);
     }
+  };
+
+  const getPlatformAccounts = (platformId: SocialPlatform) => {
+    return accounts.filter(account => account.platformId === platformId);
+  };
+
+  const getPlatformSelectedAccountIds = (platformId: SocialPlatform) => {
+    return selectedAccounts[platformId] || [];
   };
 
   return (
@@ -60,6 +95,8 @@ export function PlatformSelectors({ selectedPlatforms, onPlatformsChange, platfo
           platform={platform}
           selected={selectedPlatforms.includes(platform.id)}
           onToggle={togglePlatform}
+          accounts={getPlatformAccounts(platform.id)}
+          selectedAccountIds={getPlatformSelectedAccountIds(platform.id)}
         />
       ))}
     </div>

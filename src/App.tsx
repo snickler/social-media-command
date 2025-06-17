@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useKV } from '@github/spark/hooks';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
 import { PostEditor } from '@/components/post-editor';
-import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost, getPlatformById } from '@/lib/platform-utils';
+import { DEFAULT_HASHTAGS, PLATFORMS, SocialPlatform, Media, ThreadPost, getPlatformById, DEFAULT_ACCOUNTS, Account } from '@/lib/platform-utils';
 import { Rocket, StackSimple, Atom } from '@phosphor-icons/react';
 import { CompactView } from '@/components/compact-view';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { AccountManager } from '@/components/account-manager';
 
 function App() {
   // State management with persistence
@@ -20,8 +21,30 @@ function App() {
   const [threadsOnlyMode, setThreadsOnlyMode] = useKV('threads-only-mode', false);
   const [threadPosts, setThreadPosts] = useKV<ThreadPost[]>('thread-posts', []);
   const [viewMode, setViewMode] = useKV('view-mode', 'standard');
+  const [accounts, setAccounts] = useKV<Account[]>('platform-accounts', DEFAULT_ACCOUNTS);
+  const [selectedAccounts, setSelectedAccounts] = useKV<Record<SocialPlatform, string[]>>('selected-accounts', {});
   const [isPosting, setIsPosting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Initialize selected accounts with default accounts if not set
+  useEffect(() => {
+    const newSelectedAccounts = { ...selectedAccounts };
+    let updated = false;
+
+    selectedPlatforms.forEach(platformId => {
+      if (!selectedAccounts[platformId] || selectedAccounts[platformId].length === 0) {
+        const defaultAccount = accounts.find(a => a.platformId === platformId && a.isDefault);
+        if (defaultAccount) {
+          newSelectedAccounts[platformId] = [defaultAccount.id];
+          updated = true;
+        }
+      }
+    });
+
+    if (updated) {
+      setSelectedAccounts(newSelectedAccounts);
+    }
+  }, [selectedPlatforms, accounts, selectedAccounts, setSelectedAccounts]);
 
   const handlePlatformsChange = (platforms: SocialPlatform[]) => {
     // Filter out platforms that don't support threads when in threads-only mode
@@ -75,6 +98,19 @@ function App() {
       return;
     }
     
+    // Check if all selected platforms have at least one account selected
+    const missingAccountPlatforms = selectedPlatforms.filter(
+      platformId => !selectedAccounts[platformId] || selectedAccounts[platformId].length === 0
+    );
+    
+    if (missingAccountPlatforms.length > 0) {
+      const platformNames = missingAccountPlatforms.map(id => getPlatformById(id).name).join(', ');
+      toast.error('Missing accounts', {
+        description: `Please select at least one account for: ${platformNames}`
+      });
+      return;
+    }
+    
     setIsPosting(true);
     
     // Simulate posting with a delay
@@ -93,8 +129,11 @@ function App() {
       }
       
       // Show success toast
+      const totalAccounts = Object.values(selectedAccounts)
+        .reduce((count, accountIds) => count + accountIds.length, 0);
+      
       toast.success('Post published successfully!', {
-        description: `Published to ${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''}`
+        description: `Published to ${selectedPlatforms.length} platform${selectedPlatforms.length > 1 ? 's' : ''} using ${totalAccounts} account${totalAccounts > 1 ? 's' : ''}`
       });
       
       // Hide success message after a delay
@@ -152,24 +191,32 @@ function App() {
               </TabsList>
             </Tabs>
           </div>
-          <div className="flex items-center gap-2 bg-muted/30 p-2 rounded-md">
-            <button 
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
-              onClick={() => setThreadsOnlyMode(false)}
-            >
-              Single/Thread Posts
-            </button>
-            <button 
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
-              onClick={() => {
-                setThreadsOnlyMode(true);
-                setIsThread(true);
-                updatePlatformsForThreadMode();
-              }}
-            >
-              <StackSimple size={16} />
-              Threads Only
-            </button>
+          <div className="flex items-center gap-4">
+            <AccountManager 
+              platforms={PLATFORMS}
+              selectedPlatforms={selectedPlatforms}
+              selectedAccounts={selectedAccounts}
+              onSelectedAccountsChange={setSelectedAccounts}
+            />
+            <div className="bg-muted/30 p-2 rounded-md">
+              <button 
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${!threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
+                onClick={() => setThreadsOnlyMode(false)}
+              >
+                Single/Thread Posts
+              </button>
+              <button 
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${threadsOnlyMode ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-muted/50'}`}
+                onClick={() => {
+                  setThreadsOnlyMode(true);
+                  setIsThread(true);
+                  updatePlatformsForThreadMode();
+                }}
+              >
+                <StackSimple size={16} />
+                Threads Only
+              </button>
+            </div>
           </div>
         </div>
         
@@ -181,6 +228,8 @@ function App() {
                 platforms={threadsOnlyMode ? PLATFORMS.filter(p => p.threadSupport) : PLATFORMS} 
                 selectedPlatforms={selectedPlatforms}
                 onPlatformsChange={handlePlatformsChange}
+                accounts={accounts}
+                selectedAccounts={selectedAccounts}
               />
             </section>
             
