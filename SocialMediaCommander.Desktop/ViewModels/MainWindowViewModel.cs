@@ -14,6 +14,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public string Greeting { get; } = "Social Media Commander";
     
     public PostEditorViewModel PostEditor { get; }
+    public SocialFeedViewModel SocialFeed { get; }
     
     public MainWindowViewModel()
     {
@@ -21,8 +22,10 @@ public partial class MainWindowViewModel : ViewModelBase
         var postService = new MockPostService();
         var accountService = new InMemoryAccountService();
         var mediaService = new MockMediaService();
+        var feedService = new InMemoryFeedService();
         
         PostEditor = new PostEditorViewModel(postService, accountService, mediaService);
+        SocialFeed = new SocialFeedViewModel(feedService, accountService);
     }
 }
 

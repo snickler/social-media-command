@@ -5,235 +5,354 @@
              x:Class="SocialMediaCommander.Desktop.Views.AccountManagerView"
              x:DataType="vm:AccountManagerViewModel">
 
-  <Grid RowDefinitions="Auto,*" Margin="20">
+  <Border Background="White" 
+          CornerRadius="8" 
+          Padding="0"
+          BoxShadow="0 1 3 0 rgba(0, 0, 0, 0.1)">
     
-    <!-- Header Section -->
-    <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,20">
-      <StackPanel Grid.Column="0" Orientation="Vertical">
-        <TextBlock Text="Account Manager" 
-                   FontSize="24" 
-                   FontWeight="Bold" 
-                   Margin="0,0,0,4"/>
-        <TextBlock Text="Manage your social media accounts across platforms" 
-                   FontSize="14" 
-                   Opacity="0.7"/>
-      </StackPanel>
+    <Grid RowDefinitions="Auto,Auto,*">
       
-      <Button Grid.Column="1" 
-              Content="Add Account" 
-              Command="{Binding StartAddAccountCommand}"
-              Padding="16,8"/>
-    </Grid>
-    
-    <!-- Main Content -->
-    <Grid Grid.Row="1" ColumnDefinitions="250,*">
-      
-      <!-- Platform Selector -->
-      <Border Grid.Column="0" 
-              Background="LightGray"
-              Padding="16"
-              Margin="0,0,12,0">
+      <!-- Header -->
+      <Grid Grid.Row="0" Margin="20,20,20,16">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*"/>
+          <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
         
-        <StackPanel>
-          <TextBlock Text="Platforms" 
-                     FontSize="16" 
-                     FontWeight="SemiBold" 
-                     Margin="0,0,0,12"/>
-          
-          <StackPanel>
-            <Button Content="BlueSky" Margin="0,0,0,4" HorizontalAlignment="Stretch"/>
-            <Button Content="X (Twitter)" Margin="0,0,0,4" HorizontalAlignment="Stretch"/>
-            <Button Content="LinkedIn" Margin="0,0,0,4" HorizontalAlignment="Stretch"/>
-            <Button Content="Threads" Margin="0,0,0,4" HorizontalAlignment="Stretch"/>
-            <Button Content="Facebook" Margin="0,0,0,4" HorizontalAlignment="Stretch"/>
+        <TextBlock Grid.Column="0" 
+                   Text="Account Manager" 
+                   FontSize="20" 
+                   FontWeight="SemiBold"
+                   Foreground="#4F46E5"
+                   VerticalAlignment="Center"/>
+        
+        <Button Grid.Column="1" 
+                Content="➕ Add Account" 
+                Command="{Binding AddAccountCommand}"
+                Background="#10B981"
+                Foreground="White"
+                BorderThickness="0"
+                Padding="16,8"
+                CornerRadius="6"
+                FontWeight="SemiBold"/>
+      </Grid>
+      
+      <!-- Platform Selection -->
+      <Grid Grid.Row="1" Margin="20,0,20,16">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock Grid.Row="0" 
+                   Text="Select Platform" 
+                   FontSize="16" 
+                   FontWeight="SemiBold"
+                   Margin="0,0,0,12"/>
+        
+        <!-- Platform Selection Dropdown -->
+        <ComboBox Grid.Row="1" 
+                  SelectedItem="{Binding SelectedPlatform}"
+                  ItemsSource="{Binding AvailablePlatforms}"
+                  PlaceholderText="Choose a platform..."
+                  MinWidth="200"
+                  Padding="12,8"
+                  CornerRadius="6"
+                  BorderBrush="#E5E7EB">
+          <ComboBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Border Width="16" 
+                        Height="16" 
+                        CornerRadius="8"
+                        Background="{Binding Color}"/>
+                <TextBlock Text="{Binding Name}" 
+                          VerticalAlignment="Center"/>
+              </StackPanel>
+            </DataTemplate>
+          </ComboBox.ItemTemplate>
+        </ComboBox>
+      </Grid>
+      
+      <!-- Account List -->
+      <ScrollViewer Grid.Row="2" 
+                   Padding="20"
+                   VerticalScrollBarVisibility="Auto">
+        
+        <Grid>
+          <!-- Loading State -->
+          <StackPanel IsVisible="{Binding IsLoading}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Spacing="12">
+            <TextBlock Text="⏳" FontSize="32" HorizontalAlignment="Center"/>
+            <TextBlock Text="Loading accounts..." 
+                      FontSize="14" 
+                      Foreground="#6B7280"
+                      HorizontalAlignment="Center"/>
           </StackPanel>
-        </StackPanel>
-      </Border>
-      
-      <!-- Account List and Forms -->
-      <Grid Grid.Column="1">
-        
-        <!-- Account List (Default View) -->
-        <ScrollViewer IsVisible="{Binding !IsAddingAccount}">
-          <StackPanel>
+          
+          <!-- Empty State -->
+          <StackPanel IsVisible="{Binding !IsLoading}"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Spacing="12"
+                     Margin="0,40,0,0">
+            <TextBlock Text="👤" FontSize="48" HorizontalAlignment="Center"/>
+            <TextBlock Text="No accounts found" 
+                      FontSize="18" 
+                      FontWeight="SemiBold"
+                      HorizontalAlignment="Center"/>
+            <TextBlock Text="Add your first social media account to get started" 
+                      FontSize="14" 
+                      Foreground="#6B7280"
+                      HorizontalAlignment="Center"/>
+            <Button Command="{Binding AddAccountCommand}"
+                   Background="#4F46E5"
+                   Foreground="White"
+                   BorderThickness="0"
+                   Padding="16,8"
+                   CornerRadius="6"
+                   FontWeight="SemiBold"
+                   Margin="0,8,0,0">
+              <TextBlock Text="➕ Add Account"/>
+            </Button>
+          </StackPanel>
+          
+          <!-- Account Cards -->
+          <StackPanel IsVisible="{Binding !IsLoading}" Spacing="16">
+          
+          <!-- Sample BlueSky Account -->
+          <Border Background="White"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="16">
             
-            <!-- Platform Header -->
-            <Grid ColumnDefinitions="*" Margin="0,0,0,16">
-              <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                <TextBlock Text="{Binding SelectedPlatformName}" 
-                           FontSize="20" 
-                           FontWeight="SemiBold"/>
-                <TextBlock Text="Manage your accounts" 
-                           FontSize="14" 
-                           Opacity="0.7"/>
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <!-- Platform Icon -->
+              <Border Grid.Column="0" 
+                      Width="48" 
+                      Height="48" 
+                      CornerRadius="24"
+                      Background="#0085FF"
+                      Margin="0,0,16,0">
+                <TextBlock Text="BS" 
+                           Foreground="White"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+              </Border>
+              
+              <!-- Account Details -->
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                <TextBlock Text="My BlueSky Account" 
+                          FontSize="16"
+                          FontWeight="SemiBold"/>
+                <TextBlock Text="@myhandle.bsky.social" 
+                          FontSize="14"
+                          Foreground="#6B7280"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Background="#10B981"
+                          CornerRadius="4"
+                          Padding="4,2">
+                    <TextBlock Text="Connected" 
+                              FontSize="10"
+                              Foreground="White"
+                              FontWeight="Medium"/>
+                  </Border>
+                  <Border Background="#4F46E5"
+                          CornerRadius="4"
+                          Padding="4,2">
+                    <TextBlock Text="Default" 
+                              FontSize="10"
+                              Foreground="White"
+                              FontWeight="Medium"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+              
+              <!-- Actions -->
+              <StackPanel Grid.Column="2" 
+                         Orientation="Horizontal" 
+                         Spacing="8"
+                         VerticalAlignment="Center">
+                <Button Content="✏️" 
+                       Background="Transparent"
+                       Foreground="#6B7280"
+                       BorderBrush="#D1D5DB"
+                       BorderThickness="1"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
+                <Button Content="🗑️" 
+                       Background="Transparent"
+                       Foreground="#EF4444"
+                       BorderBrush="#FCA5A5"
+                       BorderThickness="1"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
               </StackPanel>
             </Grid>
-            
-            <!-- No Accounts Message -->
-            <Border IsVisible="{Binding !HasAccountsForPlatform}"
-                    Background="LightBlue"
-                    Padding="32"
-                    HorizontalAlignment="Center">
-              
-              <StackPanel HorizontalAlignment="Center" Spacing="12">
-                <TextBlock Text="No accounts yet" 
-                           FontSize="18" 
-                           FontWeight="SemiBold" 
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="Add your first account to get started" 
-                           FontSize="14" 
-                           Opacity="0.7" 
-                           HorizontalAlignment="Center"/>
-                <Button Content="Add Account" 
-                        Command="{Binding StartAddAccountCommand}"
-                        Padding="16,8"
-                        HorizontalAlignment="Center"
-                        Margin="0,8,0,0"/>
-              </StackPanel>
-            </Border>
-            
-            <!-- Account Cards -->
-            <ItemsControl ItemsSource="{Binding AccountsForSelectedPlatform}"
-                          IsVisible="{Binding HasAccountsForPlatform}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="models:Account">
-                  <Border Background="White"
-                          BorderBrush="Gray"
-                          BorderThickness="1"
-                          Padding="16"
-                          Margin="0,0,0,12">
-                    
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                      
-                      <!-- Avatar Placeholder -->
-                      <Border Grid.Column="0" 
-                              Width="48" 
-                              Height="48" 
-                              Background="Gray"
-                              Margin="0,0,16,0">
-                        <TextBlock Text="👤" 
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"
-                                   FontSize="24"/>
-                      </Border>
-                      
-                      <!-- Account Info -->
-                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding DisplayName}" 
-                                   FontSize="16" 
-                                   FontWeight="SemiBold"/>
-                        <TextBlock Text="{Binding Username}" 
-                                   FontSize="14" 
-                                   Opacity="0.7"
-                                   Margin="0,2,0,0"/>
-                        <TextBlock Text="{Binding IsDefault}" 
-                                   FontSize="12" 
-                                   Opacity="0.5"
-                                   Margin="0,4,0,0"/>
-                      </StackPanel>
-                      
-                      <!-- Actions -->
-                      <StackPanel Grid.Column="2" 
-                                  Orientation="Horizontal" 
-                                  Spacing="8"
-                                  VerticalAlignment="Center">
-                        
-                        <Button Content="Edit" 
-                                Command="{Binding $parent[UserControl].((vm:AccountManagerViewModel)DataContext).StartEditAccountCommand}"
-                                CommandParameter="{Binding .}"
-                                Padding="8,4"/>
-                        
-                        <Button Content="Delete" 
-                                Command="{Binding $parent[UserControl].((vm:AccountManagerViewModel)DataContext).DeleteAccountCommand}"
-                                CommandParameter="{Binding .}"
-                                Padding="8,4"
-                                IsVisible="{Binding !IsDefault}"/>
-                      </StackPanel>
-                    </Grid>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </StackPanel>
-        </ScrollViewer>
-        
-        <!-- Add/Edit Account Form -->
-        <ScrollViewer IsVisible="{Binding IsAddingAccount}">
-          <Border Background="White"
-                  BorderBrush="Gray"
-                  BorderThickness="1"
-                  Padding="24"
-                  MaxWidth="500"
-                  HorizontalAlignment="Center">
-            
-            <StackPanel Spacing="20">
-              
-              <!-- Form Header -->
-              <StackPanel>
-                <TextBlock Text="Add New Account" 
-                           FontSize="20" 
-                           FontWeight="SemiBold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding SelectedPlatformName}" 
-                           FontSize="14" 
-                           Opacity="0.7"
-                           HorizontalAlignment="Center"
-                           Margin="0,4,0,0"/>
-              </StackPanel>
-              
-              <!-- Form Fields -->
-              <StackPanel Spacing="16">
-                
-                <!-- Display Name -->
-                <StackPanel>
-                  <TextBlock Text="Display Name" 
-                             FontSize="14" 
-                             FontWeight="SemiBold" 
-                             Margin="0,0,0,4"/>
-                  <TextBox Text="{Binding NewAccountDisplayName}"
-                           Watermark="Enter display name"
-                           Padding="12"/>
-                </StackPanel>
-                
-                <!-- Username -->
-                <StackPanel>
-                  <TextBlock Text="Username" 
-                             FontSize="14" 
-                             FontWeight="SemiBold" 
-                             Margin="0,0,0,4"/>
-                  <TextBox Text="{Binding NewAccountUsername}"
-                           Watermark="Enter username"
-                           Padding="12"/>
-                </StackPanel>
-                
-                <!-- Avatar URL -->
-                <StackPanel>
-                  <TextBlock Text="Avatar URL (optional)" 
-                             FontSize="14" 
-                             FontWeight="SemiBold" 
-                             Margin="0,0,0,4"/>
-                  <TextBox Text="{Binding NewAccountAvatar}"
-                           Watermark="Enter avatar URL"
-                           Padding="12"/>
-                </StackPanel>
-              </StackPanel>
-              
-              <!-- Action Buttons -->
-              <Grid ColumnDefinitions="*,12,*" Margin="0,8,0,0">
-                <Button Grid.Column="0" 
-                        Content="Cancel" 
-                        Command="{Binding CancelAccountOperationCommand}"
-                        Padding="0,12"/>
-                
-                <Button Grid.Column="2" 
-                        Content="Add Account" 
-                        Command="{Binding SaveAccountCommand}"
-                        Padding="0,12"/>
-              </Grid>
-            </StackPanel>
           </Border>
-        </ScrollViewer>
-      </Grid>
+          
+          <!-- Sample LinkedIn Account -->
+          <Border Background="White"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="16">
+            
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <!-- Platform Icon -->
+              <Border Grid.Column="0" 
+                      Width="48" 
+                      Height="48" 
+                      CornerRadius="24"
+                      Background="#0A66C2"
+                      Margin="0,0,16,0">
+                <TextBlock Text="in" 
+                           Foreground="White"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+              </Border>
+              
+              <!-- Account Details -->
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                <TextBlock Text="Professional Profile" 
+                          FontSize="16"
+                          FontWeight="SemiBold"/>
+                <TextBlock Text="john.doe@company.com" 
+                          FontSize="14"
+                          Foreground="#6B7280"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Background="#10B981"
+                          CornerRadius="4"
+                          Padding="4,2">
+                    <TextBlock Text="Connected" 
+                              FontSize="10"
+                              Foreground="White"
+                              FontWeight="Medium"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+              
+              <!-- Actions -->
+              <StackPanel Grid.Column="2" 
+                         Orientation="Horizontal" 
+                         Spacing="8"
+                         VerticalAlignment="Center">
+                <Button Content="✏️" 
+                       Background="Transparent"
+                       Foreground="#6B7280"
+                       BorderBrush="#D1D5DB"
+                       BorderThickness="1"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
+                <Button Content="🗑️" 
+                       Background="Transparent"
+                       Foreground="#EF4444"
+                       BorderBrush="#FCA5A5"
+                       BorderThickness="1"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+          
+          <!-- Sample Facebook Account -->
+          <Border Background="White"
+                  BorderBrush="#E5E7EB"
+                  BorderThickness="1"
+                  CornerRadius="8"
+                  Padding="16">
+            
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              
+              <!-- Platform Icon -->
+              <Border Grid.Column="0" 
+                      Width="48" 
+                      Height="48" 
+                      CornerRadius="24"
+                      Background="#1877F2"
+                      Margin="0,0,16,0">
+                <TextBlock Text="f" 
+                           Foreground="White"
+                           FontSize="20"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
+              </Border>
+              
+              <!-- Account Details -->
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                <TextBlock Text="Business Page" 
+                          FontSize="16"
+                          FontWeight="SemiBold"/>
+                <TextBlock Text="My Company Page" 
+                          FontSize="14"
+                          Foreground="#6B7280"/>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Border Background="#F59E0B"
+                          CornerRadius="4"
+                          Padding="4,2">
+                    <TextBlock Text="Reconnect" 
+                              FontSize="10"
+                              Foreground="White"
+                              FontWeight="Medium"/>
+                  </Border>
+                </StackPanel>
+              </StackPanel>
+              
+              <!-- Actions -->
+              <StackPanel Grid.Column="2" 
+                         Orientation="Horizontal" 
+                         Spacing="8"
+                         VerticalAlignment="Center">
+                <Button Content="🔗" 
+                       Background="#F59E0B"
+                       Foreground="White"
+                       BorderThickness="0"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
+                <Button Content="✏️" 
+                       Background="Transparent"
+                       Foreground="#6B7280"
+                       BorderBrush="#D1D5DB"
+                       BorderThickness="1"
+                       Padding="8"
+                       CornerRadius="6"
+                       FontSize="14"/>
+              </StackPanel>
+            </Grid>
+          </Border>
+        </StackPanel>
+        </Grid>
+      </ScrollViewer>
     </Grid>
-  </Grid>
+  </Border>
 </UserControl> 

@@ -64,6 +64,12 @@ public partial class AccountManagerViewModel : ObservableObject
     public ObservableCollection<SocialPlatformConfig> PlatformConfigs { get; }
     public Dictionary<SocialPlatform, List<string>> SelectedAccountIds { get; }
     
+    // Properties for UI binding
+    public IEnumerable<SocialPlatformConfig> AvailablePlatforms => PlatformConfigs;
+    
+    [ObservableProperty]
+    private bool _isLoading = false;
+    
     // Computed properties
     public IEnumerable<Account> AccountsForSelectedPlatform => 
         Accounts.Where(a => a.PlatformId == SelectedPlatform);
@@ -75,6 +81,9 @@ public partial class AccountManagerViewModel : ObservableObject
     
     public string SelectedPlatformColor => 
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Color;
+    
+    // Command aliases for UI binding
+    public IRelayCommand AddAccountCommand => StartAddAccountCommand;
     
     #endregion
     
