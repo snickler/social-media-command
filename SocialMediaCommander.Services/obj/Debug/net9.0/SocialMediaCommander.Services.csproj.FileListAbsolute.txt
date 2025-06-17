@@ -1,0 +1,15 @@
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\bin\Debug\net9.0\SocialMediaCommander.Services.deps.json
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\bin\Debug\net9.0\SocialMediaCommander.Services.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\bin\Debug\net9.0\SocialMediaCommander.Services.pdb
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\bin\Debug\net9.0\SocialMediaCommander.Core.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\bin\Debug\net9.0\SocialMediaCommander.Core.pdb
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.csproj.AssemblyReference.cache
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.GeneratedMSBuildEditorConfig.editorconfig
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.AssemblyInfoInputs.cache
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.AssemblyInfo.cs
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.csproj.CoreCompileInputs.cache
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMe.C2A6B619.Up2Date
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\refint\SocialMediaCommander.Services.dll
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\SocialMediaCommander.Services.pdb
+C:\repos\SocialMediaCommander\SocialMediaCommander.Services\obj\Debug\net9.0\ref\SocialMediaCommander.Services.dll
