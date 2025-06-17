@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+        xmlns:views="using:SocialMediaCommander.Desktop.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -15,6 +16,27 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        
+        <!-- Header -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource AccentFillColorDefaultBrush}" 
+                Padding="20">
+            <TextBlock Text="{Binding Greeting}" 
+                      FontSize="24" 
+                      FontWeight="Bold"
+                      Foreground="{DynamicResource TextOnAccentFillColorPrimaryBrush}"
+                      HorizontalAlignment="Center"/>
+        </Border>
+        
+        <!-- Main Content -->
+        <ScrollViewer Grid.Row="1">
+            <views:PostEditorView DataContext="{Binding PostEditor}" Margin="20"/>
+        </ScrollViewer>
+    </Grid>
 
 </Window>

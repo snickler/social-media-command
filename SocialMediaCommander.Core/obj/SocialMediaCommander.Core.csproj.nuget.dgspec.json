@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj": {}
+    "C:\\repos\\social-media-command\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj": {}
   },
   "projects": {
-    "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj": {
+    "C:\\repos\\social-media-command\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj",
+        "projectUniqueName": "C:\\repos\\social-media-command\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj",
         "projectName": "SocialMediaCommander.Core",
-        "projectPath": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj",
+        "projectPath": "C:\\repos\\social-media-command\\SocialMediaCommander.Core\\SocialMediaCommander.Core.csproj",
         "packagesPath": "C:\\Users\\jerem\\.nuget\\packages\\",
-        "outputPath": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Core\\obj\\",
+        "outputPath": "C:\\repos\\social-media-command\\SocialMediaCommander.Core\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "9+bQ7TFlQPM=",
+  "dgSpecHash": "YKFuWHI7A3Q=",
   "success": true,
-  "projectFilePath": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
+  "projectFilePath": "C:\\repos\\social-media-command\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\jerem\\.nuget\\packages\\coverlet.collector\\6.0.2\\coverlet.collector.6.0.2.nupkg.sha512",
     "C:\\Users\\jerem\\.nuget\\packages\\microsoft.codecoverage\\17.12.0\\microsoft.codecoverage.17.12.0.nupkg.sha512",

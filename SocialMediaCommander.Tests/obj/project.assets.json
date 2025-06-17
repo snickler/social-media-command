@@ -912,11 +912,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
+      "projectUniqueName": "C:\\repos\\social-media-command\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
       "projectName": "SocialMediaCommander.Tests",
-      "projectPath": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
+      "projectPath": "C:\\repos\\social-media-command\\SocialMediaCommander.Tests\\SocialMediaCommander.Tests.csproj",
       "packagesPath": "C:\\Users\\jerem\\.nuget\\packages\\",
-      "outputPath": "C:\\repos\\SocialMediaCommander\\SocialMediaCommander.Tests\\obj\\",
+      "outputPath": "C:\\repos\\social-media-command\\SocialMediaCommander.Tests\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
