@@ -187,7 +187,7 @@ export function MediaUploader({
                 ) : (
                   <VideoCamera size={12} />
                 )}
-                {item.file.name.split('.').pop()?.toUpperCase()}
+                {item.file.name && item.file.name.includes('.') ? item.file.name.split('.').pop()?.toUpperCase() : 'FILE'}
               </div>
             </div>
           ))}
