@@ -318,6 +318,18 @@ public partial class PostEditorViewModel : ObservableObject
         OnMediaUploadRequested?.Invoke();
     }
     
+    [RelayCommand]
+    private void SwitchToComposer()
+    {
+        ActiveTab = "composer";
+    }
+    
+    [RelayCommand]
+    private void SwitchToPreview()
+    {
+        ActiveTab = "preview";
+    }
+    
     #endregion
     
     #region Private Methods
@@ -333,6 +345,8 @@ public partial class PostEditorViewModel : ObservableObject
             TargetPlatforms = new List<SocialPlatform>(this.SelectedPlatforms),
             Media = new List<Media>(this.Media),
             IsThread = this.IsThread,
+            PromoMode = this.PromoMode,
+            Hashtags = new List<string>(this.Hashtags),
             ThreadPosts = this.ThreadPosts.Select(tp => new ThreadPost
             {
                 Content = tp.Content,
@@ -411,11 +425,24 @@ public partial class PostEditorViewModel : ObservableObject
         
         foreach (var preview in previews)
         {
+            var platformConfig = PlatformConfigurations.GetPlatformConfig(preview.Key);
+            var characterCount = CalculateCharacterCount(preview.Value, preview.Key);
+            
             PlatformPreviews.Add(new PlatformPreview
             {
                 Platform = preview.Key,
-                PlatformName = preview.Key.ToString(),
-                FormattedContent = preview.Value
+                PlatformName = platformConfig.Name,
+                FormattedContent = preview.Value,
+                RawContent = post.Content,
+                Hashtags = post.Hashtags.ToList(),
+                HasHashtags = post.Hashtags.Any(),
+                IsThread = post.IsThread,
+                ThreadPostCount = post.ThreadPosts.Count,
+                HasMedia = post.Media.Any(),
+                MediaCount = post.Media.Count,
+                CharacterCount = characterCount,
+                CharacterLimit = platformConfig.CharacterLimit,
+                IsOverLimit = platformConfig.CharacterLimit.HasValue && characterCount > platformConfig.CharacterLimit.Value
             });
         }
     }
@@ -511,11 +538,80 @@ public partial class PostEditorViewModel : ObservableObject
 /// <summary>
 /// Supporting classes for platform-specific data display
 /// </summary>
-public class PlatformPreview
+public partial class PlatformPreview : ObservableObject
 {
-    public SocialPlatform Platform { get; set; }
-    public string PlatformName { get; set; } = string.Empty;
-    public string FormattedContent { get; set; } = string.Empty;
+    [ObservableProperty]
+    private SocialPlatform _platform;
+    
+    [ObservableProperty]
+    private string _platformName = string.Empty;
+    
+    [ObservableProperty]
+    private string _formattedContent = string.Empty;
+    
+    [ObservableProperty]
+    private string _rawContent = string.Empty;
+    
+    [ObservableProperty]
+    private List<string> _hashtags = new();
+    
+    [ObservableProperty]
+    private bool _hasHashtags = false;
+    
+    [ObservableProperty]
+    private bool _isThread = false;
+    
+    [ObservableProperty]
+    private int _threadPostCount = 0;
+    
+    [ObservableProperty]
+    private bool _hasMedia = false;
+    
+    [ObservableProperty]
+    private int _mediaCount = 0;
+    
+    [ObservableProperty]
+    private int _characterCount = 0;
+    
+    [ObservableProperty]
+    private int? _characterLimit = null;
+    
+    [ObservableProperty]
+    private bool _isOverLimit = false;
+    
+    public string CharacterCountText => CharacterLimit.HasValue 
+        ? $"{CharacterCount}/{CharacterLimit}" 
+        : CharacterCount.ToString();
+    
+    public string ThreadIndicatorText => IsThread 
+        ? $"Thread with {ThreadPostCount + 1} posts" 
+        : string.Empty;
+    
+    public string MediaIndicatorText => HasMedia 
+        ? $"{MediaCount} media attachment{(MediaCount > 1 ? "s" : "")}" 
+        : string.Empty;
+    
+    [RelayCommand]
+    private async Task CopyToClipboard()
+    {
+        try
+        {
+            // Use Avalonia's clipboard functionality
+            if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                var clipboard = desktop.MainWindow?.Clipboard;
+                if (clipboard != null)
+                {
+                    await clipboard.SetTextAsync(FormattedContent);
+                    System.Diagnostics.Debug.WriteLine($"Successfully copied to clipboard: {FormattedContent}");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to copy to clipboard: {ex.Message}");
+        }
+    }
 }
 
 public class PlatformCharacterCount

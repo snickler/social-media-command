@@ -118,10 +118,12 @@
                 Padding="24,0,24,0">
             <StackPanel Orientation="Horizontal">
                 <RadioButton Content="Composer" Classes="TabButton" GroupName="EditorTabs" 
-                             IsChecked="{Binding IsComposerTabActive}"/>
+                             IsChecked="{Binding IsComposerTabActive}"
+                             Command="{Binding SwitchToComposerCommand}"/>
                 <RadioButton Content="Preview" Classes="TabButton" GroupName="EditorTabs" 
                              IsChecked="{Binding IsPreviewTabActive}"
-                             IsEnabled="{Binding HasSelectedPlatforms}"/>
+                             IsEnabled="{Binding HasSelectedPlatforms}"
+                             Command="{Binding SwitchToPreviewCommand}"/>
             </StackPanel>
         </Border>
 
@@ -323,30 +325,91 @@
                             <DataTemplate>
                                 <Border Classes="PreviewCard">
                                     <StackPanel Spacing="12">
+                                        <!-- Header with Platform Name and Copy Button -->
                                         <Grid ColumnDefinitions="*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
                                                 <TextBlock Text="{Binding PlatformName}" 
                                                            FontWeight="SemiBold" 
                                                            Foreground="{DynamicResource SMC-Accent}"/>
-                                                <TextBlock Text="Preview" FontSize="14"/>
+                                                <TextBlock Text="Preview" FontSize="14" 
+                                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                                <Border Background="{DynamicResource SMC-Accent}" 
+                                                        CornerRadius="12" Padding="6,2"
+                                                        IsVisible="{Binding IsOverLimit}">
+                                                    <TextBlock Text="Over Limit" 
+                                                               FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource SMC-Accent-Foreground}"/>
+                                                </Border>
                                             </StackPanel>
                                             <Button Grid.Column="1" Content="📋 Copy" 
                                                     Classes="outline" 
                                                     FontSize="12" 
-                                                    Padding="8,4"/>
+                                                    Padding="8,4"
+                                                    Command="{Binding CopyToClipboardCommand}"/>
                                         </Grid>
                                         
+                                        <!-- Content Preview -->
                                         <Border Background="{DynamicResource SMC-Card-Background}" 
                                                 CornerRadius="6" Padding="12">
-                                            <TextBlock Text="{Binding FormattedContent}" 
-                                                       TextWrapping="Wrap" 
-                                                       FontSize="14"/>
+                                            <StackPanel Spacing="8">
+                                                <TextBlock Text="{Binding FormattedContent}" 
+                                                           TextWrapping="Wrap" 
+                                                           FontSize="14"/>
+                                                
+                                                <!-- Thread Indicator -->
+                                                <Border IsVisible="{Binding IsThread}"
+                                                        Background="{DynamicResource SMC-Muted}"
+                                                        CornerRadius="4" Padding="8,4">
+                                                    <TextBlock Text="{Binding ThreadIndicatorText}" 
+                                                               FontSize="12" FontWeight="Medium"
+                                                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                                </Border>
+                                                
+                                                <!-- Media Indicator -->
+                                                <Border IsVisible="{Binding HasMedia}"
+                                                        Background="{DynamicResource SMC-Muted}"
+                                                        CornerRadius="4" Padding="8,4">
+                                                    <TextBlock Text="{Binding MediaIndicatorText}" 
+                                                               FontSize="12" FontWeight="Medium"
+                                                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                                </Border>
+                                            </StackPanel>
                                         </Border>
+                                        
+                                        <!-- Footer with Character Count -->
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="Character count:" 
+                                                           FontSize="12" 
+                                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                                <TextBlock Text="{Binding CharacterCountText}" 
+                                                           FontSize="12" FontWeight="Medium"
+                                                           Foreground="{DynamicResource SMC-Foreground}"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
+                    
+                    <!-- Empty State for Preview -->
+                    <Border IsVisible="{Binding !HasSelectedPlatforms}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="2" 
+                            CornerRadius="8" 
+                            Padding="24"
+                            Opacity="0.6">
+                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="No platforms selected" 
+                                       HorizontalAlignment="Center" 
+                                       Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                            <TextBlock Text="Select platforms to see preview" 
+                                       FontSize="12" 
+                                       HorizontalAlignment="Center" 
+                                       Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
             </StackPanel>
         </Border>
