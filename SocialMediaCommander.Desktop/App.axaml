@@ -2,14 +2,151 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="SocialMediaCommander.Desktop.App"
              xmlns:local="using:SocialMediaCommander.Desktop"
-             RequestedThemeVariant="Default">
+             RequestedThemeVariant="Light">
              <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
   
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <ResourceDictionary x:Key="Light">
+                    <!-- Base -->
+                    <Color x:Key="SMC-Background">#f5f6fa</Color>
+                    <Color x:Key="SMC-Foreground">#2e2d33</Color>
+
+                    <!-- Primary/Accent -->
+                    <Color x:Key="SMC-Accent">#4338CA</Color>
+                    <Color x:Key="SMC-Accent-Foreground">#f5f6fa</Color>
+                    <Color x:Key="SMC-Accent-Hover">#5a52d0</Color>
+                    <Color x:Key="SMC-Accent-Pressed">#716dd6</Color>
+
+                    <!-- Destructive -->
+                    <Color x:Key="SMC-Destructive">#f04141</Color>
+                    <Color x:Key="SMC-Destructive-Hover">#e13333</Color>
+                    <Color x:Key="SMC-Destructive-Pressed">#d12121</Color>
+                    <Color x:Key="SMC-Destructive-Foreground">#f5f6fa</Color>
+
+                    <!-- Card -->
+                    <Color x:Key="SMC-Card-Background">#f7f8fc</Color>
+                    <Color x:Key="SMC-Card-Border">#dedce3</Color>
+
+                    <!-- Muted -->
+                    <Color x:Key="SMC-Muted">#f1f2f6</Color>
+                    <Color x:Key="SMC-Muted-Foreground">#6c757d</Color>
+
+                    <!-- Status -->
+                    <Color x:Key="SMC-Warning-Background">#FEF3C7</Color>
+                    <Color x:Key="SMC-Warning-Border">#B45309</Color>
+                    <Color x:Key="SMC-Success">#059669</Color>
+                    <Color x:Key="SMC-Success-Background">#DCFCE7</Color>
+                    <Color x:Key="SMC-Success-Border">#059669</Color>
+                    <Color x:Key="SMC-Success-Foreground">#065f46</Color>
+
+                    <!-- Overriding Fluent Colors -->
+                    <Color x:Key="SystemAccentColor">#4338CA</Color>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+  
     <Application.Styles>
         <FluentTheme />
+
+        <!-- Button Styles -->
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="#EBEAFB"/>
+            <Setter Property="Foreground" Value="#4338CA"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.secondary:pointerover">
+            <Setter Property="Background" Value="#DCD9F7"/>
+        </Style>
+        <Style Selector="Button.secondary:pressed">
+            <Setter Property="Background" Value="#CEC9F3"/>
+        </Style>
+        
+        <!-- Destructive Button -->
+        <Style Selector="Button.destructive">
+            <Setter Property="Background" Value="{DynamicResource SMC-Destructive}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Destructive}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="Button.destructive:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Destructive-Hover}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Destructive-Hover}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+        </Style>
+        <Style Selector="Button.destructive:pressed">
+            <Setter Property="Background" Value="{DynamicResource SMC-Destructive-Pressed}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
+            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+        </Style>
+        <Style Selector="Button.destructive:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="4"/>
+        </Style>
+        
+        <!-- Tab Button -->
+        <Style Selector="RadioButton.TabButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Foreground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+        </Style>
+        <Style Selector="RadioButton.TabButton:checked">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="1,1,1,0"/>
+            <Setter Property="Margin" Value="0,0,0,-1"/>
+             <Setter Property="Panel.ZIndex" Value="1"/>
+        </Style>
+         <Style Selector="RadioButton.TabButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+        </Style>
+
+        <!-- TextBox Style -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="{DynamicResource SMC-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="10"/>
+        </Style>
+        <Style Selector="TextBox:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- Card Styles -->
+        <Style Selector="Border.status-info">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="Border.status-warning">
+            <Setter Property="Background" Value="{DynamicResource SMC-Warning-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Warning-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
+
+        <Style Selector="Border.status-success">
+            <Setter Property="Background" Value="{DynamicResource SMC-Success-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Success-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+        </Style>
     </Application.Styles>
 </Application>

@@ -76,11 +76,29 @@ public partial class AccountManagerViewModel : ObservableObject
     
     public bool HasAccountsForPlatform => AccountsForSelectedPlatform.Any();
     
+    public bool HasAccounts => Accounts.Any();
+    
     public string SelectedPlatformName => 
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name;
     
     public string SelectedPlatformColor => 
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Color;
+    
+    // Platform Groups for UI
+    public IEnumerable<PlatformGroupViewModel> PlatformGroups => 
+        Enum.GetValues<SocialPlatform>()
+            .Where(platform => Accounts.Any(a => a.PlatformId == platform))
+            .Select(platform => new PlatformGroupViewModel
+            {
+                Platform = platform,
+                PlatformName = PlatformConfigurations.GetPlatformConfig(platform).Name,
+                PlatformColor = PlatformConfigurations.GetPlatformConfig(platform).Color,
+                PlatformIcon = GetPlatformIcon(platform),
+                Accounts = Accounts.Where(a => a.PlatformId == platform)
+                    .Select(a => new AccountItemViewModel(a))
+                    .ToList(),
+                AccountCount = Accounts.Count(a => a.PlatformId == platform)
+            });
     
     // Command aliases for UI binding
     public IRelayCommand AddAccountCommand => StartAddAccountCommand;
@@ -240,6 +258,12 @@ public partial class AccountManagerViewModel : ObservableObject
     }
     
     [RelayCommand]
+    private async Task RefreshAccountsAsync()
+    {
+        await LoadAccountsAsync();
+    }
+    
+    [RelayCommand]
     private async Task SetAsDefaultAccountAsync(Account account)
     {
         try
@@ -330,8 +354,7 @@ public partial class AccountManagerViewModel : ObservableObject
                 }
             });
             
-            OnPropertyChanged(nameof(AccountsForSelectedPlatform));
-            OnPropertyChanged(nameof(HasAccountsForPlatform));
+            UpdateComputedProperties();
         }
         catch (Exception ex)
         {
@@ -377,5 +400,101 @@ public partial class AccountManagerViewModel : ObservableObject
         }
     }
     
+    [RelayCommand]
+    private void AddAccountForPlatform(SocialPlatform platform)
+    {
+        SelectedPlatform = platform;
+        StartAddAccount();
+    }
+    
+    [RelayCommand]
+    private void EditAccount(AccountItemViewModel accountViewModel)
+    {
+        var account = Accounts.FirstOrDefault(a => a.Id == accountViewModel.Id);
+        if (account != null)
+        {
+            StartEditAccount(account);
+        }
+    }
+    
+    [RelayCommand]
+    private async Task RemoveAccount(AccountItemViewModel accountViewModel)
+    {
+        var account = Accounts.FirstOrDefault(a => a.Id == accountViewModel.Id);
+        if (account != null)
+        {
+            await DeleteAccountAsync(account);
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ReconnectAccount(AccountItemViewModel accountViewModel)
+    {
+        // TODO: Implement reconnection logic
+        System.Diagnostics.Debug.WriteLine($"Reconnecting account: {accountViewModel.DisplayName}");
+    }
+    
+    private string GetPlatformIcon(SocialPlatform platform)
+    {
+        return platform switch
+        {
+            SocialPlatform.BlueSky => "BS",
+            SocialPlatform.X => "𝕏",
+            SocialPlatform.LinkedIn => "in",
+            SocialPlatform.Threads => "T",
+            SocialPlatform.Facebook => "f",
+            _ => "?"
+        };
+    }
+    
+    private void UpdateComputedProperties()
+    {
+        OnPropertyChanged(nameof(HasAccounts));
+        OnPropertyChanged(nameof(PlatformGroups));
+        OnPropertyChanged(nameof(AccountsForSelectedPlatform));
+        OnPropertyChanged(nameof(HasAccountsForPlatform));
+    }
+    
     #endregion
+}
+
+// Supporting ViewModels
+public class PlatformGroupViewModel
+{
+    public SocialPlatform Platform { get; set; }
+    public string PlatformName { get; set; } = string.Empty;
+    public string PlatformColor { get; set; } = string.Empty;
+    public string PlatformIcon { get; set; } = string.Empty;
+    public List<AccountItemViewModel> Accounts { get; set; } = new();
+    public int AccountCount { get; set; }
+}
+
+public class AccountItemViewModel
+{
+    public string Id { get; set; } = string.Empty;
+    public SocialPlatform PlatformId { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string DisplayName { get; set; } = string.Empty;
+    public string Avatar { get; set; } = string.Empty;
+    public bool IsDefault { get; set; }
+    public bool IsConnected { get; set; } = true;
+    public bool RequiresReconnection { get; set; } = false;
+    
+    // UI Properties
+    public string AvatarText => DisplayName.FirstOrDefault().ToString().ToUpper();
+    public string PlatformColor => PlatformConfigurations.GetPlatformConfig(PlatformId).Color;
+    
+    public AccountItemViewModel() { }
+    
+    public AccountItemViewModel(Account account)
+    {
+        Id = account.Id;
+        PlatformId = account.PlatformId;
+        Username = account.Username;
+        DisplayName = account.DisplayName;
+        Avatar = account.Avatar ?? string.Empty;
+        IsDefault = account.IsDefault;
+        IsConnected = !string.IsNullOrEmpty(account.AccessToken);
+        RequiresReconnection = !IsConnected;
+    }
 } 

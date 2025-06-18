@@ -1,316 +1,379 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="700"
              x:Class="SocialMediaCommander.Desktop.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-  <Border Background="White" 
-          CornerRadius="8" 
-          Padding="0"
-          BoxShadow="0 1 3 0 #19000000">
-    
-    <Grid RowDefinitions="Auto,*">
-      
-      <!-- Header -->
-      <Grid Grid.Row="0" Margin="20,20,20,16">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        
-        <TextBlock Grid.Column="0" 
-                   Text="Settings" 
-                   FontSize="20" 
-                   FontWeight="SemiBold"
-                   Foreground="#4F46E5"
-                   VerticalAlignment="Center"/>
-        
-        <Button Grid.Column="1" 
-                Content="✕ Close" 
-                Background="Transparent"
-                Foreground="#6B7280"
-                BorderBrush="#D1D5DB"
-                BorderThickness="1"
-                Padding="12,6"
-                CornerRadius="6"/>
-      </Grid>
-      
-      <!-- Settings Content -->
-      <ScrollViewer Grid.Row="1" 
-                   Padding="20,0,20,20"
-                   VerticalScrollBarVisibility="Auto">
-        
-        <StackPanel Spacing="24">
-          
-          <!-- General Settings -->
-          <StackPanel Spacing="16">
-            <TextBlock Text="General" 
-                      FontSize="16" 
-                      FontWeight="SemiBold"
-                      Foreground="#374151"/>
+    <Design.DataContext>
+        <vm:SettingsViewModel />
+    </Design.DataContext>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20" Spacing="20">
             
-            <Border Background="#F8FAFC"
-                   BorderBrush="#E5E7EB"
-                   BorderThickness="1"
-                   CornerRadius="8"
-                   Padding="16">
-              <StackPanel Spacing="12">
-                
-                <!-- Auto-save drafts -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Auto-save drafts" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Automatically save your work as you type" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="True"/>
-                </Grid>
-                
-                <Separator Background="#E5E7EB"/>
-                
-                <!-- Default post mode -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Default post mode" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Choose the default mode when creating new posts" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ComboBox Grid.Column="1" 
-                           MinWidth="140"
-                           Padding="8"
-                           CornerRadius="6">
-                    <ComboBoxItem Content="Standard" IsSelected="True"/>
-                    <ComboBoxItem Content="Thread"/>
-                    <ComboBoxItem Content="Promo Mode"/>
-                  </ComboBox>
-                </Grid>
-                
-                <Separator Background="#E5E7EB"/>
-                
-                <!-- Character counter -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Show character counter" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Display real-time character count while typing" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="True"/>
-                </Grid>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-          
-          <!-- Notifications -->
-          <StackPanel Spacing="16">
-            <TextBlock Text="Notifications" 
-                      FontSize="16" 
-                      FontWeight="SemiBold"
-                      Foreground="#374151"/>
-            
-            <Border Background="#F8FAFC"
-                   BorderBrush="#E5E7EB"
-                   BorderThickness="1"
-                   CornerRadius="8"
-                   Padding="16">
-              <StackPanel Spacing="12">
-                
-                <!-- Success notifications -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Success notifications" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Show notifications when posts are published successfully" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="True"/>
-                </Grid>
-                
-                <Separator Background="#E5E7EB"/>
-                
-                <!-- Error notifications -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Error notifications" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Show notifications when errors occur" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="True"/>
-                </Grid>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-          
-          <!-- Privacy and Security -->
-          <StackPanel Spacing="16">
-            <TextBlock Text="Privacy and Security" 
-                      FontSize="16" 
-                      FontWeight="SemiBold"
-                      Foreground="#374151"/>
-            
-            <Border Background="#F8FAFC"
-                   BorderBrush="#E5E7EB"
-                   BorderThickness="1"
-                   CornerRadius="8"
-                   Padding="16">
-              <StackPanel Spacing="12">
-                
-                <!-- Clear drafts -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Clear drafts on exit" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Automatically delete saved drafts when closing the app" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="False"/>
-                </Grid>
-                
-                <Separator Background="#E5E7EB"/>
-                
-                <!-- Data collection -->
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  
-                  <StackPanel Grid.Column="0">
-                    <TextBlock Text="Analytics and usage data" 
-                              FontSize="14" 
-                              FontWeight="Medium"/>
-                    <TextBlock Text="Help improve the app by sharing anonymous usage data" 
-                              FontSize="12" 
-                              Foreground="#6B7280"
-                              Margin="0,2,0,0"/>
-                  </StackPanel>
-                  
-                  <ToggleSwitch Grid.Column="1" 
-                               IsChecked="True"/>
-                </Grid>
-              </StackPanel>
-            </Border>
-          </StackPanel>
-          
-          <!-- About -->
-          <StackPanel Spacing="16">
-            <TextBlock Text="About" 
-                      FontSize="16" 
-                      FontWeight="SemiBold"
-                      Foreground="#374151"/>
-            
-            <Border Background="#F8FAFC"
-                   BorderBrush="#E5E7EB"
-                   BorderThickness="1"
-                   CornerRadius="8"
-                   Padding="16">
-              <StackPanel Spacing="12" HorizontalAlignment="Center">
-                <TextBlock Text="🚀" 
-                          FontSize="32" 
-                          HorizontalAlignment="Center"/>
-                <TextBlock Text="Social Media Commander" 
-                          FontSize="18" 
-                          FontWeight="SemiBold"
-                          HorizontalAlignment="Center"/>
-                <TextBlock Text="Version 1.0.0" 
-                          FontSize="14" 
-                          Foreground="#6B7280"
-                          HorizontalAlignment="Center"/>
-                <TextBlock Text="A modern cross-platform social media management tool" 
-                          FontSize="12" 
-                          Foreground="#6B7280"
-                          HorizontalAlignment="Center"
-                          TextWrapping="Wrap"
-                          MaxWidth="300"/>
-                
-                <StackPanel Orientation="Horizontal" 
-                           Spacing="8" 
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,0">
-                  <Button Content="📋 Release Notes" 
-                         Background="Transparent"
-                         Foreground="#4F46E5"
-                         BorderBrush="#4F46E5"
-                         BorderThickness="1"
-                         Padding="12,6"
-                         CornerRadius="6"
-                         FontSize="12"/>
-                  <Button Content="🌐 Website" 
-                         Background="Transparent"
-                         Foreground="#4F46E5"
-                         BorderBrush="#4F46E5"
-                         BorderThickness="1"
-                         Padding="12,6"
-                         CornerRadius="6"
-                         FontSize="12"/>
+            <!-- Header Section -->
+            <Border Background="{StaticResource PrimaryBrush}" CornerRadius="12" Padding="20">
+                <StackPanel Orientation="Horizontal" Spacing="15">
+                    <Border Background="{StaticResource BackgroundBrush}" CornerRadius="8" Padding="10">
+                        <TextBlock Text="⚙️" FontSize="24"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="Settings &amp; Preferences" 
+                                 Classes="h1" Foreground="{StaticResource InverseTextBrush}"/>
+                        <TextBlock Text="Customize your Social Media Commander experience" 
+                                 Classes="p" Foreground="{StaticResource PrimaryLightBrush}"/>
+                    </StackPanel>
                 </StackPanel>
-              </StackPanel>
             </Border>
-          </StackPanel>
+
+            <!-- Status Message -->
+            <Border Background="{StaticResource InfoBrush}" CornerRadius="8" Padding="12" 
+                    IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding StatusMessage}" FontWeight="Medium" Foreground="{StaticResource InfoForegroundBrush}"/>
+            </Border>
+
+            <!-- Settings Tabs -->
+            <TabControl>
+                
+                <!-- General Tab -->
+                <TabItem Header="🎨 Appearance">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Theme Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Theme &amp; Appearance" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Theme:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding ThemeOptions}"
+                                                    SelectedItem="{Binding SelectedTheme}"
+                                                    MinWidth="200" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Language:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding LanguageOptions}"
+                                                    SelectedItem="{Binding SelectedLanguage}"
+                                                    MinWidth="200" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="UI Scale:" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                                <Slider Value="{Binding UiScale}" Minimum="0.8" Maximum="1.5" 
+                                                      Width="200" TickFrequency="0.1"/>
+                                                <TextBlock Text="{Binding UiScale, StringFormat='{}{0:P0}'}" 
+                                                         VerticalAlignment="Center" MinWidth="50"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Dark Mode:" VerticalAlignment="Center"/>
+                                            <CheckBox Grid.Column="1" IsChecked="{Binding IsDarkMode}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Notifications Tab -->
+                <TabItem Header="🔔 Notifications">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Notification Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <TextBlock Text="Notification Preferences" Classes="h2"/>
+                                        <Button Content="Test" Command="{Binding TestNotificationsCommand}"
+                                              Classes="secondary" Padding="8,4"
+                                              CornerRadius="4" FontSize="12"/>
+                                    </StackPanel>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <CheckBox Content="Enable Notifications" 
+                                                IsChecked="{Binding EnableNotifications}"/>
+                                        
+                                        <CheckBox Content="Sound Notifications" 
+                                                IsChecked="{Binding EnableSoundNotifications}"/>
+                                        
+                                        <CheckBox Content="Desktop Notifications" 
+                                                IsChecked="{Binding EnableDesktopNotifications}"/>
+                                        
+                                        <CheckBox Content="Email Notifications" 
+                                                IsChecked="{Binding EnableEmailNotifications}"/>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Duration (seconds):" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding NotificationDurationOptions}"
+                                                    SelectedItem="{Binding NotificationDuration}"
+                                                    MinWidth="150" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Automation Tab -->
+                <TabItem Header="🤖 Automation">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Automation Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Automation &amp; Scheduling" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <CheckBox Content="Enable Auto Scheduling" 
+                                                IsChecked="{Binding EnableAutoScheduling}"/>
+                                        
+                                        <CheckBox Content="Smart Posting" 
+                                                IsChecked="{Binding EnableSmartPosting}"/>
+                                        
+                                        <CheckBox Content="Weekend Posting" 
+                                                IsChecked="{Binding EnableWeekendPosting}"/>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Schedule Interval (min):" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding ScheduleIntervalOptions}"
+                                                    SelectedItem="{Binding DefaultScheduleInterval}"
+                                                    MinWidth="150" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Timezone:" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding TimezoneOptions}"
+                                                    SelectedItem="{Binding TimezoneSelection}"
+                                                    MinWidth="150" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Privacy & Security Tab -->
+                <TabItem Header="🔒 Privacy">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Privacy Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Privacy &amp; Security" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <CheckBox Content="Enable Analytics" 
+                                                IsChecked="{Binding EnableAnalytics}"/>
+                                        
+                                        <CheckBox Content="Crash Reporting" 
+                                                IsChecked="{Binding EnableCrashReporting}"/>
+                                        
+                                        <CheckBox Content="Auto Save" 
+                                                IsChecked="{Binding EnableAutoSave}"/>
+                                        
+                                        <CheckBox Content="Enable Encryption" 
+                                                IsChecked="{Binding EnableEncryption}"/>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Auto Save Interval (min):" VerticalAlignment="Center"/>
+                                            <ComboBox Grid.Column="1" 
+                                                    ItemsSource="{Binding AutoSaveIntervalOptions}"
+                                                    SelectedItem="{Binding AutoSaveInterval}"
+                                                    MinWidth="150" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Platforms Tab -->
+                <TabItem Header="🌐 Platforms">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Platform Integration Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Platform Integrations" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <CheckBox Content="Twitter Integration" 
+                                                IsChecked="{Binding EnableTwitterIntegration}"/>
+                                        
+                                        <CheckBox Content="Facebook Integration" 
+                                                IsChecked="{Binding EnableFacebookIntegration}"/>
+                                        
+                                        <CheckBox Content="Instagram Integration" 
+                                                IsChecked="{Binding EnableInstagramIntegration}"/>
+                                        
+                                        <CheckBox Content="LinkedIn Integration" 
+                                                IsChecked="{Binding EnableLinkedInIntegration}"/>
+                                        
+                                        <CheckBox Content="TikTok Integration" 
+                                                IsChecked="{Binding EnableTikTokIntegration}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- Media Tab -->
+                <TabItem Header="📁 Media">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- Media Settings -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="Media &amp; Storage" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Default Folder:" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                                <TextBox Text="{Binding DefaultMediaFolder}" Width="300" IsReadOnly="True"/>
+                                                <Button Content="Browse" Command="{Binding SelectMediaFolderCommand}"
+                                                      Classes="primary" Padding="12,6"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Max Concurrent Uploads:" VerticalAlignment="Center"/>
+                                            <NumericUpDown Grid.Column="1" Value="{Binding MaxConcurrentUploads}" 
+                                                         Minimum="1" Maximum="10" Width="150" HorizontalAlignment="Left"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="200,*">
+                                            <TextBlock Grid.Column="0" Text="Media Quality (%):" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
+                                                <Slider Value="{Binding MediaQuality}" Minimum="50" Maximum="100" 
+                                                      Width="200" TickFrequency="10"/>
+                                                <TextBlock Text="{Binding MediaQuality, StringFormat='{}{0}%'}" 
+                                                         VerticalAlignment="Center" MinWidth="40"/>
+                                            </StackPanel>
+                                        </Grid>
+                                        
+                                        <CheckBox Content="Image Optimization" 
+                                                IsChecked="{Binding EnableImageOptimization}"/>
+                                        
+                                        <CheckBox Content="Video Compression" 
+                                                IsChecked="{Binding EnableVideoCompression}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- System Tab -->
+                <TabItem Header="💾 System">
+                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
+                        <StackPanel Spacing="20">
+                            
+                            <!-- System Information -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="System Information" Classes="h2"/>
+                                    
+                                    <StackPanel Spacing="12">
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Version:" FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding ApplicationVersion}"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Total Accounts:" FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TotalAccounts}"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Total Posts:" FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding TotalPosts}"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Cache Size:" FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1" Text="15.0 MB"/>
+                                        </Grid>
+                                        
+                                        <Grid ColumnDefinitions="150,*">
+                                            <TextBlock Grid.Column="0" Text="Last Backup:" FontWeight="Medium"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding LastBackupDate}"/>
+                                        </Grid>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- System Actions -->
+                            <Border Classes="card" Padding="20">
+                                <StackPanel Spacing="15">
+                                    <TextBlock Text="System Actions" Classes="h2"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                        <Button Content="Create Backup" Command="{Binding CreateBackupCommand}"
+                                              Classes="primary" Padding="15,8"
+                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                        
+                                        <Button Content="Clear Cache" Command="{Binding ClearCacheCommand}"
+                                              Classes="secondary" Padding="15,8"
+                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                        
+                                        <Button Content="Export Settings" Command="{Binding ExportSettingsCommand}"
+                                              Classes="primary" Padding="15,8"
+                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                        
+                                        <Button Content="Import Settings" Command="{Binding ImportSettingsCommand}"
+                                              Classes="secondary" Padding="15,8"
+                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+            </TabControl>
+
+            <!-- Action Buttons -->
+            <Border Padding="20" Margin="0,10,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+                    <Button Content="Save Changes" Command="{Binding SaveSettingsCommand}"
+                          Classes="primary"/>
+                    <Button Content="Reset to Defaults" Command="{Binding ResetSettingsCommand}"
+                          Classes="danger"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Loading Indicator -->
+            <Border Background="#f0f9ff" CornerRadius="8" Padding="15"
+                    IsVisible="{Binding IsLoading}">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="20" Height="20"/>
+                    <TextBlock Text="Processing..." VerticalAlignment="Center" Foreground="#0369a1"/>
+                </StackPanel>
+            </Border>
+
         </StackPanel>
-      </ScrollViewer>
-    </Grid>
-  </Border>
+    </ScrollViewer>
 </UserControl> 

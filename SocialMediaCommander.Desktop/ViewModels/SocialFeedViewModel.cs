@@ -299,7 +299,6 @@ public partial class SocialFeedViewModel : ObservableObject
     #endregion
 
     // Events
-    public event Action<string>? OnError;
     public event Action<SocialFeedPostViewModel>? OnPostDetailsRequested;
 }
 

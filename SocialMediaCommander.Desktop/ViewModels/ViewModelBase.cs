@@ -2,6 +2,9 @@
 
 namespace SocialMediaCommander.Desktop.ViewModels;
 
-public class ViewModelBase : ObservableObject
+/// <summary>
+/// Base class for all ViewModels in the application
+/// </summary>
+public abstract partial class ViewModelBase : ObservableObject
 {
 }

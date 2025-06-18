@@ -3,298 +3,88 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="600"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="800"
              x:Class="SocialMediaCommander.Desktop.Views.SocialFeedView"
              x:DataType="vm:SocialFeedViewModel">
 
-  <Design.DataContext>
-    <vm:SocialFeedViewModel />
-  </Design.DataContext>
+    <Border Background="{DynamicResource SMC-Card-Background}" 
+            BorderBrush="{DynamicResource SMC-Card-Border}" 
+            BorderThickness="1" 
+            CornerRadius="12">
+        
+        <Grid RowDefinitions="Auto, Auto, *">
+            <!-- Header -->
+            <Grid Grid.Row="0" Margin="20,20,20,12" ColumnDefinitions="*,Auto">
+                <TextBlock Text="Social Feeds" FontSize="16" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="🔄 Refresh" Classes="ghost" IsEnabled="{Binding !IsRefreshing}"/>
+            </Grid>
 
-  <Border Background="White" 
-          CornerRadius="8" 
-          Padding="0"
-          BoxShadow="0 1 3 0 #19000000">
-    
-    <Grid RowDefinitions="Auto,Auto,*">
-      
-      <!-- Header -->
-      <Grid Grid.Row="0" 
-            Background="#F8FAFC">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*"/>
-          <ColumnDefinition Width="Auto"/>
-        </Grid.ColumnDefinitions>
-        
-        <TextBlock Grid.Column="0"
-                   Text="Social Feeds" 
-                   FontSize="18" 
-                   FontWeight="SemiBold"
-                   Foreground="#374151"
-                   VerticalAlignment="Center"
-                   Margin="20,16"/>
-        
-        <Button Grid.Column="1"
-                Content="🔄 Refresh" 
-                Command="{Binding RefreshFeedCommand}"
-                Background="Transparent"
-                BorderBrush="#D1D5DB"
-                BorderThickness="1"
-                Padding="12,6"
-                CornerRadius="6"
-                FontSize="12"
-                IsEnabled="{Binding !IsRefreshing}"
-                Margin="20,16"/>
-      </Grid>
-      
-      <!-- Platform Filters -->
-      <Border Grid.Row="1" 
-              Background="White"
-              BorderBrush="#E5E7EB"
-              BorderThickness="0,1,0,1"
-              Padding="20,12">
-        
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" 
-                     VerticalScrollBarVisibility="Disabled">
-          <ItemsControl ItemsSource="{Binding PlatformFilters}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <StackPanel Orientation="Horizontal" Spacing="8"/>
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Button Command="{Binding $parent[UserControl].((vm:SocialFeedViewModel)DataContext).FilterByPlatformCommand}"
-                        CommandParameter="{Binding Id}"
-                        Padding="12,6"
-                        CornerRadius="16"
-                        BorderThickness="1"
-                        Background="Transparent"
-                        BorderBrush="#E5E7EB"
-                        Foreground="#6B7280">
-                  
-                  <TextBlock Text="{Binding Name}" 
-                            FontSize="12"
-                            FontWeight="Medium"/>
-                </Button>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
-      </Border>
-      
-      <!-- Feed Content -->
-      <Grid Grid.Row="2">
-        
-        <!-- Loading State -->
-        <Border Background="#F9FAFB"
-                IsVisible="{Binding IsLoading}"
-                Padding="40">
-          <StackPanel HorizontalAlignment="Center" 
-                     VerticalAlignment="Center"
-                     Spacing="12">
-            <TextBlock Text="⏳" 
-                      FontSize="32"
-                      HorizontalAlignment="Center"/>
-            <TextBlock Text="Loading social feeds..." 
-                      FontSize="14"
-                      Foreground="#6B7280"
-                      HorizontalAlignment="Center"/>
-          </StackPanel>
-        </Border>
-        
-        <!-- Empty State -->
-        <Border Background="#F9FAFB"
-                IsVisible="{Binding !HasFeedItems}"
-                Padding="40">
-          <StackPanel HorizontalAlignment="Center" 
-                     VerticalAlignment="Center"
-                     Spacing="12">
-            <TextBlock Text="📭" 
-                      FontSize="32"
-                      HorizontalAlignment="Center"/>
-            <TextBlock Text="No posts to show" 
-                      FontSize="14"
-                      FontWeight="Medium"
-                      Foreground="#374151"
-                      HorizontalAlignment="Center"/>
-            <TextBlock Text="Posts from your connected accounts will appear here" 
-                      FontSize="12"
-                      Foreground="#6B7280"
-                      HorizontalAlignment="Center"/>
-          </StackPanel>
-        </Border>
-        
-        <!-- Feed Posts -->
-        <ScrollViewer VerticalScrollBarVisibility="Auto"
-                     IsVisible="{Binding HasFeedItems}">
-          <ItemsControl ItemsSource="{Binding FeedPosts}" 
-                       Margin="0,0,0,20">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate>
-                <Border Background="White"
-                       BorderBrush="#F3F4F6"
-                       BorderThickness="0,0,0,1"
-                       Padding="20,16">
-                  
-                  <Grid RowDefinitions="Auto,Auto,Auto,Auto">
-                    
-                    <!-- Post Header -->
-                    <Grid Grid.Row="0" Margin="0,0,0,8">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                      </Grid.ColumnDefinitions>
-                      
-                      <!-- User Avatar -->
-                      <Border Grid.Column="0"
-                             Width="32" Height="32"
-                             CornerRadius="16"
-                             Background="{Binding PlatformColor}"
-                             Margin="0,0,8,0">
-                        <TextBlock Text="{Binding UserName}" 
-                                  FontSize="14"
-                                  FontWeight="Bold"
-                                  Foreground="White"
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                      </Border>
-                      
-                      <!-- User Info -->
-                      <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding UserName}" 
-                                  FontSize="14"
-                                  FontWeight="SemiBold"
-                                  Foreground="#374151"/>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                          <TextBlock Text="{Binding UserHandle}" 
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                          <TextBlock Text="•" 
-                                    FontSize="12"
-                                    Foreground="#D1D5DB"/>
-                          <TextBlock Text="{Binding TimeAgo}" 
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                        </StackPanel>
-                      </StackPanel>
-                      
-                      <!-- Platform Badge -->
-                      <Border Grid.Column="2"
-                             Background="{Binding PlatformColor}"
-                             CornerRadius="4"
-                             Padding="6,3"
-                             VerticalAlignment="Top">
-                        <TextBlock Text="{Binding PlatformDisplayName}" 
-                                  FontSize="10"
-                                  FontWeight="Bold"
-                                  Foreground="White"/>
-                      </Border>
-                    </Grid>
-                    
-                    <!-- Post Content -->
-                    <TextBlock Grid.Row="1"
-                              Text="{Binding Content}" 
-                              FontSize="14"
-                              TextWrapping="Wrap"
-                              LineHeight="20"
-                              Foreground="#374151"
-                              Margin="0,0,0,12"/>
-                    
-                    <!-- Media Indicator -->
-                    <Border Grid.Row="2"
-                           Background="#F3F4F6"
-                           CornerRadius="6"
-                           Padding="12,8"
-                           Margin="0,0,0,12"
-                           IsVisible="{Binding HasMedia}">
-                      <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="📷" FontSize="14"/>
-                        <TextBlock Text="This post contains media" 
-                                  FontSize="12"
-                                  Foreground="#6B7280"/>
-                      </StackPanel>
-                    </Border>
-                    
-                    <!-- Post Actions -->
-                    <Grid Grid.Row="3">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                      </Grid.ColumnDefinitions>
-                      
-                      <!-- Like Button -->
-                      <Button Grid.Column="0"
-                             Command="{Binding $parent[UserControl].((vm:SocialFeedViewModel)DataContext).LikePostCommand}"
-                             CommandParameter="{Binding}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Padding="8,4"
-                             HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                          <TextBlock Text="❤️" 
-                                    FontSize="14"/>
-                          <TextBlock Text="{Binding LikesCount}" 
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                        </StackPanel>
-                      </Button>
-                      
-                      <!-- Retweet Button -->
-                      <Button Grid.Column="1"
-                             Command="{Binding $parent[UserControl].((vm:SocialFeedViewModel)DataContext).RetweetPostCommand}"
-                             CommandParameter="{Binding}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Padding="8,4"
-                             HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                          <TextBlock Text="🔄" 
-                                    FontSize="14"/>
-                          <TextBlock Text="{Binding RetweetsCount}" 
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                        </StackPanel>
-                      </Button>
-                      
-                      <!-- Reply Button -->
-                      <Button Grid.Column="2"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Padding="8,4"
-                             HorizontalAlignment="Left">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                          <TextBlock Text="💬" FontSize="14"/>
-                          <TextBlock Text="{Binding RepliesCount}" 
-                                    FontSize="12"
-                                    Foreground="#6B7280"/>
-                        </StackPanel>
-                      </Button>
-                      
-                      <!-- More Actions -->
-                      <Button Grid.Column="3"
-                             Command="{Binding $parent[UserControl].((vm:SocialFeedViewModel)DataContext).ViewPostDetailsCommand}"
-                             CommandParameter="{Binding}"
-                             Background="Transparent"
-                             BorderThickness="0"
-                             Padding="8,4"
-                             HorizontalAlignment="Right">
-                        <TextBlock Text="⋯" 
-                                  FontSize="16"
-                                  Foreground="#9CA3AF"/>
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </ScrollViewer>
-      </Grid>
-    </Grid>
-  </Border>
+            <!-- Platform Filters -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Margin="20,0,20,12">
+                <ItemsControl ItemsSource="{Binding PlatformFilters}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" Spacing="4"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Content="{Binding Name}" Classes="outline" Padding="12,6"
+                                    Command="{Binding $parent[UserControl].((vm:SocialFeedViewModel)DataContext).FilterByPlatformCommand}"
+                                    CommandParameter="{Binding Id}"/>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Feed Content -->
+            <ScrollViewer Grid.Row="2">
+                <StackPanel Spacing="16" Margin="20,0,20,20">
+                    <!-- Loading State -->
+                    <StackPanel IsVisible="{Binding IsLoading}" Spacing="12" MinHeight="300" 
+                                HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <ProgressBar IsIndeterminate="True" Width="100"/>
+                        <TextBlock Text="Loading social feeds..." Opacity="0.7" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Empty State -->
+                     <StackPanel IsVisible="{Binding !HasFeedItems}" Spacing="12" MinHeight="300"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <TextBlock Text="📭" FontSize="32" HorizontalAlignment="Center"/>
+                        <TextBlock Text="No posts to show" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                        <TextBlock Text="Posts from connected accounts will appear here" Opacity="0.7" HorizontalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Feed Items -->
+                    <ItemsControl ItemsSource="{Binding FeedPosts}" IsVisible="{Binding HasFeedItems}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1" CornerRadius="8" Padding="16">
+                                    <StackPanel Spacing="8">
+                                        <!-- Header -->
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <Border Width="32" Height="32" CornerRadius="16" Background="Gray" Margin="0,0,12,0">
+                                                <!-- Placeholder for Avatar -->
+                                            </Border>
+                                            <StackPanel Grid.Column="1" Spacing="2">
+                                                <TextBlock Text="{Binding UserName}" FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding TimeAgo}" FontSize="12" Opacity="0.7"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding PlatformDisplayName}" FontSize="12" Opacity="0.7"/>
+                                        </Grid>
+                                        <!-- Content -->
+                                        <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                                        <!-- Media Placeholder (if any) -->
+                                        <Border IsVisible="{Binding HasMedia}" Background="#F0F0F0" Height="100" CornerRadius="4">
+                                            <TextBlock Text="[Media Content]" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Border>
 </UserControl> 

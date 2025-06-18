@@ -40,12 +40,45 @@ public partial class MediaUploadViewModel : ObservableObject
     #region Properties
     
     public ObservableCollection<MediaFileItem> MediaFiles { get; }
+    public ObservableCollection<Media> MediaItems { get; } = new();
     
-    public bool HasMedia => MediaFiles.Any();
+    public bool HasMedia => MediaItems.Any();
+    public bool CanAddMore => MediaItems.Count < 4;
+    public string MediaCountText => $"{MediaItems.Count} of 4 media files";
     
     #endregion
     
     #region Commands
+    
+    [RelayCommand]
+    private async Task UploadAsync()
+    {
+        try
+        {
+            if (MediaItems.Count >= 4) return;
+            
+            // In a real implementation, this would open a file dialog
+            // For now, simulate file selection
+            await SimulateMediaUploadAsync();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Upload failed: {ex.Message}");
+        }
+    }
+    
+    [RelayCommand]
+    private void RemoveMedia(Media media)
+    {
+        if (MediaItems.Contains(media))
+        {
+            MediaItems.Remove(media);
+            OnPropertyChanged(nameof(HasMedia));
+            OnPropertyChanged(nameof(CanAddMore));
+            OnPropertyChanged(nameof(MediaCountText));
+            System.Diagnostics.Debug.WriteLine($"Removed media: {media.FileName}");
+        }
+    }
     
     [RelayCommand]
     private async Task BrowseFilesAsync()
@@ -105,11 +138,10 @@ public partial class MediaUploadViewModel : ObservableObject
     }
     
     [RelayCommand]
-    private async Task RemoveFileAsync(MediaFileItem file)
+    private void RemoveFile(MediaFileItem file)
     {
         try
         {
-            await Task.Delay(100); // Simulate async operation
             MediaFiles.Remove(file);
             UpdateStorageInfo();
             OnPropertyChanged(nameof(HasMedia));
@@ -121,11 +153,10 @@ public partial class MediaUploadViewModel : ObservableObject
     }
     
     [RelayCommand]
-    private async Task PreviewFileAsync(MediaFileItem file)
+    private void PreviewFile(MediaFileItem file)
     {
         try
         {
-            await Task.Delay(100); // Simulate async operation
             // In a real implementation, this would open a preview window
             System.Diagnostics.Debug.WriteLine($"Previewing file: {file.FileName}");
         }
@@ -138,6 +169,43 @@ public partial class MediaUploadViewModel : ObservableObject
     #endregion
     
     #region Helper Methods
+    
+    private async Task SimulateMediaUploadAsync()
+    {
+        try
+        {
+            if (MediaItems.Count >= 4) return;
+            
+            // Simulate async upload delay
+            await Task.Delay(100);
+            
+            var mediaTypes = new[] { MediaType.Image, MediaType.Video };
+            var mediaType = mediaTypes[Random.Shared.Next(mediaTypes.Length)];
+            var fileName = mediaType == MediaType.Image ? $"image_{MediaItems.Count + 1}.jpg" : $"video_{MediaItems.Count + 1}.mp4";
+            
+            var media = new Media
+            {
+                Id = Guid.NewGuid().ToString(),
+                FileName = fileName,
+                FilePath = $"mock://path/{fileName}",
+                Type = mediaType,
+                MimeType = mediaType == MediaType.Image ? "image/jpeg" : "video/mp4",
+                FileSize = Random.Shared.Next(1024 * 100, 1024 * 1024 * 10), // 100KB to 10MB
+                PreviewUrl = $"mock://preview/{fileName}"
+            };
+            
+            MediaItems.Add(media);
+            OnPropertyChanged(nameof(HasMedia));
+            OnPropertyChanged(nameof(CanAddMore));
+            OnPropertyChanged(nameof(MediaCountText));
+            
+            System.Diagnostics.Debug.WriteLine($"Added media: {media.FileName}");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Simulate media upload failed: {ex.Message}");
+        }
+    }
     
     private async Task SimulateFileUploadAsync(string fileName, string icon, string extension, string size)
     {

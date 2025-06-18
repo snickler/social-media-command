@@ -2,224 +2,242 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
         xmlns:views="using:SocialMediaCommander.Desktop.Views"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
         x:Class="SocialMediaCommander.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
         Title="Social Media Management Hub"
-        MinWidth="1000"
-        MinHeight="700">
+        MinWidth="1280" MinHeight="800"
+        Background="{DynamicResource SMC-Background}"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1">
 
-    <Design.DataContext>
-        <!-- This only sets the DataContext for the previewer in an IDE,
-             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel/>
-    </Design.DataContext>
+    <Window.Styles>
+        <!-- Header Button Styles -->
+        <Style Selector="Button.HeaderButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Button.HeaderButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        
+        <!-- Toggle Button Styles -->
+        <Style Selector="ToggleButton.ViewToggle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+        </Style>
+        <Style Selector="ToggleButton.ViewToggle:checked">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="ToggleButton.ViewToggle:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        
+        <!-- Card Styles -->
+        <Style Selector="Border.Card">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="24"/>
+        </Style>
+        
+        <!-- Success Message Styles -->
+        <Style Selector="Border.SuccessMessage">
+            <Setter Property="Background" Value="{DynamicResource SMC-Success-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Success-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="Margin" Value="0,0,0,24"/>
+        </Style>
+    </Window.Styles>
 
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
+
         <!-- Header -->
-        <Border Grid.Row="0" 
-                Background="#4F46E5" 
-                Padding="16">
+        <Border Grid.Row="0" Background="{DynamicResource SMC-Accent}" 
+                BorderBrush="{DynamicResource SMC-Accent}" 
+                BorderThickness="0,0,0,1">
+            <Grid Margin="24,16">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Top Header Row -->
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- App Title -->
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Border Background="{DynamicResource SMC-Accent-Foreground}" 
+                                CornerRadius="6" Padding="6" Opacity="0.1">
+                            <TextBlock Text="🚀" FontSize="20"/>
+                        </Border>
+                        <TextBlock Text="Social Media Management Hub" 
+                                   Foreground="{DynamicResource SMC-Accent-Foreground}" 
+                                   FontWeight="Bold" FontSize="18"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+
+                    <!-- Action Buttons -->
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Content="📖" Classes="HeaderButton" ToolTip.Tip="Documentation"/>
+                        <Button Content="⚙️" Classes="HeaderButton" ToolTip.Tip="Settings"/>
+                        <Button Content="👤 Manage Accounts" Classes="secondary" 
+                                Command="{Binding ManageAccountsCommand}"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- Bottom Header Row - View Controls -->
+                <Grid Grid.Row="1" Margin="0,16,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- View Mode Toggle -->
+                    <Border Grid.Column="0" Background="{DynamicResource SMC-Accent-Foreground}" 
+                            CornerRadius="8" Padding="4" Opacity="0.1">
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Content="Standard View" 
+                                          Classes="ViewToggle"
+                                          IsChecked="{Binding !IsCompactViewActive}"
+                                          Command="{Binding SetStandardViewCommand}"/>
+                            <ToggleButton Content="🔬 Compact View" 
+                                          Classes="ViewToggle"
+                                          IsChecked="{Binding IsCompactViewActive}"
+                                          Command="{Binding SetCompactViewCommand}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Workspace Mode Toggle -->
+                    <Border Grid.Column="2" Background="{DynamicResource SMC-Accent-Foreground}" 
+                            CornerRadius="8" Padding="4" Opacity="0.1">
+                        <StackPanel Orientation="Horizontal">
+                            <ToggleButton Content="Single/Thread Posts" 
+                                          Classes="ViewToggle"
+                                          Command="{Binding SetSingleThreadModeCommand}"/>
+                            <ToggleButton Content="📚 Threads Only" 
+                                          Classes="ViewToggle"
+                                          Command="{Binding SetThreadsOnlyModeCommand}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" Margin="24" IsVisible="{Binding !IsAccountManagerVisible}">
+            <!-- Standard View Layout -->
+            <ScrollViewer IsVisible="{Binding !IsCompactViewActive}" Padding="0,0,12,0">
+                <StackPanel Spacing="24" MaxWidth="1200">
+                    <!-- Success Message (when visible) -->
+                    <Border Classes="SuccessMessage" IsVisible="False">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Background="{DynamicResource SMC-Success}" 
+                                    CornerRadius="20" Padding="8">
+                                <TextBlock Text="🚀" FontSize="16" 
+                                           Foreground="{DynamicResource SMC-Success-Foreground}"/>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Post published successfully!" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{DynamicResource SMC-Success-Foreground}"/>
+                                <TextBlock Text="Your content is now live on your selected platforms." 
+                                           FontSize="14" Opacity="0.8"
+                                           Foreground="{DynamicResource SMC-Success-Foreground}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Post Editor Card -->
+                    <Border Classes="Card">
+                        <views:PostEditorView DataContext="{Binding PostEditor}"/>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Compact View Layout -->
+            <Grid IsVisible="{Binding IsCompactViewActive}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="{Binding PostEditorColumnWidth}"/>
+                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="{Binding FeedColumnWidth}"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Post Editor Column -->
+                <ScrollViewer Grid.Column="0" Padding="0,0,12,0">
+                    <Border Classes="Card">
+                        <views:PostEditorView DataContext="{Binding PostEditor}"/>
+                    </Border>
+                </ScrollViewer>
+
+                <!-- Social Feed Column -->
+                <ScrollViewer Grid.Column="2" Padding="12,0,0,0" 
+                              IsVisible="{Binding !IsComposeOnlyActive}">
+                    <Border Classes="Card">
+                        <views:SocialFeedView DataContext="{Binding SocialFeed}"/>
+                    </Border>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <!-- Account Manager Overlay -->
+        <Border Grid.Row="1" Grid.RowSpan="2"
+                IsVisible="{Binding IsAccountManagerVisible}">
+            <views:AccountManagerView DataContext="{Binding AccountManager}"/>
+        </Border>
+
+        <!-- Footer -->
+        <Border Grid.Row="2" Background="{DynamicResource SMC-Muted}" 
+                BorderBrush="{DynamicResource SMC-Card-Border}" 
+                BorderThickness="0,1,0,0" Padding="24,16">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                
-                <!-- Left side - Logo and Title -->
-                <StackPanel Grid.Column="0" 
-                           Orientation="Horizontal" 
-                           VerticalAlignment="Center">
-                    <Border Background="White" 
-                            CornerRadius="6" 
-                            Padding="6" 
-                            Margin="0,0,12,0">
-                        <TextBlock Text="🚀" 
-                                  FontSize="20" 
-                                  HorizontalAlignment="Center"
-                                  VerticalAlignment="Center"/>
-                    </Border>
-                    <TextBlock Text="Social Media Management Hub" 
-                              FontSize="20" 
-                              FontWeight="Bold"
-                              Foreground="White"
-                              VerticalAlignment="Center"/>
-                </StackPanel>
-                
-                <!-- Right side - View mode and Account Management -->
-                <StackPanel Grid.Column="1" 
-                           Orientation="Horizontal" 
-                           Spacing="8"
-                           VerticalAlignment="Center">
-                    
-                    <!-- View Mode Toggle -->
-                    <StackPanel Orientation="Horizontal" Spacing="4">
-                        <Button Content="📱 Standard View" 
-                                Background="Transparent"
-                                Foreground="White"
-                                BorderBrush="White"
-                                BorderThickness="1"
-                                Padding="12,6"
-                                CornerRadius="6"/>
-                        <Button Content="🔗 Compact View" 
-                                Background="Transparent"
-                                Foreground="White"
-                                BorderBrush="White"
-                                BorderThickness="1"
-                                Padding="12,6"
-                                CornerRadius="6"/>
-                    </StackPanel>
-                    
-                    <!-- Manage Accounts Button -->
-                    <Button Content="👤 Manage Accounts" 
-                            Background="White"
-                            Foreground="#4F46E5"
-                            BorderThickness="0"
-                            Padding="16,8"
-                            CornerRadius="6"
-                            FontWeight="SemiBold"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-        
-        <!-- Mode Selector -->
-        <Border Grid.Row="1" 
-                Background="#E0E7FF" 
-                Padding="16,12">
-            <StackPanel Orientation="Horizontal" 
-                       HorizontalAlignment="Center"
-                       Spacing="8">
-                <Button Content="Single/Thread Posts" 
-                        Background="#4F46E5"
-                        Foreground="White"
-                        BorderThickness="0"
-                        Padding="16,8"
-                        CornerRadius="20"
-                        FontWeight="SemiBold"/>
-                <Button Content="🧵 Threads Only" 
-                        Background="Transparent"
-                        Foreground="#4F46E5"
-                        BorderThickness="0"
-                        Padding="16,8"
-                        CornerRadius="20"/>
-            </StackPanel>
-        </Border>
-        
-        <!-- Main Content Area -->
-        <Grid Grid.Row="2" Background="#F8FAFC" Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <!-- Workspace Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,20">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <TextBlock Grid.Column="0" 
-                          Text="Workspace" 
-                          FontSize="24" 
-                          FontWeight="Bold"
-                          VerticalAlignment="Center"/>
-                
-                <StackPanel Grid.Column="1" 
-                           Orientation="Horizontal" 
-                           Spacing="8"
-                           VerticalAlignment="Center">
-                    <Button Content="🔄 Split View" 
-                            Background="Transparent"
-                            Foreground="#6B7280"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Padding="12,6"
-                            CornerRadius="6"/>
-                    <Button Content="✏️ Compose Only" 
-                            Background="Transparent"
-                            Foreground="#6B7280"
-                            BorderBrush="#D1D5DB"
-                            BorderThickness="1"
-                            Padding="12,6"
-                            CornerRadius="6"/>
-                </StackPanel>
-            </Grid>
-            
-            <!-- Status Bar -->
-            <Border Grid.Row="1" 
-                    Background="White"
-                    BorderBrush="#E5E7EB"
-                    BorderThickness="1"
-                    CornerRadius="6"
-                    Padding="16,12"
-                    Margin="0,0,0,20">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    
-                    <!-- Status Info -->
-                    <StackPanel Grid.Column="0" 
-                               Orientation="Horizontal" 
-                               Spacing="16">
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <Border Width="8" Height="8" CornerRadius="4" Background="#10B981"/>
-                            <TextBlock Text="3 accounts connected" 
-                                      FontSize="14" 
-                                      Foreground="#374151"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="📝" FontSize="14"/>
-                            <TextBlock Text="2 drafts saved" 
-                                      FontSize="14" 
-                                      Foreground="#6B7280"/>
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal" Spacing="4">
-                            <TextBlock Text="🚀" FontSize="14"/>
-                            <TextBlock Text="15 posts published today" 
-                                      FontSize="14" 
-                                      Foreground="#6B7280"/>
-                        </StackPanel>
-                    </StackPanel>
-                    
-                    <!-- Last Updated -->
-                    <TextBlock Grid.Column="1" 
-                              Text="Last updated: 2 min ago" 
-                              FontSize="12" 
-                              Foreground="#9CA3AF"
-                              VerticalAlignment="Center"/>
-                </Grid>
-            </Border>
-            
-            <!-- Main Content Grid -->
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="20"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                
-                <!-- Left Panel - Post Editor -->
-                <views:PostEditorView Grid.Column="0" 
-                                     DataContext="{Binding PostEditor}"/>
-                
-                <!-- Right Panel - Social Feed -->
-                <views:SocialFeedView Grid.Column="2" 
-                                     DataContext="{Binding SocialFeed}"/>
-            </Grid>
-        </Grid>
-    </Grid>
 
+                <TextBlock Grid.Column="0" 
+                           Text="Social Media Management Hub — A unified platform for all your social media needs" 
+                           FontSize="14" 
+                           Foreground="{DynamicResource SMC-Muted-Foreground}"
+                           VerticalAlignment="Center"/>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                    <Button Content="❓" Classes="ghost" 
+                            Width="32" Height="32" 
+                            FontSize="16"
+                            ToolTip.Tip="Help &amp; Support"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
 </Window>

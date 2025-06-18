@@ -1,316 +1,178 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             xmlns:models="using:SocialMediaCommander.Core.Models"
+             xmlns:converters="using:SocialMediaCommander.Desktop.Converters"
              x:Class="SocialMediaCommander.Desktop.Views.MediaUploadView"
              x:DataType="vm:MediaUploadViewModel">
 
+  <Design.DataContext>
+    <vm:MediaUploadViewModel/>
+  </Design.DataContext>
+
   <Border Background="White" 
           CornerRadius="8" 
-          Padding="0"
-          BoxShadow="0 1 3 0 #19000000">
+          Padding="20"
+          BorderBrush="#E5E7EB"
+          BorderThickness="1">
     
-    <Grid RowDefinitions="Auto,*,Auto">
+    <StackPanel Spacing="16">
       
       <!-- Header -->
-      <Grid Grid.Row="0" Margin="20,20,20,16">
+      <Grid>
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*"/>
           <ColumnDefinition Width="Auto"/>
         </Grid.ColumnDefinitions>
         
-        <TextBlock Grid.Column="0" 
-                   Text="Media Library" 
-                   FontSize="20" 
-                   FontWeight="SemiBold"
-                   Foreground="#4F46E5"
-                   VerticalAlignment="Center"/>
-        
-        <StackPanel Grid.Column="1" 
-                   Orientation="Horizontal" 
-                   Spacing="8">
-          <Button Content="📁 Browse Files" 
-                 Command="{Binding BrowseFilesCommand}"
-                 Background="Transparent"
-                 Foreground="#4F46E5"
-                 BorderBrush="#4F46E5"
-                 BorderThickness="1"
-                 Padding="12,6"
-                 CornerRadius="6"/>
-          <Button Content="🗑️ Clear All" 
-                 Command="{Binding ClearAllCommand}"
-                 Background="Transparent"
-                 Foreground="#DC2626"
-                 BorderBrush="#DC2626"
-                 BorderThickness="1"
-                 Padding="12,6"
-                 CornerRadius="6"/>
+        <StackPanel Grid.Column="0">
+          <TextBlock Text="Media" 
+                    FontSize="16" 
+                    FontWeight="SemiBold"
+                    Margin="0,0,0,4"/>
+          <TextBlock Text="Add up to 4 images or videos to your post" 
+                    FontSize="12"
+                    Foreground="#6B7280"/>
         </StackPanel>
+        
+        <Button Grid.Column="1"
+               Content="📁 Upload"
+               Command="{Binding UploadCommand}"
+               Background="#4F46E5"
+               Foreground="White"
+               Padding="12,8"
+               CornerRadius="6"
+               FontWeight="Medium"/>
       </Grid>
       
-      <!-- Media Content -->
-      <ScrollViewer Grid.Row="1" 
-                   Padding="20,0,20,0"
-                   VerticalScrollBarVisibility="Auto">
-        
-        <StackPanel Spacing="16">
-          
-          <!-- Upload Zone -->
-          <Border BorderBrush="#E5E7EB"
-                 BorderThickness="2"
-                 CornerRadius="8"
-                 Padding="40"
-                 Background="#F8FAFC"
-                 MinHeight="200">
-            <StackPanel HorizontalAlignment="Center" 
-                       VerticalAlignment="Center"
-                       Spacing="16">
-              <Border Width="80" Height="80" 
-                     CornerRadius="40" 
-                     Background="#E0E7FF">
-                <TextBlock Text="📎" 
-                          FontSize="32" 
-                          HorizontalAlignment="Center"
-                          VerticalAlignment="Center"/>
-              </Border>
-              
-              <StackPanel HorizontalAlignment="Center" Spacing="8">
-                <TextBlock Text="Drag and drop files here" 
-                          FontSize="18" 
-                          FontWeight="Medium"
-                          Foreground="#374151"
-                          HorizontalAlignment="Center"/>
-                <TextBlock Text="or click to browse" 
-                          FontSize="14" 
-                          Foreground="#6B7280"
-                          HorizontalAlignment="Center"/>
-              </StackPanel>
-              
-              <StackPanel Orientation="Horizontal" 
-                         HorizontalAlignment="Center"
-                         Spacing="16">
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <TextBlock Text="📷" FontSize="16"/>
-                  <TextBlock Text="Images" FontSize="12" Foreground="#6B7280"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <TextBlock Text="🎥" FontSize="16"/>
-                  <TextBlock Text="Videos" FontSize="12" Foreground="#6B7280"/>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" Spacing="4">
-                  <TextBlock Text="🎵" FontSize="16"/>
-                  <TextBlock Text="Audio" FontSize="12" Foreground="#6B7280"/>
-                </StackPanel>
-              </StackPanel>
-              
-              <TextBlock Text="Max 4 files • 10MB per file" 
-                        FontSize="12" 
-                        Foreground="#9CA3AF"
-                        HorizontalAlignment="Center"/>
-            </StackPanel>
-          </Border>
-          
-          <!-- Upload Progress -->
-          <StackPanel IsVisible="{Binding IsUploading}" Spacing="12">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-              </Grid.ColumnDefinitions>
-              
-              <TextBlock Grid.Column="0" 
-                        Text="Uploading files..." 
-                        FontSize="14" 
-                        FontWeight="Medium"/>
-              <TextBlock Grid.Column="1" 
-                        Text="{Binding UploadProgress, StringFormat={}{0}%}" 
-                        FontSize="14" 
-                        Foreground="#4F46E5"/>
-            </Grid>
-            
-            <ProgressBar Value="{Binding UploadProgress}" 
-                        Maximum="100"
-                        Height="8"
-                        CornerRadius="4"
-                        Background="#E5E7EB"
-                        Foreground="#4F46E5"/>
-          </StackPanel>
-          
-          <!-- Media Grid -->
-          <Grid IsVisible="{Binding HasMedia}">
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"/>
-              <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            
-            <Grid Grid.Row="0" Margin="0,0,0,16">
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-              </Grid.ColumnDefinitions>
-              
-              <TextBlock Grid.Column="0" 
-                        Text="Uploaded Media" 
-                        FontSize="16" 
-                        FontWeight="SemiBold"/>
-              <TextBlock Grid.Column="1" 
-                        Text="{Binding MediaFiles.Count, StringFormat={}{0} files}" 
-                        FontSize="14" 
-                        Foreground="#6B7280"/>
-            </Grid>
-            
-            <!-- Media Items -->
-            <ItemsControl Grid.Row="1" ItemsSource="{Binding MediaFiles}">
-              <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                  <UniformGrid Columns="2" />
-                </ItemsPanelTemplate>
-              </ItemsControl.ItemsPanel>
-              
-              <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                  <Border Background="White"
-                         BorderBrush="#E5E7EB"
-                         BorderThickness="1"
-                         CornerRadius="8"
-                         Padding="16"
-                         Margin="0,0,8,8">
-                    <Grid>
-                      <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                        <RowDefinition Height="Auto"/>
-                      </Grid.RowDefinitions>
-                      
-                      <!-- Media Preview -->
-                      <Border Grid.Row="0" 
-                             Width="120" 
-                             Height="120" 
-                             CornerRadius="6"
-                             Background="#F3F4F6"
-                             HorizontalAlignment="Center"
-                             Margin="0,0,0,12">
-                        <StackPanel HorizontalAlignment="Center" 
-                                   VerticalAlignment="Center">
-                          <TextBlock Text="{Binding FileTypeIcon}" 
-                                    FontSize="32" 
-                                    HorizontalAlignment="Center"/>
-                          <TextBlock Text="{Binding FileExtension}" 
-                                    FontSize="10" 
-                                    Foreground="#6B7280"
-                                    HorizontalAlignment="Center"/>
-                        </StackPanel>
-                      </Border>
-                      
-                      <!-- Media Info -->
-                      <StackPanel Grid.Row="1" Spacing="4">
-                        <TextBlock Text="{Binding FileName}" 
-                                  FontSize="14" 
-                                  FontWeight="Medium"
-                                  TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding FileSize}" 
-                                  FontSize="12" 
-                                  Foreground="#6B7280"/>
-                        <TextBlock Text="{Binding UploadDate, StringFormat='Uploaded {0:MMM dd, yyyy}'}" 
-                                  FontSize="12" 
-                                  Foreground="#6B7280"/>
-                      </StackPanel>
-                      
-                      <!-- Actions -->
-                      <StackPanel Grid.Row="2" 
-                                 Orientation="Horizontal" 
-                                 Spacing="8"
-                                 HorizontalAlignment="Center"
-                                 Margin="0,12,0,0">
-                        <Button Content="👁️ Preview" 
-                               Background="Transparent"
-                               Foreground="#4F46E5"
-                               BorderBrush="#4F46E5"
-                               BorderThickness="1"
-                               Padding="8,4"
-                               CornerRadius="4"
-                               FontSize="12"/>
-                        <Button Content="🗑️ Remove" 
-                               Background="Transparent"
-                               Foreground="#DC2626"
-                               BorderBrush="#DC2626"
-                               BorderThickness="1"
-                               Padding="8,4"
-                               CornerRadius="4"
-                               FontSize="12"/>
-                      </StackPanel>
-                    </Grid>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
-          </Grid>
-          
-          <!-- Empty State -->
-          <Border IsVisible="{Binding !HasMedia}" 
-                 Background="#F8FAFC"
-                 BorderBrush="#E5E7EB"
-                 BorderThickness="1"
-                 CornerRadius="8"
-                 Padding="40">
-            <StackPanel HorizontalAlignment="Center" Spacing="8">
-              <TextBlock Text="📁" 
-                        FontSize="48" 
-                        HorizontalAlignment="Center"
-                        Opacity="0.5"/>
-              <TextBlock Text="No media files uploaded yet" 
-                        FontSize="16" 
-                        Foreground="#6B7280"
-                        HorizontalAlignment="Center"/>
-              <TextBlock Text="Upload some images, videos, or audio files to get started" 
-                        FontSize="14" 
-                        Foreground="#9CA3AF"
-                        HorizontalAlignment="Center"/>
-            </StackPanel>
-          </Border>
-        </StackPanel>
-      </ScrollViewer>
-      
-      <!-- Footer -->
-      <Border Grid.Row="2" 
-              Background="#F8FAFC"
+      <!-- Media Grid or Drop Area -->
+      <Border Name="DropArea"
+              Background="#F9FAFB"
               BorderBrush="#E5E7EB"
-              BorderThickness="0,1,0,0"
-              Padding="20,16"
-              CornerRadius="0,0,8,8">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          
-          <StackPanel Grid.Column="0" 
-                     Orientation="Horizontal" 
-                     Spacing="16">
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <TextBlock Text="📊" FontSize="14"/>
-              <TextBlock Text="{Binding TotalStorageUsed}" 
-                        FontSize="14" 
-                        Foreground="#6B7280"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Spacing="4">
-              <TextBlock Text="📁" FontSize="14"/>
-              <TextBlock Text="{Binding MediaFiles.Count, StringFormat='{}{0} files uploaded'}" 
-                        FontSize="14" 
-                        Foreground="#6B7280"/>
-            </StackPanel>
-          </StackPanel>
-          
-          <Button Grid.Column="1" 
-                 Content="✨ Optimize All" 
-                 Command="{Binding OptimizeAllCommand}"
-                 Background="#10B981"
+              BorderThickness="2"
+              CornerRadius="8"
+              MinHeight="200"
+              IsVisible="{Binding !HasMedia}">
+        <StackPanel HorizontalAlignment="Center" 
+                   VerticalAlignment="Center"
+                   Spacing="12">
+          <TextBlock Text="📁 📹" 
+                    FontSize="32"
+                    HorizontalAlignment="Center"/>
+          <TextBlock Text="Drag and drop media here or click to browse" 
+                    FontSize="14"
+                    Foreground="#6B7280"
+                    HorizontalAlignment="Center"/>
+          <TextBlock Text="Supports images and videos (JPG, PNG, MP4, MOV)" 
+                    FontSize="12"
+                    Foreground="#9CA3AF"
+                    HorizontalAlignment="Center"/>
+          <Button Content="📁 Choose Files"
+                 Command="{Binding UploadCommand}"
+                 Background="#4F46E5"
                  Foreground="White"
-                 BorderThickness="0"
-                 Padding="16,8"
+                 Padding="16,10"
                  CornerRadius="6"
-                 FontWeight="SemiBold"/>
-        </Grid>
+                 Margin="0,8,0,0"/>
+        </StackPanel>
       </Border>
-    </Grid>
+      
+      <!-- Media Items Grid -->
+      <Grid IsVisible="{Binding HasMedia}">
+        <ItemsControl ItemsSource="{Binding MediaItems}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <UniformGrid Columns="2" Rows="2"/>
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="models:Media">
+              <Border Background="White"
+                     BorderBrush="#E5E7EB"
+                     BorderThickness="1"
+                     CornerRadius="8"
+                     Margin="4"
+                     MinHeight="120">
+                
+                <Grid>
+                  <!-- Media Type Icon -->
+                  <Border Background="#F3F4F6"
+                         CornerRadius="8">
+                    <StackPanel HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               Spacing="8">
+                      
+                      <TextBlock Text="{Binding Type, Converter={x:Static converters:MediaTypeToIconConverter.Instance}}" 
+                                FontSize="24"
+                                HorizontalAlignment="Center"/>
+                      
+                      <TextBlock Text="{Binding FileName}" 
+                                FontSize="12"
+                                FontWeight="Medium"
+                                HorizontalAlignment="Center"
+                                MaxWidth="100"
+                                TextTrimming="CharacterEllipsis"/>
+                      
+                      <TextBlock Text="{Binding FileSizeFormatted}" 
+                                FontSize="10"
+                                Foreground="#6B7280"
+                                HorizontalAlignment="Center"/>
+                    </StackPanel>
+                  </Border>
+                  
+                  <!-- Remove Button -->
+                  <Button HorizontalAlignment="Right"
+                         VerticalAlignment="Top"
+                         Width="24" Height="24"
+                         Margin="8"
+                         Content="❌"
+                         FontSize="10"
+                         Background="#EF4444"
+                         Foreground="White"
+                         CornerRadius="12"
+                         Padding="0"
+                         Command="{Binding $parent[UserControl].((vm:MediaUploadViewModel)DataContext).RemoveMediaCommand}"
+                         CommandParameter="{Binding}"/>
+                  
+                  <!-- Media Type Badge -->
+                  <Border HorizontalAlignment="Left"
+                         VerticalAlignment="Bottom"
+                         Background="#1F2937"
+                         CornerRadius="4"
+                         Padding="6,2"
+                         Margin="8">
+                    <TextBlock Text="{Binding Type}" 
+                              FontSize="10"
+                              Foreground="White"
+                              FontWeight="Medium"/>
+                  </Border>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
+      
+      <!-- Add More Button (when has media but not full) -->
+      <Button Content="➕ Add More Media"
+             Command="{Binding UploadCommand}"
+             Background="Transparent"
+             BorderBrush="#E5E7EB"
+             BorderThickness="2"
+             Padding="12,8"
+             CornerRadius="6"
+             FontWeight="Medium"
+             IsVisible="{Binding CanAddMore}"
+             HorizontalAlignment="Center"/>
+      
+      <!-- Media Count Info -->
+      <TextBlock Text="{Binding MediaCountText}" 
+                FontSize="12"
+                Foreground="#6B7280"
+                HorizontalAlignment="Center"
+                IsVisible="{Binding HasMedia}"/>
+      
+    </StackPanel>
   </Border>
 </UserControl> 

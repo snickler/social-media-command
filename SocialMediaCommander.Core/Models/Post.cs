@@ -31,6 +31,23 @@ public class Media
     public TimeSpan? Duration { get; set; }
     
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    /// <summary>
+    /// Gets a formatted file size string
+    /// </summary>
+    public string FileSizeFormatted 
+    {
+        get
+        {
+            if (FileSize < 1024)
+                return $"{FileSize} B";
+            if (FileSize < 1024 * 1024)
+                return $"{FileSize / 1024.0:F1} KB";
+            if (FileSize < 1024 * 1024 * 1024)
+                return $"{FileSize / (1024.0 * 1024.0):F1} MB";
+            return $"{FileSize / (1024.0 * 1024.0 * 1024.0):F1} GB";
+        }
+    }
 }
 
 /// <summary>
@@ -40,6 +57,8 @@ public enum MediaType
 {
     Image,
     Video,
+    Audio,
+    Document,
     Gif
 }
 

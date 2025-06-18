@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
 using SocialMediaCommander.Services.Interfaces;
@@ -15,9 +17,27 @@ public partial class MainWindowViewModel : ViewModelBase
     
     public PostEditorViewModel PostEditor { get; }
     public SocialFeedViewModel SocialFeed { get; }
+    public AccountManagerViewModel AccountManager { get; }
+    public AnalyticsDashboardViewModel AnalyticsDashboard { get; }
+    public SettingsViewModel Settings { get; }
+    public SchedulerViewModel Scheduler { get; }
+    
+    [ObservableProperty]
+    private ViewMode currentViewMode = ViewMode.Standard;
+    
+    [ObservableProperty]
+    private WorkspaceMode currentWorkspaceMode = WorkspaceMode.SingleThread;
+    
+    [ObservableProperty]
+    private LayoutMode currentLayoutMode = LayoutMode.SplitView;
+    
+    [ObservableProperty]
+    private bool isAccountManagerVisible = false;
     
     public MainWindowViewModel()
     {
+        Console.WriteLine("MainWindowViewModel constructor called");
+        
         // Initialize with mock services for now
         var postService = new MockPostService();
         var accountService = new InMemoryAccountService();
@@ -26,14 +46,157 @@ public partial class MainWindowViewModel : ViewModelBase
         
         PostEditor = new PostEditorViewModel(postService, accountService, mediaService);
         SocialFeed = new SocialFeedViewModel(feedService, accountService);
+        AccountManager = new AccountManagerViewModel(accountService);
+        AnalyticsDashboard = new AnalyticsDashboardViewModel(postService, accountService, feedService);
+        Settings = new SettingsViewModel(accountService);
+        Scheduler = new SchedulerViewModel(postService, accountService);
         
         // Subscribe to error events for user notifications
         PostEditor.OnError += (message) => HandleError("Post Editor", message);
         PostEditor.OnPostPublished += () => HandlePostPublished();
         PostEditor.OnDraftSaved += () => HandleDraftSaved();
         
-        SocialFeed.OnError += (message) => HandleError("Social Feed", message);
+        Console.WriteLine("MainWindowViewModel initialization complete");
+        
+        // Debug: Check if commands are available
+        Console.WriteLine($"SetStandardViewCommand is null: {SetStandardViewCommand == null}");
+        Console.WriteLine($"SetCompactViewCommand is null: {SetCompactViewCommand == null}");
+        Console.WriteLine($"ManageAccountsCommand is null: {ManageAccountsCommand == null}");
+        Console.WriteLine($"SetSplitViewCommand is null: {SetSplitViewCommand == null}");
+        Console.WriteLine($"SetComposeOnlyCommand is null: {SetComposeOnlyCommand == null}");
+        Console.WriteLine($"SetSingleThreadModeCommand is null: {SetSingleThreadModeCommand == null}");
+        Console.WriteLine($"SetThreadsOnlyModeCommand is null: {SetThreadsOnlyModeCommand == null}");
     }
+    
+    #region View Mode Commands
+    
+    [RelayCommand]
+    private void SetStandardView()
+    {
+        Console.WriteLine("SetStandardView command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Standard View");
+        CurrentViewMode = ViewMode.Standard;
+        UpdateViewLayout();
+    }
+    
+    [RelayCommand]
+    private void SetCompactView()
+    {
+        Console.WriteLine("SetCompactView command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Compact View");
+        CurrentViewMode = ViewMode.Compact;
+        UpdateViewLayout();
+    }
+    
+    #endregion
+    
+    #region Account Management Commands
+    
+    [RelayCommand]
+    private void ManageAccounts()
+    {
+        Console.WriteLine("ManageAccounts command executed!");
+        System.Diagnostics.Debug.WriteLine("Opening Account Management");
+        
+        IsAccountManagerVisible = !IsAccountManagerVisible;
+        
+        if (IsAccountManagerVisible)
+        {
+            // Refresh account data when opening
+            _ = AccountManager.RefreshAccountsCommand.ExecuteAsync(null);
+        }
+    }
+    
+    [RelayCommand]
+    private void CloseAccountManager()
+    {
+        Console.WriteLine("CloseAccountManager command executed!");
+        IsAccountManagerVisible = false;
+    }
+    
+    #endregion
+    
+    #region Workspace Mode Commands
+    
+    [RelayCommand]
+    private void SetSingleThreadMode()
+    {
+        Console.WriteLine("SetSingleThreadMode command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Single/Thread Posts mode");
+        CurrentWorkspaceMode = WorkspaceMode.SingleThread;
+        PostEditor.ThreadsOnlyMode = false;
+    }
+    
+    [RelayCommand]
+    private void SetThreadsOnlyMode()
+    {
+        Console.WriteLine("SetThreadsOnlyMode command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Threads Only mode");
+        CurrentWorkspaceMode = WorkspaceMode.ThreadsOnly;
+        PostEditor.ThreadsOnlyMode = true;
+    }
+    
+    #endregion
+    
+    #region Layout Commands
+    
+    [RelayCommand]
+    private void SetSplitView()
+    {
+        Console.WriteLine("SetSplitView command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Split View layout");
+        CurrentLayoutMode = LayoutMode.SplitView;
+        UpdateViewLayout();
+    }
+    
+    [RelayCommand]
+    private void SetComposeOnly()
+    {
+        Console.WriteLine("SetComposeOnly command executed!");
+        System.Diagnostics.Debug.WriteLine("Switching to Compose Only layout");
+        CurrentLayoutMode = LayoutMode.ComposeOnly;
+        UpdateViewLayout();
+    }
+    
+    #endregion
+    
+    #region Helper Methods
+    
+    private void UpdateViewLayout()
+    {
+        // Update UI based on current view mode and layout
+        OnPropertyChanged(nameof(IsCompactViewActive));
+        OnPropertyChanged(nameof(IsSplitViewActive));
+        OnPropertyChanged(nameof(IsComposeOnlyActive));
+        OnPropertyChanged(nameof(PostEditorColumnWidth));
+        OnPropertyChanged(nameof(FeedColumnWidth));
+    }
+    
+    #endregion
+    
+    #region View State Properties
+    
+    public bool IsCompactViewActive => CurrentViewMode == ViewMode.Compact;
+    public bool IsSplitViewActive => CurrentLayoutMode == LayoutMode.SplitView;
+    public bool IsComposeOnlyActive => CurrentLayoutMode == LayoutMode.ComposeOnly;
+    
+    public string PostEditorColumnWidth => CurrentLayoutMode switch
+    {
+        LayoutMode.ComposeOnly => "*",
+        LayoutMode.SplitView when CurrentViewMode == ViewMode.Compact => "1.5*",
+        LayoutMode.SplitView => "2*",
+        _ => "*"
+    };
+    
+    public string FeedColumnWidth => CurrentLayoutMode switch
+    {
+        LayoutMode.ComposeOnly => "0",
+        LayoutMode.SplitView when CurrentViewMode == ViewMode.Compact => "*",
+        LayoutMode.SplitView => "*",
+        _ => "*"
+    };
+    
+    #endregion
     
     private void HandleError(string source, string message)
     {
@@ -53,6 +216,25 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         System.Diagnostics.Debug.WriteLine("Draft saved successfully!");
     }
+}
+
+// Enums for view modes
+public enum ViewMode
+{
+    Standard,
+    Compact
+}
+
+public enum WorkspaceMode
+{
+    SingleThread,
+    ThreadsOnly
+}
+
+public enum LayoutMode
+{
+    SplitView,
+    ComposeOnly
 }
 
 // Mock media service for now
