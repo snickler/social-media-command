@@ -188,21 +188,20 @@ public class ThreadsService : IThreadsService
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
     {
-        var config = PlatformConfigurations.GetPlatformConfig(Platform);
-        var content = post.FormatForPlatform(Platform);
+        var limits = await GetPlatformLimitsAsync();
 
         var result = new ValidationResult();
 
-        // Check character limit
-        if (config.CharacterLimit.HasValue && content.Length > config.CharacterLimit.Value)
+        // Check character limit on original content (not formatted)
+        if (post.Content.Length > limits.CharacterLimit)
         {
-            result.Errors.Add($"Content exceeds {config.CharacterLimit.Value} character limit");
+            result.Errors.Add($"Content exceeds {limits.CharacterLimit} characters");
         }
 
         // Check media count
-        if (post.Media.Count > 10)
+        if (post.Media.Count > limits.MaxMediaCount)
         {
-            result.Errors.Add("Threads supports maximum 10 media attachments");
+            result.Errors.Add($"Threads supports maximum {limits.MaxMediaCount} media attachments");
         }
 
         return result;

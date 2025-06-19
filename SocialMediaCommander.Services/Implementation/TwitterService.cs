@@ -289,21 +289,20 @@ public class TwitterService : ITwitterService
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
     {
-        var config = PlatformConfigurations.GetPlatformConfig(Platform);
-        var content = post.FormatForPlatform(Platform);
+        var limits = await GetPlatformLimitsAsync();
 
         var result = new ValidationResult();
 
-        // Check character limit
-        if (config.CharacterLimit.HasValue && content.Length > config.CharacterLimit.Value)
+        // Check character limit on original content (not formatted)
+        if (post.Content.Length > limits.CharacterLimit)
         {
-            result.Errors.Add($"Content exceeds {config.CharacterLimit.Value} character limit");
+            result.Errors.Add($"Content exceeds {limits.CharacterLimit} characters");
         }
 
         // Check media count
-        if (post.Media.Count > 4)
+        if (post.Media.Count > limits.MaxMediaCount)
         {
-            result.Errors.Add("Twitter supports maximum 4 media attachments");
+            result.Errors.Add($"Twitter supports maximum {limits.MaxMediaCount} media attachments");
         }
 
         return result;

@@ -178,21 +178,20 @@ public class LinkedInService : ILinkedInService
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
     {
-        var config = PlatformConfigurations.GetPlatformConfig(Platform);
-        var content = post.FormatForPlatform(Platform);
+        var limits = await GetPlatformLimitsAsync();
 
         var result = new ValidationResult();
 
-        // Check character limit
-        if (config.CharacterLimit.HasValue && content.Length > config.CharacterLimit.Value)
+        // Check character limit (LinkedIn uses service-defined limit of 3000) on original content
+        if (post.Content.Length > limits.CharacterLimit)
         {
-            result.Errors.Add($"Content exceeds {config.CharacterLimit.Value} character limit");
+            result.Errors.Add($"Content exceeds {limits.CharacterLimit} characters");
         }
 
         // LinkedIn supports up to 9 images or 1 video
-        if (post.Media.Count > 9)
+        if (post.Media.Count > limits.MaxMediaCount)
         {
-            result.Errors.Add("LinkedIn supports maximum 9 media attachments");
+            result.Errors.Add($"LinkedIn supports maximum {limits.MaxMediaCount} media attachments");
         }
 
         return result;

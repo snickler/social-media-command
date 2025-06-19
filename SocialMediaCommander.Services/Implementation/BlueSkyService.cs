@@ -284,21 +284,20 @@ public class BlueSkyService : IBlueSkyService
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
     {
-        var config = PlatformConfigurations.GetPlatformConfig(Platform);
-        var content = post.FormatForPlatform(Platform);
+        var limits = await GetPlatformLimitsAsync();
 
         var result = new ValidationResult();
 
-        // Check character limit
-        if (config.CharacterLimit.HasValue && content.Length > config.CharacterLimit.Value)
+        // Check character limit on original content (not formatted)
+        if (post.Content.Length > limits.CharacterLimit)
         {
-            result.Errors.Add($"Content exceeds {config.CharacterLimit.Value} character limit");
+            result.Errors.Add($"Content exceeds {limits.CharacterLimit} characters");
         }
 
         // Check media count
-        if (post.Media.Count > 4)
+        if (post.Media.Count > limits.MaxMediaCount)
         {
-            result.Errors.Add("BlueSky supports maximum 4 media attachments");
+            result.Errors.Add($"BlueSky supports maximum {limits.MaxMediaCount} media attachments");
         }
 
         return result;
@@ -331,7 +330,7 @@ public class BlueSkyService : IBlueSkyService
             MaxMediaCount = 4,
             MaxMediaSize = 1000000, // 1MB
             SupportedMediaTypes = new[] { "image/jpeg", "image/png", "image/gif", "image/webp" },
-            MaxThreadLength = 100,
+            MaxThreadLength = 25, // BlueSky supports reasonable thread lengths
             PostingInterval = TimeSpan.FromSeconds(1),
             DailyPostLimit = 300
         };

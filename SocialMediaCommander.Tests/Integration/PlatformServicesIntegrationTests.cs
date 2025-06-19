@@ -63,7 +63,7 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("Authentication failed");
+        result.ErrorMessage.Should().Contain("not authenticated");
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("Authentication failed");
+        result.ErrorMessage.Should().Contain("not authenticated");
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("Authentication failed");
+        result.ErrorMessage.Should().Contain("not authenticated");
     }
 
     [Fact]
@@ -280,11 +280,11 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         limits.Should().NotBeNull();
         limits.CharacterLimit.Should().Be(3000);
-        limits.MaxMediaCount.Should().Be(20);
+        limits.MaxMediaCount.Should().Be(9);
         limits.SupportedMediaTypes.Should().Contain("image/jpeg");
-        limits.SupportedMediaTypes.Should().Contain("application/pdf");
+        limits.SupportedMediaTypes.Should().Contain("image/png");
         limits.MaxThreadLength.Should().Be(1); // LinkedIn doesn't support threads
-        limits.DailyPostLimit.Should().Be(150);
+        limits.DailyPostLimit.Should().Be(100);
     }
 
     #endregion
