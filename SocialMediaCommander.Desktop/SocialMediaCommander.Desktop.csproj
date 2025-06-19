@@ -6,6 +6,14 @@
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Description>Enhanced Social Media Commander Desktop Application with AI, advanced auth, MCP, and Windows integration</Description>
+    <Authors>Social Media Commander Team</Authors>
+    <Company>Social Media Commander</Company>
+    <Product>Social Media Commander</Product>
+    <Copyright>Copyright © 2024 Social Media Commander</Copyright>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,10 +33,29 @@
     </PackageReference>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
     <PackageReference Include="WebViewControl-Avalonia" Version="3.120.10" />
+    
+    <!-- Enhanced Dependencies -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SocialMediaCommander.Core\SocialMediaCommander.Core.csproj" />
     <ProjectReference Include="..\SocialMediaCommander.Services\SocialMediaCommander.Services.csproj" />
   </ItemGroup>
+
+  <!-- Copy configuration files -->
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="appsettings.enhanced.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

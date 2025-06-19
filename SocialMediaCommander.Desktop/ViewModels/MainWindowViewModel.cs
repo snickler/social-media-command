@@ -21,6 +21,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public AnalyticsDashboardViewModel AnalyticsDashboard { get; }
     public SettingsViewModel Settings { get; }
     public SchedulerViewModel Scheduler { get; }
+    public AIAssistantViewModel AIAssistant { get; }
     
     [ObservableProperty]
     private ViewMode currentViewMode = ViewMode.Standard;
@@ -34,36 +35,40 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     private bool isAccountManagerVisible = false;
     
-    public MainWindowViewModel()
+    [ObservableProperty]
+    private bool isAIAssistantVisible = false;
+
+    public MainWindowViewModel(
+        PostEditorViewModel postEditor,
+        SocialFeedViewModel socialFeed,
+        AccountManagerViewModel accountManager,
+        AnalyticsDashboardViewModel analyticsDashboard,
+        SettingsViewModel settings,
+        SchedulerViewModel scheduler,
+        AIAssistantViewModel aiAssistant)
     {
-        Console.WriteLine("MainWindowViewModel constructor called");
+        Console.WriteLine("MainWindowViewModel constructor called with DI");
         
-        // Initialize with mock services for now
-        var postService = new MockPostService();
-        var accountService = new InMemoryAccountService();
-        var mediaService = new MockMediaService();
-        var feedService = new InMemoryFeedService();
-        var httpClient = new System.Net.Http.HttpClient();
-        var authenticationService = new OAuthAuthenticationService(httpClient);
-        
-        PostEditor = new PostEditorViewModel(postService, accountService, mediaService);
-        SocialFeed = new SocialFeedViewModel(feedService, accountService);
-        AccountManager = new AccountManagerViewModel(accountService, authenticationService);
-        AnalyticsDashboard = new AnalyticsDashboardViewModel(postService, accountService, feedService);
-        Settings = new SettingsViewModel(accountService);
-        Scheduler = new SchedulerViewModel(postService, accountService);
+        PostEditor = postEditor;
+        SocialFeed = socialFeed;
+        AccountManager = accountManager;
+        AnalyticsDashboard = analyticsDashboard;
+        Settings = settings;
+        Scheduler = scheduler;
+        AIAssistant = aiAssistant;
         
         // Subscribe to error events for user notifications
         PostEditor.OnError += (message) => HandleError("Post Editor", message);
         PostEditor.OnPostPublished += () => HandlePostPublished();
         PostEditor.OnDraftSaved += () => HandleDraftSaved();
         
-        Console.WriteLine("MainWindowViewModel initialization complete");
+        Console.WriteLine("MainWindowViewModel initialization complete with DI");
         
         // Debug: Check if commands are available
         Console.WriteLine($"SetStandardViewCommand is null: {SetStandardViewCommand == null}");
         Console.WriteLine($"SetCompactViewCommand is null: {SetCompactViewCommand == null}");
         Console.WriteLine($"ManageAccountsCommand is null: {ManageAccountsCommand == null}");
+        Console.WriteLine($"ToggleAIAssistantCommand is null: {ToggleAIAssistantCommand == null}");
         Console.WriteLine($"SetSplitViewCommand is null: {SetSplitViewCommand == null}");
         Console.WriteLine($"SetComposeOnlyCommand is null: {SetComposeOnlyCommand == null}");
         Console.WriteLine($"SetSingleThreadModeCommand is null: {SetSingleThreadModeCommand == null}");
@@ -114,6 +119,26 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         Console.WriteLine("CloseAccountManager command executed!");
         IsAccountManagerVisible = false;
+    }
+    
+    #endregion
+    
+    #region AI Assistant Commands
+    
+    [RelayCommand]
+    private void ToggleAIAssistant()
+    {
+        Console.WriteLine("ToggleAIAssistant command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling AI Assistant");
+        
+        IsAIAssistantVisible = !IsAIAssistantVisible;
+    }
+    
+    [RelayCommand]
+    private void CloseAIAssistant()
+    {
+        Console.WriteLine("CloseAIAssistant command executed!");
+        IsAIAssistantVisible = false;
     }
     
     #endregion
@@ -200,24 +225,29 @@ public partial class MainWindowViewModel : ViewModelBase
     
     #endregion
     
+    #region Event Handlers
+    
     private void HandleError(string source, string message)
     {
-        // In a real implementation, this would show a notification or message box
-        System.Diagnostics.Debug.WriteLine($"{source} Error: {message}");
+        Console.WriteLine($"Error from {source}: {message}");
+        // TODO: Show error notification to user
     }
     
     private void HandlePostPublished()
     {
-        // Refresh the social feed when a post is published
+        Console.WriteLine("Post published successfully!");
+        // TODO: Show success notification to user
+        // Refresh feed data
         _ = SocialFeed.RefreshFeedCommand.ExecuteAsync(null);
-        
-        System.Diagnostics.Debug.WriteLine("Post published successfully!");
     }
     
     private void HandleDraftSaved()
     {
-        System.Diagnostics.Debug.WriteLine("Draft saved successfully!");
+        Console.WriteLine("Draft saved successfully!");
+        // TODO: Show draft saved notification to user
     }
+    
+    #endregion
 }
 
 // Enums for view modes
