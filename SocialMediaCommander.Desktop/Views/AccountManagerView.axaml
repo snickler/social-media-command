@@ -221,7 +221,7 @@
                     </Border>
                     
                     <!-- Account Groups -->
-                    <ItemsControl ItemsSource="{Binding Accounts}"
+                    <ItemsControl ItemsSource="{Binding AccountViewModels}"
                                  IsVisible="{Binding HasAccounts}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
@@ -257,7 +257,7 @@
                                                 <Border Background="{DynamicResource SMC-Success}"
                                                         CornerRadius="12"
                                                         Padding="8,4"
-                                                        IsVisible="{Binding IsAuthenticated}">
+                                                        IsVisible="{Binding IsConnected}">
                                                     <TextBlock Text="Connected" 
                                                                FontSize="10"
                                                                Foreground="White"
@@ -283,13 +283,17 @@
                                             
                                             <!-- Edit Button -->
                                             <Button Classes="AccountAction"
-                                                   BorderBrush="{DynamicResource SMC-Card-Border}">
+                                                   BorderBrush="{DynamicResource SMC-Card-Border}"
+                                                   Command="{Binding EditCommand}"
+                                                   ToolTip.Tip="Edit Account">
                                                 <TextBlock Text="✏️" FontSize="14"/>
                                             </Button>
                                             
                                             <!-- Delete Button -->
                                             <Button Classes="AccountAction"
-                                                   BorderBrush="{DynamicResource SMC-Warning-Border}">
+                                                   BorderBrush="{DynamicResource SMC-Warning-Border}"
+                                                   Command="{Binding DeleteCommand}"
+                                                   ToolTip.Tip="Delete Account">
                                                 <TextBlock Text="🗑️" FontSize="14"/>
                                             </Button>
                                         </StackPanel>

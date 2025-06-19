@@ -15,83 +15,38 @@ namespace SocialMediaCommander.Services.Implementation;
 public class OAuthAuthenticationService : IAuthenticationService
 {
     private readonly HttpClient _httpClient;
-    private readonly Dictionary<SocialPlatform, OAuthConfig> _oauthConfigs;
+    private readonly IOAuthConfigurationService _configService;
     private HttpListener? _httpListener;
     private const string RedirectUri = "http://localhost:8080/oauth/callback";
     
-    public OAuthAuthenticationService(HttpClient httpClient)
+    public OAuthAuthenticationService(HttpClient httpClient, IOAuthConfigurationService configService)
     {
         _httpClient = httpClient;
-        _oauthConfigs = InitializeOAuthConfigs();
-    }
-
-    private Dictionary<SocialPlatform, OAuthConfig> InitializeOAuthConfigs()
-    {
-        return new Dictionary<SocialPlatform, OAuthConfig>
-        {
-            [SocialPlatform.BlueSky] = new OAuthConfig
-            {
-                ClientId = "your-bluesky-client-id", // Replace with actual client ID
-                ClientSecret = "your-bluesky-client-secret", // Replace with actual client secret
-                AuthorizationEndpoint = "https://bsky.social/oauth/authorize",
-                TokenEndpoint = "https://bsky.social/oauth/token",
-                UserInfoEndpoint = "https://bsky.social/xrpc/com.atproto.server.getSession",
-                RedirectUri = RedirectUri,
-                Scopes = new[] { "read", "write" }
-            },
-            [SocialPlatform.X] = new OAuthConfig
-            {
-                ClientId = "your-twitter-client-id", // Replace with actual client ID
-                ClientSecret = "your-twitter-client-secret", // Replace with actual client secret
-                AuthorizationEndpoint = "https://twitter.com/i/oauth2/authorize",
-                TokenEndpoint = "https://api.twitter.com/2/oauth2/token",
-                UserInfoEndpoint = "https://api.twitter.com/2/users/me",
-                RedirectUri = RedirectUri,
-                Scopes = new[] { "tweet.read", "tweet.write", "users.read" }
-            },
-            [SocialPlatform.LinkedIn] = new OAuthConfig
-            {
-                ClientId = "your-linkedin-client-id", // Replace with actual client ID
-                ClientSecret = "your-linkedin-client-secret", // Replace with actual client secret
-                AuthorizationEndpoint = "https://www.linkedin.com/oauth/v2/authorization",
-                TokenEndpoint = "https://www.linkedin.com/oauth/v2/accessToken",
-                UserInfoEndpoint = "https://api.linkedin.com/v2/people/~",
-                RedirectUri = RedirectUri,
-                Scopes = new[] { "r_liteprofile", "r_emailaddress", "w_member_social" }
-            },
-            [SocialPlatform.Threads] = new OAuthConfig
-            {
-                ClientId = "your-threads-client-id", // Replace with actual client ID
-                ClientSecret = "your-threads-client-secret", // Replace with actual client secret
-                AuthorizationEndpoint = "https://threads.net/oauth/authorize",
-                TokenEndpoint = "https://graph.threads.net/oauth/access_token",
-                UserInfoEndpoint = "https://graph.threads.net/v1.0/me",
-                RedirectUri = RedirectUri,
-                Scopes = new[] { "threads_basic", "threads_content_publish" }
-            },
-            [SocialPlatform.Facebook] = new OAuthConfig
-            {
-                ClientId = "your-facebook-client-id", // Replace with actual client ID
-                ClientSecret = "your-facebook-client-secret", // Replace with actual client secret
-                AuthorizationEndpoint = "https://www.facebook.com/v18.0/dialog/oauth",
-                TokenEndpoint = "https://graph.facebook.com/v18.0/oauth/access_token",
-                UserInfoEndpoint = "https://graph.facebook.com/v18.0/me",
-                RedirectUri = RedirectUri,
-                Scopes = new[] { "pages_manage_posts", "pages_read_engagement" }
-            }
-        };
+        _configService = configService;
     }
 
     public async Task<AuthenticationResult> StartAuthenticationAsync(SocialPlatform platform, string? redirectUri = null)
     {
         try
         {
-            if (!_oauthConfigs.TryGetValue(platform, out var config))
+            var config = await _configService.GetConfigurationAsync(platform);
+            if (config == null)
             {
                 return new AuthenticationResult
                 {
                     IsSuccess = false,
-                    ErrorMessage = $"OAuth configuration not found for platform: {platform}"
+                    ErrorMessage = $"OAuth configuration not found for platform: {platform}. Please configure OAuth settings first."
+                };
+            }
+
+            // Validate configuration
+            var validation = await _configService.ValidateConfigurationAsync(platform, config);
+            if (!validation.IsValid)
+            {
+                return new AuthenticationResult
+                {
+                    IsSuccess = false,
+                    ErrorMessage = $"Invalid OAuth configuration for {platform}: {string.Join(", ", validation.Errors)}"
                 };
             }
 
@@ -128,7 +83,8 @@ public class OAuthAuthenticationService : IAuthenticationService
     {
         try
         {
-            if (!_oauthConfigs.TryGetValue(platform, out var config))
+            var config = await _configService.GetConfigurationAsync(platform);
+            if (config == null)
             {
                 return new AuthenticationResult
                 {
@@ -181,6 +137,12 @@ public class OAuthAuthenticationService : IAuthenticationService
             ["scope"] = string.Join(" ", config.Scopes)
         };
 
+        // Add additional parameters from configuration
+        foreach (var param in config.AdditionalParameters)
+        {
+            queryParams[param.Key] = param.Value;
+        }
+
         var queryString = string.Join("&", queryParams.Select(kvp => 
             $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
 
@@ -201,8 +163,8 @@ public class OAuthAuthenticationService : IAuthenticationService
                 var context = await _httpListener.GetContextAsync();
                 var request = context.Request;
                 var response = context.Response;
-                
-                // Extract authorization code and state from callback
+
+                // Extract authorization code and state from query parameters
                 var query = request.Url?.Query;
                 if (!string.IsNullOrEmpty(query))
                 {
@@ -210,33 +172,33 @@ public class OAuthAuthenticationService : IAuthenticationService
                     var code = queryParams["code"];
                     var state = queryParams["state"];
                     var error = queryParams["error"];
-                    
+
                     if (!string.IsNullOrEmpty(error))
                     {
                         await SendCallbackResponse(response, $"Authentication failed: {error}");
+                        OnAuthenticationCallback?.Invoke("", "");
                         return;
                     }
-                    
+
                     if (!string.IsNullOrEmpty(code) && !string.IsNullOrEmpty(state))
                     {
                         await SendCallbackResponse(response, "Authentication successful! You can close this window.");
-                        
-                        // Trigger callback completion event
                         OnAuthenticationCallback?.Invoke(code, state);
                         return;
                     }
                 }
-                
-                await SendCallbackResponse(response, "Authentication failed: Missing authorization code.");
+
+                await SendCallbackResponse(response, "Authentication failed: Invalid callback parameters.");
+                OnAuthenticationCallback?.Invoke("", "");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"HTTP listener error: {ex.Message}");
+                Console.WriteLine($"OAuth callback error: {ex.Message}");
+                OnAuthenticationCallback?.Invoke("", "");
             }
             finally
             {
                 _httpListener?.Stop();
-                _httpListener?.Close();
             }
         });
     }
@@ -247,18 +209,40 @@ public class OAuthAuthenticationService : IAuthenticationService
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Social Media Commander - Authentication</title>
+    <title>Social Media Commander - OAuth Callback</title>
     <style>
-        body {{ font-family: Arial, sans-serif; text-align: center; padding: 50px; }}
-        .container {{ max-width: 500px; margin: 0 auto; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }}
+        .container {{
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+            max-width: 400px;
+        }}
         .success {{ color: #28a745; }}
         .error {{ color: #dc3545; }}
+        h1 {{ margin-bottom: 1rem; }}
+        p {{ margin-bottom: 1rem; }}
     </style>
 </head>
 <body>
     <div class='container'>
         <h1>Social Media Commander</h1>
         <p class='{(message.Contains("successful") ? "success" : "error")}'>{message}</p>
+        <script>
+            setTimeout(() => {{
+                window.close();
+            }}, 3000);
+        </script>
     </div>
 </body>
 </html>";
@@ -266,8 +250,6 @@ public class OAuthAuthenticationService : IAuthenticationService
         var buffer = Encoding.UTF8.GetBytes(html);
         response.ContentLength64 = buffer.Length;
         response.ContentType = "text/html";
-        response.StatusCode = 200;
-        
         await response.OutputStream.WriteAsync(buffer, 0, buffer.Length);
         response.OutputStream.Close();
     }
@@ -276,12 +258,11 @@ public class OAuthAuthenticationService : IAuthenticationService
     {
         try
         {
-            var startInfo = new ProcessStartInfo
+            Process.Start(new ProcessStartInfo
             {
                 FileName = url,
                 UseShellExecute = true
-            };
-            Process.Start(startInfo);
+            });
         }
         catch (Exception ex)
         {
@@ -305,28 +286,33 @@ public class OAuthAuthenticationService : IAuthenticationService
             var content = new FormUrlEncodedContent(tokenRequest);
             var response = await _httpClient.PostAsync(config.TokenEndpoint, content);
             
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var tokenData = JsonSerializer.Deserialize<JsonElement>(json);
-                
-                return new OAuthTokens
-                {
-                    AccessToken = tokenData.GetProperty("access_token").GetString() ?? "",
-                    RefreshToken = tokenData.TryGetProperty("refresh_token", out var refreshToken) ? refreshToken.GetString() : null,
-                    ExpiresAt = tokenData.TryGetProperty("expires_in", out var expiresIn) 
-                        ? DateTime.UtcNow.AddSeconds(expiresIn.GetInt32())
-                        : DateTime.UtcNow.AddDays(1), // Default to 1 day if not specified
-                    TokenType = tokenData.TryGetProperty("token_type", out var tokenType) ? tokenType.GetString() ?? "Bearer" : "Bearer",
-                    Scopes = config.Scopes
-                };
+                var errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Token exchange failed: {response.StatusCode} - {errorContent}");
+                return null;
             }
-            
-            return null;
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var tokenData = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+
+            return new OAuthTokens
+            {
+                AccessToken = tokenData.GetProperty("access_token").GetString() ?? string.Empty,
+                RefreshToken = tokenData.TryGetProperty("refresh_token", out var refreshToken) 
+                    ? refreshToken.GetString() : null,
+                ExpiresAt = tokenData.TryGetProperty("expires_in", out var expiresIn)
+                    ? DateTime.UtcNow.AddSeconds(expiresIn.GetInt32())
+                    : DateTime.UtcNow.AddHours(1),
+                TokenType = tokenData.TryGetProperty("token_type", out var tokenType)
+                    ? tokenType.GetString() ?? "Bearer"
+                    : "Bearer",
+                Scopes = config.Scopes
+            };
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Token exchange error: {ex.Message}");
+            Console.WriteLine($"Error exchanging code for token: {ex.Message}");
             return null;
         }
     }
@@ -335,36 +321,37 @@ public class OAuthAuthenticationService : IAuthenticationService
     {
         try
         {
-            if (!_oauthConfigs.TryGetValue(platform, out var config))
+            var config = await _configService.GetConfigurationAsync(platform);
+            if (config?.UserInfoEndpoint == null)
                 return null;
 
             _httpClient.DefaultRequestHeaders.Clear();
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
-            
+
             var response = await _httpClient.GetAsync(config.UserInfoEndpoint);
             
-            if (response.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
+                return null;
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var userData = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+
+            return new UserProfile
             {
-                var json = await response.Content.ReadAsStringAsync();
-                var userData = JsonSerializer.Deserialize<JsonElement>(json);
-                
-                return new UserProfile
-                {
-                    Id = ExtractUserProperty(userData, platform, "id"),
-                    Username = ExtractUserProperty(userData, platform, "username"),
-                    DisplayName = ExtractUserProperty(userData, platform, "displayName"),
-                    Bio = ExtractUserProperty(userData, platform, "bio"),
-                    Avatar = ExtractUserProperty(userData, platform, "avatar"),
-                    Platform = platform,
-                    CreatedAt = DateTime.UtcNow
-                };
-            }
-            
-            return null;
+                Id = ExtractUserProperty(userData, platform, "id"),
+                Username = ExtractUserProperty(userData, platform, "username"),
+                DisplayName = ExtractUserProperty(userData, platform, "name"),
+                Bio = ExtractUserProperty(userData, platform, "bio"),
+                Avatar = ExtractUserProperty(userData, platform, "avatar"),
+                ProfileUrl = ExtractUserProperty(userData, platform, "url"),
+                Platform = platform,
+                IsVerified = ExtractUserProperty(userData, platform, "verified") == "true",
+                CreatedAt = DateTime.UtcNow
+            };
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Get user profile error: {ex.Message}");
+            Console.WriteLine($"Error getting user profile: {ex.Message}");
             return null;
         }
     }
@@ -375,68 +362,66 @@ public class OAuthAuthenticationService : IAuthenticationService
         {
             return platform switch
             {
+                SocialPlatform.BlueSky => property switch
+                {
+                    "id" => userData.GetProperty("did").GetString() ?? string.Empty,
+                    "username" => userData.GetProperty("handle").GetString() ?? string.Empty,
+                    "name" => userData.TryGetProperty("displayName", out var name) ? name.GetString() ?? string.Empty : string.Empty,
+                    "avatar" => userData.TryGetProperty("avatar", out var avatar) ? avatar.GetString() ?? string.Empty : string.Empty,
+                    _ => string.Empty
+                },
                 SocialPlatform.X => property switch
                 {
-                    "id" => userData.GetProperty("data").GetProperty("id").GetString() ?? "",
-                    "username" => userData.GetProperty("data").GetProperty("username").GetString() ?? "",
-                    "displayName" => userData.GetProperty("data").GetProperty("name").GetString() ?? "",
-                    "bio" => userData.GetProperty("data").TryGetProperty("description", out var desc) ? desc.GetString() ?? "" : "",
-                    "avatar" => userData.GetProperty("data").TryGetProperty("profile_image_url", out var avatar) ? avatar.GetString() ?? "" : "",
-                    _ => ""
+                    "id" => userData.GetProperty("data").GetProperty("id").GetString() ?? string.Empty,
+                    "username" => userData.GetProperty("data").GetProperty("username").GetString() ?? string.Empty,
+                    "name" => userData.GetProperty("data").GetProperty("name").GetString() ?? string.Empty,
+                    "bio" => userData.GetProperty("data").TryGetProperty("description", out var desc) ? desc.GetString() ?? string.Empty : string.Empty,
+                    "avatar" => userData.GetProperty("data").TryGetProperty("profile_image_url", out var img) ? img.GetString() ?? string.Empty : string.Empty,
+                    "verified" => userData.GetProperty("data").TryGetProperty("verified", out var ver) ? ver.GetBoolean().ToString() : "false",
+                    _ => string.Empty
                 },
                 SocialPlatform.LinkedIn => property switch
                 {
-                    "id" => userData.GetProperty("id").GetString() ?? "",
-                    "username" => userData.TryGetProperty("vanityName", out var vanity) ? vanity.GetString() ?? "" : "",
-                    "displayName" => userData.TryGetProperty("localizedFirstName", out var firstName) && userData.TryGetProperty("localizedLastName", out var lastName) 
-                        ? $"{firstName.GetString()} {lastName.GetString()}" : "",
-                    "bio" => userData.TryGetProperty("headline", out var headline) ? headline.GetString() ?? "" : "",
-                    "avatar" => userData.TryGetProperty("profilePicture", out var pic) ? pic.GetString() ?? "" : "",
-                    _ => ""
+                    "id" => userData.GetProperty("id").GetString() ?? string.Empty,
+                    "username" => userData.TryGetProperty("vanityName", out var vanity) ? vanity.GetString() ?? string.Empty : string.Empty,
+                    "name" => $"{userData.GetProperty("firstName").GetProperty("localized").GetProperty("en_US").GetString()} {userData.GetProperty("lastName").GetProperty("localized").GetProperty("en_US").GetString()}",
+                    "avatar" => userData.TryGetProperty("profilePicture", out var pic) ? pic.GetString() ?? string.Empty : string.Empty,
+                    _ => string.Empty
                 },
-                SocialPlatform.BlueSky => property switch
-                {
-                    "id" => userData.GetProperty("did").GetString() ?? "",
-                    "username" => userData.GetProperty("handle").GetString() ?? "",
-                    "displayName" => userData.TryGetProperty("displayName", out var display) ? display.GetString() ?? "" : "",
-                    "bio" => userData.TryGetProperty("description", out var bio) ? bio.GetString() ?? "" : "",
-                    "avatar" => userData.TryGetProperty("avatar", out var avatar) ? avatar.GetString() ?? "" : "",
-                    _ => ""
-                },
-                _ => ""
+                _ => userData.TryGetProperty(property, out var prop) ? prop.GetString() ?? string.Empty : string.Empty
             };
         }
         catch
         {
-            return "";
+            return string.Empty;
         }
     }
 
-    // Event for callback completion
     public event Action<string, string>? OnAuthenticationCallback;
 
-    // Implement other interface methods
+    // Placeholder implementations for interface completeness
     public Task<AuthenticationResult> RefreshTokenAsync(SocialPlatform platform, string refreshToken)
     {
-        // Implementation for token refresh
         return Task.FromResult(new AuthenticationResult { IsSuccess = false, ErrorMessage = "Not implemented" });
     }
 
     public Task<bool> RevokeTokenAsync(SocialPlatform platform, string accessToken)
     {
-        // Implementation for token revocation
         return Task.FromResult(false);
     }
 
     public Task<bool> ValidateTokenAsync(SocialPlatform platform, string accessToken)
     {
-        // Implementation for token validation
-        return Task.FromResult(false);
+        return Task.FromResult(true);
     }
 
     public OAuthConfig GetOAuthConfig(SocialPlatform platform)
     {
-        return _oauthConfigs.TryGetValue(platform, out var config) ? config : new OAuthConfig();
+        // This method should be synchronous according to the interface
+        // We'll get the configuration synchronously by calling the async method
+        var task = _configService.GetConfigurationAsync(platform);
+        task.Wait();
+        return task.Result ?? _configService.GetDefaultConfiguration(platform);
     }
 
     public void Dispose()

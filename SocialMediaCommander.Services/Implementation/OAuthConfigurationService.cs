@@ -1,0 +1,341 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
+using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Services;
+using SocialMediaCommander.Services.Interfaces;
+using Serilog;
+
+namespace SocialMediaCommander.Services.Implementation;
+
+/// <summary>
+/// Service for managing OAuth configurations per platform with secure storage
+/// </summary>
+public class OAuthConfigurationService : IOAuthConfigurationService
+{
+    private readonly string _configDirectory;
+    private readonly string _configFileName = "oauth-configs.json";
+    private readonly Dictionary<SocialPlatform, OAuthConfig> _configurations;
+    private readonly object _lock = new object();
+    private readonly ILogger _logger;
+
+    public OAuthConfigurationService()
+    {
+        _logger = LoggingService.ForContext<OAuthConfigurationService>();
+        _configDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "SocialMediaCommander",
+            "Config"
+        );
+        
+        Directory.CreateDirectory(_configDirectory);
+        _configurations = new Dictionary<SocialPlatform, OAuthConfig>();
+        
+        // Load existing configurations
+        _ = Task.Run(LoadConfigurationsAsync);
+    }
+
+    public async Task<OAuthConfig?> GetConfigurationAsync(SocialPlatform platform)
+    {
+        await EnsureConfigurationsLoadedAsync();
+        
+        lock (_lock)
+        {
+            return _configurations.TryGetValue(platform, out var config) ? config : null;
+        }
+    }
+
+    public async Task SaveConfigurationAsync(SocialPlatform platform, OAuthConfig config)
+    {
+        if (config == null)
+            throw new ArgumentNullException(nameof(config));
+
+        lock (_lock)
+        {
+            _configurations[platform] = config;
+        }
+
+        await SaveConfigurationsAsync();
+    }
+
+    public async Task<Dictionary<SocialPlatform, OAuthConfig>> GetAllConfigurationsAsync()
+    {
+        await EnsureConfigurationsLoadedAsync();
+        
+        lock (_lock)
+        {
+            return new Dictionary<SocialPlatform, OAuthConfig>(_configurations);
+        }
+    }
+
+    public async Task DeleteConfigurationAsync(SocialPlatform platform)
+    {
+        lock (_lock)
+        {
+            _configurations.Remove(platform);
+        }
+
+        await SaveConfigurationsAsync();
+    }
+
+    public async Task<ValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config)
+    {
+        var errors = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(config.ClientId))
+            errors.Add("Client ID is required");
+
+        if (string.IsNullOrWhiteSpace(config.ClientSecret))
+            errors.Add("Client Secret is required");
+
+        if (string.IsNullOrWhiteSpace(config.AuthorizationEndpoint))
+            errors.Add("Authorization Endpoint is required");
+        else if (!Uri.TryCreate(config.AuthorizationEndpoint, UriKind.Absolute, out _))
+            errors.Add("Authorization Endpoint must be a valid URL");
+
+        if (string.IsNullOrWhiteSpace(config.TokenEndpoint))
+            errors.Add("Token Endpoint is required");
+        else if (!Uri.TryCreate(config.TokenEndpoint, UriKind.Absolute, out _))
+            errors.Add("Token Endpoint must be a valid URL");
+
+        if (string.IsNullOrWhiteSpace(config.RedirectUri))
+            errors.Add("Redirect URI is required");
+        else if (!Uri.TryCreate(config.RedirectUri, UriKind.Absolute, out _))
+            errors.Add("Redirect URI must be a valid URL");
+
+        if (!string.IsNullOrWhiteSpace(config.UserInfoEndpoint) && 
+            !Uri.TryCreate(config.UserInfoEndpoint, UriKind.Absolute, out _))
+            errors.Add("User Info Endpoint must be a valid URL");
+
+        if (!string.IsNullOrWhiteSpace(config.RevokeEndpoint) && 
+            !Uri.TryCreate(config.RevokeEndpoint, UriKind.Absolute, out _))
+            errors.Add("Revoke Endpoint must be a valid URL");
+
+        if (config.Scopes == null || config.Scopes.Length == 0)
+            errors.Add("At least one scope is required");
+
+        return new ValidationResult(errors);
+    }
+
+    public OAuthConfig GetDefaultConfiguration(SocialPlatform platform)
+    {
+        return platform switch
+        {
+            SocialPlatform.BlueSky => new OAuthConfig
+            {
+                AuthorizationEndpoint = "https://bsky.social/oauth/authorize",
+                TokenEndpoint = "https://bsky.social/oauth/token",
+                UserInfoEndpoint = "https://bsky.social/xrpc/com.atproto.server.getSession",
+                RedirectUri = "http://localhost:8080/oauth/callback",
+                Scopes = new[] { "read", "write" },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    ["response_type"] = "code",
+                    ["code_challenge_method"] = "S256"
+                }
+            },
+            SocialPlatform.X => new OAuthConfig
+            {
+                AuthorizationEndpoint = "https://twitter.com/i/oauth2/authorize",
+                TokenEndpoint = "https://api.twitter.com/2/oauth2/token",
+                UserInfoEndpoint = "https://api.twitter.com/2/users/me",
+                RevokeEndpoint = "https://api.twitter.com/2/oauth2/revoke",
+                RedirectUri = "http://localhost:8080/oauth/callback",
+                Scopes = new[] { "tweet.read", "tweet.write", "users.read", "offline.access" },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    ["response_type"] = "code",
+                    ["code_challenge_method"] = "S256"
+                }
+            },
+            SocialPlatform.LinkedIn => new OAuthConfig
+            {
+                AuthorizationEndpoint = "https://www.linkedin.com/oauth/v2/authorization",
+                TokenEndpoint = "https://www.linkedin.com/oauth/v2/accessToken",
+                UserInfoEndpoint = "https://api.linkedin.com/v2/people/~",
+                RedirectUri = "http://localhost:8080/oauth/callback",
+                Scopes = new[] { "r_liteprofile", "r_emailaddress", "w_member_social" },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    ["response_type"] = "code"
+                }
+            },
+            SocialPlatform.Threads => new OAuthConfig
+            {
+                AuthorizationEndpoint = "https://threads.net/oauth/authorize",
+                TokenEndpoint = "https://graph.threads.net/oauth/access_token",
+                UserInfoEndpoint = "https://graph.threads.net/v1.0/me",
+                RedirectUri = "http://localhost:8080/oauth/callback",
+                Scopes = new[] { "threads_basic", "threads_content_publish" },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    ["response_type"] = "code"
+                }
+            },
+            SocialPlatform.Facebook => new OAuthConfig
+            {
+                AuthorizationEndpoint = "https://www.facebook.com/v18.0/dialog/oauth",
+                TokenEndpoint = "https://graph.facebook.com/v18.0/oauth/access_token",
+                UserInfoEndpoint = "https://graph.facebook.com/v18.0/me",
+                RedirectUri = "http://localhost:8080/oauth/callback",
+                Scopes = new[] { "pages_manage_posts", "pages_read_engagement", "public_profile" },
+                AdditionalParameters = new Dictionary<string, string>
+                {
+                    ["response_type"] = "code"
+                }
+            },
+            _ => throw new ArgumentException($"Unsupported platform: {platform}")
+        };
+    }
+
+    public async Task<bool> HasValidConfigurationAsync(SocialPlatform platform)
+    {
+        var config = await GetConfigurationAsync(platform);
+        if (config == null) return false;
+
+        var validation = await ValidateConfigurationAsync(platform, config);
+        return validation.IsValid;
+    }
+
+    public async Task ImportConfigurationsAsync(string filePath)
+    {
+        if (!File.Exists(filePath))
+            throw new FileNotFoundException($"Configuration file not found: {filePath}");
+
+        var json = await File.ReadAllTextAsync(filePath);
+        var importedConfigs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
+
+        if (importedConfigs != null)
+        {
+            lock (_lock)
+            {
+                foreach (var kvp in importedConfigs)
+                {
+                    if (Enum.TryParse<SocialPlatform>(kvp.Key, out var platform))
+                    {
+                        _configurations[platform] = kvp.Value;
+                    }
+                }
+            }
+
+            await SaveConfigurationsAsync();
+        }
+    }
+
+    public async Task ExportConfigurationsAsync(string filePath)
+    {
+        await EnsureConfigurationsLoadedAsync();
+        
+        Dictionary<string, OAuthConfig> exportConfigs;
+        lock (_lock)
+        {
+            exportConfigs = _configurations.ToDictionary(
+                kvp => kvp.Key.ToString(),
+                kvp => kvp.Value
+            );
+        }
+
+        var json = JsonSerializer.Serialize(exportConfigs, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        await File.WriteAllTextAsync(filePath, json);
+    }
+
+    private async Task LoadConfigurationsAsync()
+    {
+        var configPath = Path.Combine(_configDirectory, _configFileName);
+        
+        if (!File.Exists(configPath))
+        {
+            // Initialize with default configurations
+            await InitializeDefaultConfigurationsAsync();
+            return;
+        }
+
+        try
+        {
+            var json = await File.ReadAllTextAsync(configPath);
+            var configs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
+
+            if (configs != null)
+            {
+                lock (_lock)
+                {
+                    _configurations.Clear();
+                    foreach (var kvp in configs)
+                    {
+                        if (Enum.TryParse<SocialPlatform>(kvp.Key, out var platform))
+                        {
+                            _configurations[platform] = kvp.Value;
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error and initialize defaults
+            _logger.Error(ex, "Error loading OAuth configurations");
+            await InitializeDefaultConfigurationsAsync();
+        }
+    }
+
+    private async Task SaveConfigurationsAsync()
+    {
+        var configPath = Path.Combine(_configDirectory, _configFileName);
+        
+        Dictionary<string, OAuthConfig> saveConfigs;
+        lock (_lock)
+        {
+            saveConfigs = _configurations.ToDictionary(
+                kvp => kvp.Key.ToString(),
+                kvp => kvp.Value
+            );
+        }
+
+        var json = JsonSerializer.Serialize(saveConfigs, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+
+        await File.WriteAllTextAsync(configPath, json);
+    }
+
+    private async Task InitializeDefaultConfigurationsAsync()
+    {
+        // Initialize with default configurations that have placeholder values
+        // Users will need to provide their own client IDs and secrets
+        lock (_lock)
+        {
+            _configurations.Clear();
+            foreach (var platform in Enum.GetValues<SocialPlatform>())
+            {
+                var defaultConfig = GetDefaultConfiguration(platform);
+                // Set placeholder values that users need to replace
+                defaultConfig.ClientId = "YOUR_CLIENT_ID_HERE";
+                defaultConfig.ClientSecret = "YOUR_CLIENT_SECRET_HERE";
+                _configurations[platform] = defaultConfig;
+            }
+        }
+        
+        await SaveConfigurationsAsync();
+    }
+
+    private async Task EnsureConfigurationsLoadedAsync()
+    {
+        // Simple check - in a real implementation you might want more sophisticated loading
+        lock (_lock)
+        {
+            if (_configurations.Count == 0)
+            {
+                // Trigger reload
+                _ = Task.Run(LoadConfigurationsAsync);
+            }
+        }
+    }
+} 

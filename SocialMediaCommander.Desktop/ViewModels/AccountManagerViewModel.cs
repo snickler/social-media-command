@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Reflection;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Services;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Services.Implementation;
+using Serilog;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
 
@@ -18,6 +21,8 @@ public partial class AccountManagerViewModel : ObservableObject
 {
     private readonly IAccountService _accountService;
     private readonly IAuthenticationService _authenticationService;
+    private readonly IOAuthConfigurationService _oauthConfigService;
+    private readonly ILogger _logger;
     
     [ObservableProperty]
     private bool _isAddingAccount = false;
@@ -46,10 +51,12 @@ public partial class AccountManagerViewModel : ObservableObject
     [ObservableProperty]
     private string _authenticationStatus = string.Empty;
 
-    public AccountManagerViewModel(IAccountService accountService, IAuthenticationService authenticationService)
+    public AccountManagerViewModel(IAccountService accountService, IAuthenticationService authenticationService, IOAuthConfigurationService oauthConfigService)
     {
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+        _oauthConfigService = oauthConfigService ?? throw new ArgumentNullException(nameof(oauthConfigService));
+        _logger = LoggingService.ForContext<AccountManagerViewModel>();
         
         // Initialize collections
         Accounts = new ObservableCollection<Account>();
@@ -87,11 +94,15 @@ public partial class AccountManagerViewModel : ObservableObject
     
     // Computed properties
     public IEnumerable<Account> AccountsForSelectedPlatform => 
-        Accounts.Where(a => a.PlatformId == SelectedPlatform);
+        Accounts.Where(a => a != null && a.PlatformId == SelectedPlatform);
     
     public bool HasAccountsForPlatform => AccountsForSelectedPlatform.Any();
     
-    public bool HasAccounts => Accounts.Any();
+    public bool HasAccounts => Accounts.Any(a => a != null);
+    
+    // UI-friendly account view models
+    public IEnumerable<AccountItemViewModel> AccountViewModels => 
+        Accounts.Where(a => a != null).Select(a => new AccountItemViewModel(a, EditAccountCommand, RemoveAccountCommand));
     
     public string SelectedPlatformName => 
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name;
@@ -102,17 +113,17 @@ public partial class AccountManagerViewModel : ObservableObject
     // Platform Groups for UI
     public IEnumerable<PlatformGroupViewModel> PlatformGroups => 
         Enum.GetValues<SocialPlatform>()
-            .Where(platform => Accounts.Any(a => a.PlatformId == platform))
+            .Where(platform => Accounts.Any(a => a != null && a.PlatformId == platform))
             .Select(platform => new PlatformGroupViewModel
             {
                 Platform = platform,
                 PlatformName = PlatformConfigurations.GetPlatformConfig(platform).Name,
                 PlatformColor = PlatformConfigurations.GetPlatformConfig(platform).Color,
                 PlatformIcon = GetPlatformIcon(platform),
-                Accounts = Accounts.Where(a => a.PlatformId == platform)
+                Accounts = Accounts.Where(a => a != null && a.PlatformId == platform)
                     .Select(a => new AccountItemViewModel(a))
                     .ToList(),
-                AccountCount = Accounts.Count(a => a.PlatformId == platform)
+                AccountCount = Accounts.Count(a => a != null && a.PlatformId == platform)
             });
     
     // Command aliases for UI binding
@@ -125,8 +136,76 @@ public partial class AccountManagerViewModel : ObservableObject
     [RelayCommand]
     private async Task StartAddAccount()
     {
-        // Use OAuth authentication instead of manual form
-        await StartOAuthAuthentication(SelectedPlatform);
+        _logger.Information("StartAddAccount command executed");
+        
+        // Set a very visible status message immediately
+        AuthenticationStatus = "🔴 ADD ACCOUNT BUTTON CLICKED! Processing...";
+        
+        try
+        {
+            _logger.Information("Starting account addition for platform: {Platform}", SelectedPlatform);
+            
+            // Check if OAuth configuration exists for the selected platform
+            var config = await _oauthConfigService.GetConfigurationAsync(SelectedPlatform);
+            _logger.Debug("OAuth configuration retrieved for {Platform}: {ConfigExists}", SelectedPlatform, config != null);
+            
+            if (config == null)
+            {
+                // No OAuth configuration found - guide user to set it up
+                AuthenticationStatus = $"❌ OAuth configuration required for {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name}. Please configure OAuth settings first.";
+                _logger.Warning("OAuth configuration is null for platform: {Platform}", SelectedPlatform);
+                
+                // TODO: Open OAuth configuration dialog or navigate to OAuth settings
+                // For now, show a helpful message
+                _logger.Information("User needs to configure OAuth settings for platform: {Platform}", SelectedPlatform);
+                
+                // Clear status after delay
+                _ = Task.Delay(5000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+                return;
+            }
+            
+            _logger.Debug("OAuth configuration found - ClientId: {ClientIdPreview}...", 
+                config.ClientId?.Substring(0, Math.Min(10, config.ClientId?.Length ?? 0)));
+            
+            // Check if configuration has placeholder values
+            if (config.ClientId == "YOUR_CLIENT_ID_HERE" || config.ClientSecret == "YOUR_CLIENT_SECRET_HERE" ||
+                string.IsNullOrWhiteSpace(config.ClientId) || string.IsNullOrWhiteSpace(config.ClientSecret))
+            {
+                AuthenticationStatus = $"⚠️ OAuth configuration incomplete for {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name}. Please provide valid Client ID and Client Secret in OAuth settings.";
+                _logger.Warning("OAuth configuration has placeholder values for platform: {Platform}", SelectedPlatform);
+                
+                // Clear status after delay
+                _ = Task.Delay(7000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+                return;
+            }
+            
+            // Validate configuration
+            var validation = await _oauthConfigService.ValidateConfigurationAsync(SelectedPlatform, config);
+            _logger.Debug("OAuth configuration validation result for {Platform}: {IsValid}", SelectedPlatform, validation.IsValid);
+            
+            if (!validation.IsValid)
+            {
+                AuthenticationStatus = $"❌ Invalid OAuth configuration for {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name}: {string.Join(", ", validation.Errors)}";
+                _logger.Warning("OAuth configuration validation failed for {Platform}: {Errors}", 
+                    SelectedPlatform, string.Join(", ", validation.Errors));
+                
+                // Clear status after delay
+                _ = Task.Delay(7000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+                return;
+            }
+            
+            _logger.Information("Starting OAuth authentication for platform: {Platform}", SelectedPlatform);
+            // Use OAuth authentication with the selected platform
+            await StartOAuthAuthentication(SelectedPlatform);
+        }
+        catch (Exception ex)
+        {
+            AuthenticationStatus = $"💥 Error starting account creation: {ex.Message}";
+            _logger.Error(ex, "StartAddAccount failed for platform: {Platform}", SelectedPlatform);
+            
+            // Clear status after delay
+            _ = Task.Delay(5000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+        }
     }
     
     [RelayCommand]
@@ -455,6 +534,8 @@ public partial class AccountManagerViewModel : ObservableObject
         }
     }
     
+
+    
     #endregion
     
     #region Helper Methods
@@ -478,7 +559,11 @@ public partial class AccountManagerViewModel : ObservableObject
                 Accounts.Clear();
                 foreach (var account in accounts)
                 {
-                    Accounts.Add(account);
+                    // Only add non-null accounts to prevent NullReferenceExceptions
+                    if (account != null)
+                    {
+                        Accounts.Add(account);
+                    }
                 }
             });
             
@@ -502,7 +587,7 @@ public partial class AccountManagerViewModel : ObservableObject
             return Enumerable.Empty<Account>();
             
         var selectedIds = SelectedAccountIds[platform];
-        return Accounts.Where(a => a.PlatformId == platform && selectedIds.Contains(a.Id));
+        return Accounts.Where(a => a != null && a.PlatformId == platform && selectedIds.Contains(a.Id));
     }
     
     public Dictionary<SocialPlatform, List<string>> GetAllSelectedAccounts()
@@ -538,20 +623,96 @@ public partial class AccountManagerViewModel : ObservableObject
     [RelayCommand]
     private void EditAccount(AccountItemViewModel accountViewModel)
     {
-        var account = Accounts.FirstOrDefault(a => a.Id == accountViewModel.Id);
+        _logger.Information("EditAccount command executed");
+        
+        // Check if accountViewModel is null
+        if (accountViewModel == null)
+        {
+            _logger.Warning("EditAccount: accountViewModel is null");
+            return;
+        }
+        
+        // Check if accountViewModel.Id is null or empty
+        if (string.IsNullOrEmpty(accountViewModel.Id))
+        {
+            _logger.Warning("EditAccount: accountViewModel.Id is null or empty");
+            return;
+        }
+        
+        // Check if Accounts collection is null
+        if (Accounts == null)
+        {
+            _logger.Error("EditAccount: Accounts collection is null");
+            return;
+        }
+        
+        _logger.Debug("EditAccount: Looking for account with ID: {AccountId}", accountViewModel.Id);
+        
+        // Add comprehensive null checks to prevent NullReferenceException
+        var account = Accounts.Where(a => a != null && !string.IsNullOrEmpty(a.Id))
+                              .FirstOrDefault(a => a.Id == accountViewModel.Id);
+        
         if (account != null)
         {
+            _logger.Information("Editing account: {DisplayName} ({PlatformId})", account.DisplayName, account.PlatformId);
             StartEditAccount(account);
+        }
+        else
+        {
+            _logger.Warning("Account not found for editing: {AccountId}", accountViewModel.Id);
+            _logger.Debug("Available accounts: {AvailableAccounts}", 
+                string.Join(", ", Accounts.Where(a => a != null).Select(a => a.Id)));
         }
     }
     
     [RelayCommand]
     private async Task RemoveAccount(AccountItemViewModel accountViewModel)
     {
-        var account = Accounts.FirstOrDefault(a => a.Id == accountViewModel.Id);
-        if (account != null)
+        System.Diagnostics.Debug.WriteLine("RemoveAccount command executed!");
+        
+        try
         {
-            await DeleteAccountAsync(account);
+            // Check if accountViewModel is null
+            if (accountViewModel == null)
+            {
+                System.Diagnostics.Debug.WriteLine("RemoveAccount: accountViewModel is null!");
+                return;
+            }
+            
+            // Check if accountViewModel.Id is null or empty
+            if (string.IsNullOrEmpty(accountViewModel.Id))
+            {
+                System.Diagnostics.Debug.WriteLine("RemoveAccount: accountViewModel.Id is null or empty!");
+                return;
+            }
+            
+            // Check if Accounts collection is null
+            if (Accounts == null)
+            {
+                System.Diagnostics.Debug.WriteLine("RemoveAccount: Accounts collection is null!");
+                return;
+            }
+            
+            System.Diagnostics.Debug.WriteLine($"RemoveAccount: Looking for account with ID: {accountViewModel.Id}");
+            
+            // Add comprehensive null checks to prevent NullReferenceException
+            var account = Accounts.Where(a => a != null && !string.IsNullOrEmpty(a.Id))
+                                  .FirstOrDefault(a => a.Id == accountViewModel.Id);
+            
+            if (account != null)
+            {
+                System.Diagnostics.Debug.WriteLine($"Removing account: {account.DisplayName} ({account.PlatformId})");
+                await DeleteAccountAsync(account);
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine($"Account not found for removal: {accountViewModel.Id}");
+                System.Diagnostics.Debug.WriteLine($"Available accounts: {string.Join(", ", Accounts.Where(a => a != null).Select(a => a.Id))}");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"RemoveAccount failed: {ex}");
         }
     }
     
@@ -570,10 +731,11 @@ public partial class AccountManagerViewModel : ObservableObject
     
     private void UpdateComputedProperties()
     {
-        OnPropertyChanged(nameof(HasAccounts));
-        OnPropertyChanged(nameof(PlatformGroups));
         OnPropertyChanged(nameof(AccountsForSelectedPlatform));
         OnPropertyChanged(nameof(HasAccountsForPlatform));
+        OnPropertyChanged(nameof(HasAccounts));
+        OnPropertyChanged(nameof(AccountViewModels));
+        OnPropertyChanged(nameof(PlatformGroups));
     }
     
     #endregion
@@ -657,6 +819,10 @@ public class AccountItemViewModel
     public bool IsConnected { get; set; } = true;
     public bool RequiresReconnection { get; set; } = false;
     
+    // Commands for direct binding
+    public IRelayCommand? EditCommand { get; set; }
+    public IRelayCommand? DeleteCommand { get; set; }
+    
     // UI Properties
     public string AvatarText => DisplayName.FirstOrDefault().ToString().ToUpper();
     public string PlatformColor => PlatformConfigurations.GetPlatformConfig(PlatformId).Color;
@@ -673,5 +839,11 @@ public class AccountItemViewModel
         IsDefault = account.IsDefault;
         IsConnected = account.Tokens != null && !account.Tokens.IsExpired;
         RequiresReconnection = account.Tokens?.IsExpired == true;
+    }
+    
+    public AccountItemViewModel(Account account, IRelayCommand editCommand, IRelayCommand deleteCommand) : this(account)
+    {
+        EditCommand = editCommand;
+        DeleteCommand = deleteCommand;
     }
 } 

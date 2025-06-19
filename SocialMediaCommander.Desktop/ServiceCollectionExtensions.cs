@@ -10,6 +10,7 @@ using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Desktop.ViewModels;
+using SocialMediaCommander.Desktop.Services;
 
 namespace SocialMediaCommander.Desktop;
 
@@ -22,6 +23,7 @@ public static class ServiceCollectionExtensions
         
         // Core Services
         services.AddHttpClient<IAIService, FoundryLocalAIService>();
+        services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
         services.AddHttpClient<IAuthenticationService, OAuthAuthenticationService>();
         
         // Platform Services
@@ -34,6 +36,7 @@ public static class ServiceCollectionExtensions
         // Application Services
         services.AddScoped<IPostService, MockPostService>();
         services.AddScoped<IAccountService, InMemoryAccountService>();
+        services.AddScoped<IMediaService, MockMediaService>();
         services.AddScoped<IFeedService, InMemoryFeedService>();
         
         // Enhanced Services
@@ -48,6 +51,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<SchedulerViewModel>();
         services.AddTransient<AIAssistantViewModel>();
+        services.AddTransient<OAuthConfigurationViewModel>();
         
         // Logging
         services.AddLogging(builder =>

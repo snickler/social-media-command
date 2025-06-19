@@ -1,0 +1,294 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             x:Class="SocialMediaCommander.Desktop.Views.OAuthConfigurationView"
+             x:DataType="vm:OAuthConfigurationViewModel">
+
+    <Design.DataContext>
+        <!-- Design-time DataContext for previewing -->
+        <vm:OAuthConfigurationViewModel />
+    </Design.DataContext>
+
+    <ScrollViewer>
+        <StackPanel Margin="20" Spacing="20">
+            
+            <!-- Header -->
+            <StackPanel Spacing="10">
+                <TextBlock Text="OAuth Configuration" 
+                          FontSize="24" 
+                          FontWeight="Bold" 
+                          Foreground="#2c3e50" />
+                <TextBlock Text="Configure OAuth settings for each social media platform to enable authentication."
+                          FontSize="14"
+                          Foreground="#7f8c8d"
+                          TextWrapping="Wrap" />
+            </StackPanel>
+
+            <!-- Platform Selection -->
+            <Border Background="#f8f9fa" 
+                    CornerRadius="8" 
+                    Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Select Platform" 
+                              FontWeight="SemiBold" 
+                              FontSize="16" />
+                    
+                    <!-- Platform Selector with Status -->
+                    <Grid ColumnDefinitions="2*,*">
+                        <ComboBox Grid.Column="0"
+                                 ItemsSource="{Binding AvailablePlatforms}"
+                                 SelectedItem="{Binding SelectedPlatform}"
+                                 HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="{Binding StatusIcon}" 
+                                                  Foreground="{Binding StatusColor}" 
+                                                  FontWeight="Bold" />
+                                        <TextBlock Text="{Binding Name}" />
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        
+                        <StackPanel Grid.Column="1" 
+                                   Orientation="Horizontal" 
+                                   Spacing="8" 
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center">
+                            <TextBlock Text="{Binding ConfigurationStatus}" 
+                                      Foreground="{Binding ConfigurationStatusColor}" 
+                                      FontWeight="SemiBold" />
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Configuration Form -->
+            <Border Background="White" 
+                    BorderBrush="#e1e5e9" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="20">
+                <StackPanel Spacing="16">
+                    
+                    <!-- Form Header -->
+                    <StackPanel Spacing="8">
+                        <TextBlock Text="{Binding PlatformDisplayName, StringFormat='Configure {0}'}" 
+                                  FontWeight="SemiBold" 
+                                  FontSize="18" />
+                        <TextBlock Text="Enter your OAuth application credentials for this platform."
+                                  FontSize="14"
+                                  Foreground="#6c757d" />
+                    </StackPanel>
+
+                    <!-- Client ID -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Client ID *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding ClientId}" 
+                                Watermark="Enter your OAuth Client ID"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- Client Secret -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Client Secret *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding ClientSecret}" 
+                                Watermark="Enter your OAuth Client Secret"
+                                PasswordChar="*"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- Authorization Endpoint -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Authorization Endpoint *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding AuthorizationEndpoint}" 
+                                Watermark="https://example.com/oauth/authorize"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- Token Endpoint -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Token Endpoint *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding TokenEndpoint}" 
+                                Watermark="https://example.com/oauth/token"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- User Info Endpoint -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="User Info Endpoint" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding UserInfoEndpoint}" 
+                                Watermark="https://example.com/api/user (optional)"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- Revoke Endpoint -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Revoke Endpoint" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding RevokeEndpoint}" 
+                                Watermark="https://example.com/oauth/revoke (optional)"
+                                IsEnabled="{Binding !IsLoading}" />
+                    </StackPanel>
+
+                    <!-- Redirect URI -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Redirect URI *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding RedirectUri}" 
+                                IsEnabled="{Binding !IsLoading}" />
+                        <TextBlock Text="This should match the redirect URI configured in your OAuth application."
+                                  FontSize="12"
+                                  Foreground="#6c757d"
+                                  TextWrapping="Wrap" />
+                    </StackPanel>
+
+                    <!-- Scopes -->
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="Scopes *" FontWeight="SemiBold" />
+                        <TextBox Text="{Binding ScopesText}" 
+                                Watermark="read, write, profile (comma-separated)"
+                                IsEnabled="{Binding !IsLoading}" />
+                        <TextBlock Text="Enter the OAuth scopes required for your application, separated by commas."
+                                  FontSize="12"
+                                  Foreground="#6c757d"
+                                  TextWrapping="Wrap" />
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+
+            <!-- Validation Errors -->
+            <Border Background="#f8d7da" 
+                    BorderBrush="#f5c6cb" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="12"
+                    IsVisible="{Binding ValidationErrors.Count}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Please fix the following errors:" 
+                              FontWeight="SemiBold" 
+                              Foreground="#721c24" />
+                    <ItemsControl ItemsSource="{Binding ValidationErrors}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" 
+                                          Foreground="#721c24" 
+                                          FontSize="14" 
+                                          Margin="0,2" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Status Message -->
+            <Border Background="#d4edda" 
+                    BorderBrush="#c3e6cb" 
+                    BorderThickness="1" 
+                    CornerRadius="4" 
+                    Padding="12"
+                    IsVisible="{Binding ValidationMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                <TextBlock Text="{Binding ValidationMessage}" 
+                          Foreground="#155724" 
+                          FontWeight="SemiBold"
+                          TextWrapping="Wrap" />
+            </Border>
+
+            <!-- Action Buttons -->
+            <StackPanel Orientation="Horizontal" 
+                       Spacing="12" 
+                       HorizontalAlignment="Center">
+                
+                <Button Content="Load Defaults" 
+                       Command="{Binding LoadDefaultsCommand}"
+                       IsEnabled="{Binding CanLoadDefaults}"
+                       Background="#6c757d"
+                       Foreground="White"
+                       Padding="16,8"
+                       CornerRadius="4" />
+
+                <Button Content="Test Configuration" 
+                       Command="{Binding TestConfigurationCommand}"
+                       IsEnabled="{Binding CanTest}"
+                       Background="#17a2b8"
+                       Foreground="White"
+                       Padding="16,8"
+                       CornerRadius="4" />
+
+                <Button Content="Save Configuration" 
+                       Command="{Binding SaveConfigurationCommand}"
+                       IsEnabled="{Binding CanSave}"
+                       Background="#28a745"
+                       Foreground="White"
+                       Padding="16,8"
+                       CornerRadius="4" />
+
+                <Button Content="Delete" 
+                       Command="{Binding DeleteConfigurationCommand}"
+                       IsEnabled="{Binding IsConfigured}"
+                       Background="#dc3545"
+                       Foreground="White"
+                       Padding="16,8"
+                       CornerRadius="4" />
+            </StackPanel>
+
+            <!-- Import/Export Section -->
+            <Border Background="#f8f9fa" 
+                    CornerRadius="8" 
+                    Padding="16">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Import/Export Configurations" 
+                              FontWeight="SemiBold" 
+                              FontSize="16" />
+                    
+                    <StackPanel Orientation="Horizontal" 
+                               Spacing="12" 
+                               HorizontalAlignment="Center">
+                        <Button Content="Import from File" 
+                               Command="{Binding ImportConfigurationsCommand}"
+                               Background="#ffc107"
+                               Foreground="#212529"
+                               Padding="12,6"
+                               CornerRadius="4" />
+                        
+                        <Button Content="Export to File" 
+                               Command="{Binding ExportConfigurationsCommand}"
+                               Background="#ffc107"
+                               Foreground="#212529"
+                               Padding="12,6"
+                               CornerRadius="4" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Help Section -->
+            <Border Background="#e7f3ff" 
+                    BorderBrush="#b3d7ff" 
+                    BorderThickness="1" 
+                    CornerRadius="8" 
+                    Padding="16">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="💡 Need Help?" 
+                              FontWeight="SemiBold" 
+                              FontSize="16" />
+                    <TextBlock TextWrapping="Wrap" 
+                              FontSize="14">
+                        <Run Text="To get OAuth credentials:" />
+                        <LineBreak />
+                        <Run Text="1. Visit the developer portal for each platform" />
+                        <LineBreak />
+                        <Run Text="2. Create a new OAuth application" />
+                        <LineBreak />
+                        <Run Text="3. Set the redirect URI to: http://localhost:8080/oauth/callback" />
+                        <LineBreak />
+                        <Run Text="4. Copy the Client ID and Client Secret here" />
+                        <LineBreak />
+                        <Run Text="5. Click 'Load Defaults' to populate the endpoints automatically" />
+                    </TextBlock>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+
+</UserControl> 
