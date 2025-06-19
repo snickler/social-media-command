@@ -43,10 +43,12 @@ public partial class MainWindowViewModel : ViewModelBase
         var accountService = new InMemoryAccountService();
         var mediaService = new MockMediaService();
         var feedService = new InMemoryFeedService();
+        var httpClient = new System.Net.Http.HttpClient();
+        var authenticationService = new OAuthAuthenticationService(httpClient);
         
         PostEditor = new PostEditorViewModel(postService, accountService, mediaService);
         SocialFeed = new SocialFeedViewModel(feedService, accountService);
-        AccountManager = new AccountManagerViewModel(accountService);
+        AccountManager = new AccountManagerViewModel(accountService, authenticationService);
         AnalyticsDashboard = new AnalyticsDashboardViewModel(postService, accountService, feedService);
         Settings = new SettingsViewModel(accountService);
         Scheduler = new SchedulerViewModel(postService, accountService);

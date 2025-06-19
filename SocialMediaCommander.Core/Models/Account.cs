@@ -29,9 +29,14 @@ public class Account
     public DateTime LastUsed { get; set; } = DateTime.UtcNow;
     
     /// <summary>
-    /// Encrypted access token for API authentication (if applicable)
+    /// Authentication status of the account
     /// </summary>
-    public string? AccessToken { get; set; }
+    public AuthenticationStatus AuthStatus { get; set; } = AuthenticationStatus.NotAuthenticated;
+    
+    /// <summary>
+    /// OAuth tokens for API authentication
+    /// </summary>
+    public OAuthTokens? Tokens { get; set; }
     
     /// <summary>
     /// Additional metadata for the account
@@ -50,6 +55,48 @@ public class Account
         var seed = $"{platformName}-{Id}";
         return $"https://api.dicebear.com/7.x/personas/svg?seed={seed}";
     }
+
+    /// <summary>
+    /// Checks if the account has valid authentication
+    /// </summary>
+    public bool IsAuthenticated => AuthStatus == AuthenticationStatus.Authenticated && 
+                                   Tokens != null && 
+                                   !Tokens.IsExpired;
+}
+
+/// <summary>
+/// OAuth token information for authenticated accounts
+/// </summary>
+public class OAuthTokens
+{
+    public string AccessToken { get; set; } = string.Empty;
+    public string? RefreshToken { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public string TokenType { get; set; } = "Bearer";
+    public string[]? Scopes { get; set; }
+    
+    /// <summary>
+    /// Checks if the access token is expired
+    /// </summary>
+    public bool IsExpired => DateTime.UtcNow >= ExpiresAt.AddMinutes(-5); // 5 minute buffer
+    
+    /// <summary>
+    /// Checks if the token can be refreshed
+    /// </summary>
+    public bool CanRefresh => !string.IsNullOrEmpty(RefreshToken);
+}
+
+/// <summary>
+/// Authentication status for accounts
+/// </summary>
+public enum AuthenticationStatus
+{
+    NotAuthenticated,
+    Authenticating,
+    Authenticated,
+    AuthenticationFailed,
+    TokenExpired,
+    Revoked
 }
 
 /// <summary>

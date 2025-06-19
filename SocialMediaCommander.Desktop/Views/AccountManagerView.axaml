@@ -107,7 +107,8 @@
                     <!-- Empty State -->
                     <StackPanel HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Spacing="16">
+                               Spacing="16"
+                               IsVisible="{Binding !HasAccounts}">
                         <Border Background="{DynamicResource SMC-Muted}" 
                                 CornerRadius="50" 
                                 Width="80" Height="80"
@@ -130,179 +131,173 @@
                                        TextWrapping="Wrap"
                                        MaxWidth="400"/>
                         </StackPanel>
-                        <Button Command="{Binding AddAccountCommand}"
-                               Classes="primary"
-                               Margin="0,16,0,0">
-                            <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="+" FontWeight="Bold"/>
-                                <TextBlock Text="Connect Your First Account"/>
-                            </StackPanel>
-                        </Button>
+                        
+                        <!-- Platform Connection Buttons -->
+                        <StackPanel Spacing="12" HorizontalAlignment="Center">
+                            <!-- BlueSky -->
+                            <Button Command="{Binding ConnectAccountCommand}" 
+                                   CommandParameter="{x:Static models:SocialPlatform.BlueSky}"
+                                   Classes="primary"
+                                   Width="200">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="BS" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Connect BlueSky"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- X/Twitter -->
+                            <Button Command="{Binding ConnectAccountCommand}" 
+                                   CommandParameter="{x:Static models:SocialPlatform.X}"
+                                   Classes="primary"
+                                   Width="200">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="𝕏" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Connect X"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- LinkedIn -->
+                            <Button Command="{Binding ConnectAccountCommand}" 
+                                   CommandParameter="{x:Static models:SocialPlatform.LinkedIn}"
+                                   Classes="primary"
+                                   Width="200">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="in" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Connect LinkedIn"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Threads -->
+                            <Button Command="{Binding ConnectAccountCommand}" 
+                                   CommandParameter="{x:Static models:SocialPlatform.Threads}"
+                                   Classes="primary"
+                                   Width="200">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="@" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Connect Threads"/>
+                                </StackPanel>
+                            </Button>
+                            
+                            <!-- Facebook -->
+                            <Button Command="{Binding ConnectAccountCommand}" 
+                                   CommandParameter="{x:Static models:SocialPlatform.Facebook}"
+                                   Classes="primary"
+                                   Width="200">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock Text="f" FontWeight="Bold" Foreground="White"/>
+                                    <TextBlock Text="Connect Facebook"/>
+                                </StackPanel>
+                            </Button>
+                        </StackPanel>
                     </StackPanel>
                     
-                    <!-- Sample Account Cards for now -->
-                    <StackPanel Spacing="12">
-                        
-                        <!-- BlueSky Account -->
-                        <Border Background="{DynamicResource SMC-Card}"
-                                BorderBrush="{DynamicResource SMC-Card-Border}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="16">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                
-                                <!-- Account Avatar -->
-                                <Border Grid.Column="0" 
-                                        Width="48" Height="48" 
-                                        CornerRadius="24"
-                                        Background="#0085FF"
-                                        Margin="0,0,16,0">
-                                    <TextBlock Text="BS" 
-                                               Foreground="White"
-                                               FontSize="16"
-                                               FontWeight="Bold"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
-                                </Border>
-                                
-                                <!-- Account Details -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
-                                    <TextBlock Text="My BlueSky Account" 
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource SMC-Foreground}"/>
-                                    <TextBlock Text="@myhandle.bsky.social" 
-                                               FontSize="14"
-                                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
-                                    
-                                    <!-- Status Badges -->
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Border Background="{DynamicResource SMC-Success}"
-                                                CornerRadius="12"
-                                                Padding="8,4">
-                                            <TextBlock Text="Connected" 
-                                                       FontSize="10"
+                    <!-- Authentication Status -->
+                    <Border Background="{DynamicResource SMC-Card}"
+                            BorderBrush="{DynamicResource SMC-Card-Border}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="16"
+                            Margin="0,0,0,16"
+                            IsVisible="{Binding IsAuthenticating}">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Border Background="{DynamicResource SMC-Accent}" 
+                                    CornerRadius="50" 
+                                    Width="40" Height="40">
+                                <TextBlock Text="🔐" 
+                                           FontSize="16" 
+                                           HorizontalAlignment="Center" 
+                                           VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Authenticating..." 
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SMC-Foreground}"/>
+                                <TextBlock Text="{Binding AuthenticationStatus}" 
+                                           FontSize="14"
+                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                    
+                    <!-- Account Groups -->
+                    <ItemsControl ItemsSource="{Binding Accounts}"
+                                 IsVisible="{Binding HasAccounts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="AccountCard">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        
+                                        <!-- Account Avatar -->
+                                        <Border Grid.Column="0" 
+                                                Width="48" Height="48" 
+                                                CornerRadius="24"
+                                                Background="#0085FF"
+                                                Margin="0,0,16,0">
+                                            <TextBlock Text="{Binding DisplayName[0]}" 
                                                        Foreground="White"
-                                                       FontWeight="Medium"/>
+                                                       FontSize="16"
+                                                       FontWeight="Bold"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
                                         </Border>
-                                        <Border Background="{DynamicResource SMC-Accent}"
-                                                CornerRadius="12"
-                                                Padding="8,4">
-                                            <TextBlock Text="Default" 
-                                                       FontSize="10"
-                                                       Foreground="{DynamicResource SMC-Accent-Foreground}"
-                                                       FontWeight="Medium"/>
-                                        </Border>
-                                    </StackPanel>
-                                </StackPanel>
-                                
-                                <!-- Actions -->
-                                <StackPanel Grid.Column="2" 
-                                           Orientation="Horizontal" 
-                                           Spacing="8"
-                                           VerticalAlignment="Center">
-                                    
-                                    <!-- Edit Button -->
-                                    <Button Background="Transparent"
-                                            BorderBrush="{DynamicResource SMC-Card-Border}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Padding="8"
-                                            Width="36"
-                                            Height="36">
-                                        <TextBlock Text="✏️" FontSize="14"/>
-                                    </Button>
-                                    
-                                    <!-- Delete Button -->
-                                    <Button Background="Transparent"
-                                            BorderBrush="{DynamicResource SMC-Warning-Border}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Padding="8"
-                                            Width="36"
-                                            Height="36">
-                                        <TextBlock Text="🗑️" FontSize="14"/>
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                        
-                        <!-- LinkedIn Account -->
-                        <Border Background="{DynamicResource SMC-Card}"
-                                BorderBrush="{DynamicResource SMC-Card-Border}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="16">
-                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                
-                                <!-- Account Avatar -->
-                                <Border Grid.Column="0" 
-                                        Width="48" Height="48" 
-                                        CornerRadius="24"
-                                        Background="#0A66C2"
-                                        Margin="0,0,16,0">
-                                    <TextBlock Text="in" 
-                                               Foreground="White"
-                                               FontSize="16"
-                                               FontWeight="Bold"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"/>
+                                        
+                                        <!-- Account Details -->
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                                            <TextBlock Text="{Binding DisplayName}" 
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource SMC-Foreground}"/>
+                                            <TextBlock Text="{Binding Username, StringFormat='@{0}'}" 
+                                                       FontSize="14"
+                                                       Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                            
+                                            <!-- Status Badges -->
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <Border Background="{DynamicResource SMC-Success}"
+                                                        CornerRadius="12"
+                                                        Padding="8,4"
+                                                        IsVisible="{Binding IsAuthenticated}">
+                                                    <TextBlock Text="Connected" 
+                                                               FontSize="10"
+                                                               Foreground="White"
+                                                               FontWeight="Medium"/>
+                                                </Border>
+                                                <Border Background="{DynamicResource SMC-Accent}"
+                                                        CornerRadius="12"
+                                                        Padding="8,4"
+                                                        IsVisible="{Binding IsDefault}">
+                                                    <TextBlock Text="Default" 
+                                                               FontSize="10"
+                                                               Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                               FontWeight="Medium"/>
+                                                </Border>
+                                            </StackPanel>
+                                        </StackPanel>
+                                        
+                                        <!-- Actions -->
+                                        <StackPanel Grid.Column="2" 
+                                                   Orientation="Horizontal" 
+                                                   Spacing="8"
+                                                   VerticalAlignment="Center">
+                                            
+                                            <!-- Edit Button -->
+                                            <Button Classes="AccountAction"
+                                                   BorderBrush="{DynamicResource SMC-Card-Border}">
+                                                <TextBlock Text="✏️" FontSize="14"/>
+                                            </Button>
+                                            
+                                            <!-- Delete Button -->
+                                            <Button Classes="AccountAction"
+                                                   BorderBrush="{DynamicResource SMC-Warning-Border}">
+                                                <TextBlock Text="🗑️" FontSize="14"/>
+                                            </Button>
+                                        </StackPanel>
+                                    </Grid>
                                 </Border>
-                                
-                                <!-- Account Details -->
-                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
-                                    <TextBlock Text="Professional Profile" 
-                                               FontSize="16"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource SMC-Foreground}"/>
-                                    <TextBlock Text="@john.doe" 
-                                               FontSize="14"
-                                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
-                                    
-                                    <!-- Status Badges -->
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <Border Background="{DynamicResource SMC-Success}"
-                                                CornerRadius="12"
-                                                Padding="8,4">
-                                            <TextBlock Text="Connected" 
-                                                       FontSize="10"
-                                                       Foreground="White"
-                                                       FontWeight="Medium"/>
-                                        </Border>
-                                    </StackPanel>
-                                </StackPanel>
-                                
-                                <!-- Actions -->
-                                <StackPanel Grid.Column="2" 
-                                           Orientation="Horizontal" 
-                                           Spacing="8"
-                                           VerticalAlignment="Center">
-                                    
-                                    <!-- Edit Button -->
-                                    <Button Background="Transparent"
-                                            BorderBrush="{DynamicResource SMC-Card-Border}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Padding="8"
-                                            Width="36"
-                                            Height="36">
-                                        <TextBlock Text="✏️" FontSize="14"/>
-                                    </Button>
-                                    
-                                    <!-- Delete Button -->
-                                    <Button Background="Transparent"
-                                            BorderBrush="{DynamicResource SMC-Warning-Border}"
-                                            BorderThickness="1"
-                                            CornerRadius="6"
-                                            Padding="8"
-                                            Width="36"
-                                            Height="36">
-                                        <TextBlock Text="🗑️" FontSize="14"/>
-                                    </Button>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
         </Grid>

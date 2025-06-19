@@ -16,6 +16,7 @@ namespace SocialMediaCommander.Desktop.ViewModels;
 public partial class AccountManagerViewModel : ObservableObject
 {
     private readonly IAccountService _accountService;
+    private readonly IAuthenticationService _authenticationService;
     
     [ObservableProperty]
     private bool _isAddingAccount = false;
@@ -37,10 +38,17 @@ public partial class AccountManagerViewModel : ObservableObject
     
     [ObservableProperty]
     private string _newAccountAvatar = string.Empty;
+    
+    [ObservableProperty]
+    private bool _isAuthenticating = false;
+    
+    [ObservableProperty]
+    private string _authenticationStatus = string.Empty;
 
-    public AccountManagerViewModel(IAccountService accountService)
+    public AccountManagerViewModel(IAccountService accountService, IAuthenticationService authenticationService)
     {
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
+        _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
         
         // Initialize collections
         Accounts = new ObservableCollection<Account>();
@@ -108,15 +116,10 @@ public partial class AccountManagerViewModel : ObservableObject
     #region Commands
     
     [RelayCommand]
-    private void StartAddAccount()
+    private async Task StartAddAccount()
     {
-        IsAddingAccount = true;
-        IsEditingAccount = false;
-        CurrentAccount = null;
-        ClearAccountForm();
-        
-        // Generate default avatar
-        NewAccountAvatar = $"https://api.dicebear.com/7.x/personas/svg?seed={SelectedPlatform}-{DateTime.Now.Ticks}";
+        // Use OAuth authentication instead of manual form
+        await StartOAuthAuthentication(SelectedPlatform);
     }
     
     [RelayCommand]
@@ -168,7 +171,7 @@ public partial class AccountManagerViewModel : ObservableObject
                     IsDefault = CurrentAccount.IsDefault,
                     CreatedAt = CurrentAccount.CreatedAt,
                     LastUsed = DateTime.UtcNow,
-                    AccessToken = CurrentAccount.AccessToken,
+                    Tokens = CurrentAccount.Tokens,
                     Metadata = CurrentAccount.Metadata
                 };
                 
@@ -284,7 +287,7 @@ public partial class AccountManagerViewModel : ObservableObject
                         IsDefault = false,
                         CreatedAt = acc.CreatedAt,
                         LastUsed = acc.LastUsed,
-                        AccessToken = acc.AccessToken,
+                        Tokens = acc.Tokens,
                         Metadata = acc.Metadata
                     };
                     
@@ -309,7 +312,7 @@ public partial class AccountManagerViewModel : ObservableObject
                 IsDefault = true,
                 CreatedAt = account.CreatedAt,
                 LastUsed = DateTime.UtcNow,
-                AccessToken = account.AccessToken,
+                Tokens = account.Tokens,
                 Metadata = account.Metadata
             };
             
@@ -324,6 +327,124 @@ public partial class AccountManagerViewModel : ObservableObject
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Set default account failed: {ex.Message}");
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ReconnectAccount(AccountItemViewModel accountViewModel)
+    {
+        var account = Accounts.FirstOrDefault(a => a.Id == accountViewModel.Id);
+        if (account != null)
+        {
+            await StartOAuthAuthentication(account.PlatformId, account);
+        }
+    }
+    
+    [RelayCommand]
+    private async Task ConnectAccount(SocialPlatform platform)
+    {
+        await StartOAuthAuthentication(platform);
+    }
+    
+    private async Task StartOAuthAuthentication(SocialPlatform platform, Account? existingAccount = null)
+    {
+        try
+        {
+            IsAuthenticating = true;
+            AuthenticationStatus = $"Starting authentication for {PlatformConfigurations.GetPlatformConfig(platform).Name}...";
+            
+            var result = await _authenticationService.StartAuthenticationAsync(platform);
+            
+            if (result.IsSuccess && !string.IsNullOrEmpty(result.AuthorizationUrl))
+            {
+                AuthenticationStatus = "Opening browser for authentication...";
+                
+                // Open the authorization URL in the default browser
+                var startInfo = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = result.AuthorizationUrl,
+                    UseShellExecute = true
+                };
+                System.Diagnostics.Process.Start(startInfo);
+                
+                AuthenticationStatus = "Waiting for authorization...";
+                
+                // TODO: In a real implementation, you would listen for the redirect callback
+                // For now, we'll simulate a successful authentication after a delay
+                await Task.Delay(3000);
+                
+                // Simulate completing the OAuth flow
+                var completeResult = await _authenticationService.CompleteAuthenticationAsync(platform, "mock_auth_code", result.State ?? "");
+                
+                if (completeResult.IsSuccess && completeResult.Tokens != null)
+                {
+                    AuthenticationStatus = "Authentication successful! Creating account...";
+                    
+                    if (existingAccount != null)
+                    {
+                        // Update existing account with new tokens
+                        existingAccount.Tokens = completeResult.Tokens;
+                        existingAccount.LastUsed = DateTime.UtcNow;
+                        existingAccount.AuthStatus = Core.Models.AuthenticationStatus.Authenticated;
+                        
+                        await _accountService.UpdateAccountAsync(existingAccount);
+                        
+                        // Update in collection
+                        var index = Accounts.IndexOf(existingAccount);
+                        if (index >= 0)
+                        {
+                            Accounts[index] = existingAccount;
+                        }
+                        
+                        AuthenticationStatus = "Account reconnected successfully!";
+                    }
+                    else
+                    {
+                        // Create new account
+                        var newAccount = new Account
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            PlatformId = platform,
+                            Username = completeResult.UserProfile?.Username ?? $"user_{DateTime.Now.Ticks}",
+                            DisplayName = completeResult.UserProfile?.DisplayName ?? $"User {DateTime.Now:HH:mm}",
+                            Avatar = completeResult.UserProfile?.Avatar ?? $"https://api.dicebear.com/7.x/personas/svg?seed={platform}-{DateTime.Now.Ticks}",
+                            IsDefault = !AccountsForSelectedPlatform.Any(),
+                            CreatedAt = DateTime.UtcNow,
+                            LastUsed = DateTime.UtcNow,
+                            Tokens = completeResult.Tokens,
+                            AuthStatus = Core.Models.AuthenticationStatus.Authenticated,
+                            Metadata = new Dictionary<string, string>()
+                        };
+                        
+                        await _accountService.CreateAccountAsync(newAccount);
+                        Accounts.Add(newAccount);
+                        
+                        AuthenticationStatus = "Account connected successfully!";
+                    }
+                    
+                    UpdateComputedProperties();
+                }
+                else
+                {
+                    AuthenticationStatus = $"Authentication failed: {completeResult.ErrorMessage}";
+                }
+            }
+            else
+            {
+                AuthenticationStatus = $"Failed to start authentication: {result.ErrorMessage}";
+            }
+        }
+        catch (Exception ex)
+        {
+            AuthenticationStatus = $"Authentication error: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"OAuth authentication failed: {ex}");
+        }
+        finally
+        {
+            IsAuthenticating = false;
+            
+            // Clear status after delay
+            _ = Task.Delay(3000).ContinueWith(_ => AuthenticationStatus = string.Empty);
         }
     }
     
@@ -427,13 +548,6 @@ public partial class AccountManagerViewModel : ObservableObject
         }
     }
     
-    [RelayCommand]
-    private async Task ReconnectAccount(AccountItemViewModel accountViewModel)
-    {
-        // TODO: Implement reconnection logic
-        System.Diagnostics.Debug.WriteLine($"Reconnecting account: {accountViewModel.DisplayName}");
-    }
-    
     private string GetPlatformIcon(SocialPlatform platform)
     {
         return platform switch
@@ -494,7 +608,7 @@ public class AccountItemViewModel
         DisplayName = account.DisplayName;
         Avatar = account.Avatar ?? string.Empty;
         IsDefault = account.IsDefault;
-        IsConnected = !string.IsNullOrEmpty(account.AccessToken);
-        RequiresReconnection = !IsConnected;
+        IsConnected = account.Tokens != null && !account.Tokens.IsExpired;
+        RequiresReconnection = account.Tokens?.IsExpired == true;
     }
 } 
