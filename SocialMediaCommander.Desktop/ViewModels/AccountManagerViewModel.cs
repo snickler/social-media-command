@@ -7,6 +7,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Implementation;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
 
@@ -60,6 +61,12 @@ public partial class AccountManagerViewModel : ObservableObject
         foreach (var platform in Enum.GetValues<SocialPlatform>())
         {
             SelectedAccountIds[platform] = new List<string>();
+        }
+        
+        // Subscribe to OAuth callback
+        if (_authenticationService is OAuthAuthenticationService oauthService)
+        {
+            oauthService.OnAuthenticationCallback += HandleOAuthCallback;
         }
         
         // Load accounts on startup
@@ -570,6 +577,62 @@ public partial class AccountManagerViewModel : ObservableObject
     }
     
     #endregion
+    
+    private async void HandleOAuthCallback(string authorizationCode, string state)
+    {
+        try
+        {
+            IsAuthenticating = true;
+            AuthenticationStatus = "Completing authentication...";
+            
+            // Find which platform is being authenticated based on state or current context
+            // For now, we'll use the selected platform
+            var result = await _authenticationService.CompleteAuthenticationAsync(SelectedPlatform, authorizationCode, state);
+            
+            if (result.IsSuccess && result.Tokens != null && result.UserProfile != null)
+            {
+                // Create new account with OAuth tokens
+                var account = new Account
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    PlatformId = SelectedPlatform,
+                    Username = result.UserProfile.Username,
+                    DisplayName = result.UserProfile.DisplayName,
+                    Avatar = result.UserProfile.Avatar,
+                    AuthStatus = Core.Models.AuthenticationStatus.Authenticated,
+                    Tokens = result.Tokens,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["UserId"] = result.UserProfile.Id,
+                        ["Bio"] = result.UserProfile.Bio ?? "",
+                        ["ProfileUrl"] = result.UserProfile.ProfileUrl ?? ""
+                    }
+                };
+                
+                await _accountService.CreateAccountAsync(account);
+                await LoadAccountsAsync();
+                
+                AuthenticationStatus = $"Successfully connected {result.UserProfile.DisplayName}!";
+                
+                // Clear status after delay
+                _ = Task.Delay(3000).ContinueWith(_ => 
+                {
+                    AuthenticationStatus = "";
+                    IsAuthenticating = false;
+                });
+            }
+            else
+            {
+                AuthenticationStatus = $"Authentication failed: {result.ErrorMessage}";
+                IsAuthenticating = false;
+            }
+        }
+        catch (Exception ex)
+        {
+            AuthenticationStatus = $"Authentication error: {ex.Message}";
+            IsAuthenticating = false;
+        }
+    }
 }
 
 // Supporting ViewModels
