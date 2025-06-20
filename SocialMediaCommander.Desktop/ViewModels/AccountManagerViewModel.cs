@@ -53,31 +53,58 @@ public partial class AccountManagerViewModel : ObservableObject
 
     public AccountManagerViewModel(IAccountService accountService, IAuthenticationService authenticationService, IOAuthConfigurationService oauthConfigService)
     {
+        Console.WriteLine("AccountManagerViewModel constructor: Starting");
+        
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
+        Console.WriteLine("AccountManagerViewModel constructor: accountService assigned");
+        
         _authenticationService = authenticationService ?? throw new ArgumentNullException(nameof(authenticationService));
+        Console.WriteLine("AccountManagerViewModel constructor: authenticationService assigned");
+        
         _oauthConfigService = oauthConfigService ?? throw new ArgumentNullException(nameof(oauthConfigService));
+        Console.WriteLine("AccountManagerViewModel constructor: oauthConfigService assigned");
+        
         _logger = LoggingService.ForContext<AccountManagerViewModel>();
+        Console.WriteLine("AccountManagerViewModel constructor: logger created");
         
         // Initialize collections
         Accounts = new ObservableCollection<Account>();
+        Console.WriteLine("AccountManagerViewModel constructor: Accounts collection created");
+        
         SelectedAccountIds = new Dictionary<SocialPlatform, List<string>>();
-        PlatformConfigs = new ObservableCollection<SocialPlatformConfig>(
-            PlatformConfigurations.GetAllPlatforms());
+        Console.WriteLine("AccountManagerViewModel constructor: SelectedAccountIds dictionary created");
+        
+        Console.WriteLine("AccountManagerViewModel constructor: About to call PlatformConfigurations.GetAllPlatforms()");
+        var allPlatforms = PlatformConfigurations.GetAllPlatforms();
+        Console.WriteLine("AccountManagerViewModel constructor: PlatformConfigurations.GetAllPlatforms() completed");
+        
+        PlatformConfigs = new ObservableCollection<SocialPlatformConfig>(allPlatforms);
+        Console.WriteLine("AccountManagerViewModel constructor: PlatformConfigs collection created");
         
         // Initialize selected accounts for each platform
+        Console.WriteLine("AccountManagerViewModel constructor: About to initialize selected accounts for each platform");
         foreach (var platform in Enum.GetValues<SocialPlatform>())
         {
             SelectedAccountIds[platform] = new List<string>();
         }
+        Console.WriteLine("AccountManagerViewModel constructor: Selected accounts initialized");
         
         // Subscribe to OAuth callback
+        Console.WriteLine("AccountManagerViewModel constructor: About to check OAuth service type");
         if (_authenticationService is OAuthAuthenticationService oauthService)
         {
+            Console.WriteLine("AccountManagerViewModel constructor: Subscribing to OAuth callback");
             oauthService.OnAuthenticationCallback += HandleOAuthCallback;
+            Console.WriteLine("AccountManagerViewModel constructor: OAuth callback subscribed");
+        }
+        else
+        {
+            Console.WriteLine($"AccountManagerViewModel constructor: AuthenticationService is not OAuthAuthenticationService, it's {_authenticationService.GetType().Name}");
         }
         
-        // Load accounts on startup
-        _ = Task.Run(LoadAccountsAsync);
+        Console.WriteLine("AccountManagerViewModel constructor: Completed successfully");
+        // Note: Removed async loading from constructor to prevent UI thread issues
+        // LoadAccountsAsync will be called from the UI when needed
     }
     
     #region Properties
@@ -553,24 +580,23 @@ public partial class AccountManagerViewModel : ObservableObject
         {
             var accounts = await _accountService.GetAllAccountsAsync();
             
-            // Update UI on main thread
-            await Task.Run(() =>
+            // Update UI collections on the current thread (which should be the UI thread)
+            // ObservableCollection operations must be performed on the UI thread
+            Accounts.Clear();
+            foreach (var account in accounts)
             {
-                Accounts.Clear();
-                foreach (var account in accounts)
+                // Only add non-null accounts to prevent NullReferenceExceptions
+                if (account != null)
                 {
-                    // Only add non-null accounts to prevent NullReferenceExceptions
-                    if (account != null)
-                    {
-                        Accounts.Add(account);
-                    }
+                    Accounts.Add(account);
                 }
-            });
+            }
             
             UpdateComputedProperties();
         }
         catch (Exception ex)
         {
+            _logger.Error(ex, "Load accounts failed");
             System.Diagnostics.Debug.WriteLine($"Load accounts failed: {ex.Message}");
         }
     }
@@ -621,21 +647,21 @@ public partial class AccountManagerViewModel : ObservableObject
     }
     
     [RelayCommand]
-    private void EditAccount(AccountItemViewModel accountViewModel)
+    private void EditAccount(AccountItemViewModel? accountViewModel)
     {
         _logger.Information("EditAccount command executed");
         
         // Check if accountViewModel is null
         if (accountViewModel == null)
         {
-            _logger.Warning("EditAccount: accountViewModel is null");
+            _logger.Warning("EditAccount: accountViewModel is null - this suggests a UI binding issue");
             return;
         }
         
         // Check if accountViewModel.Id is null or empty
         if (string.IsNullOrEmpty(accountViewModel.Id))
         {
-            _logger.Warning("EditAccount: accountViewModel.Id is null or empty");
+            _logger.Warning("EditAccount: accountViewModel.Id is null or empty for account: {DisplayName}", accountViewModel.DisplayName);
             return;
         }
         
@@ -661,39 +687,39 @@ public partial class AccountManagerViewModel : ObservableObject
         {
             _logger.Warning("Account not found for editing: {AccountId}", accountViewModel.Id);
             _logger.Debug("Available accounts: {AvailableAccounts}", 
-                string.Join(", ", Accounts.Where(a => a != null).Select(a => a.Id)));
+                string.Join(", ", Accounts.Where(a => a != null).Select(a => $"{a.Id}:{a.DisplayName}")));
         }
     }
     
     [RelayCommand]
     private async Task RemoveAccount(AccountItemViewModel accountViewModel)
     {
-        System.Diagnostics.Debug.WriteLine("RemoveAccount command executed!");
+        _logger.Information("RemoveAccount command executed");
         
         try
         {
             // Check if accountViewModel is null
             if (accountViewModel == null)
             {
-                System.Diagnostics.Debug.WriteLine("RemoveAccount: accountViewModel is null!");
+                _logger.Warning("RemoveAccount: accountViewModel is null - this suggests a UI binding issue");
                 return;
             }
             
             // Check if accountViewModel.Id is null or empty
             if (string.IsNullOrEmpty(accountViewModel.Id))
             {
-                System.Diagnostics.Debug.WriteLine("RemoveAccount: accountViewModel.Id is null or empty!");
+                _logger.Warning("RemoveAccount: accountViewModel.Id is null or empty for account: {DisplayName}", accountViewModel.DisplayName);
                 return;
             }
             
             // Check if Accounts collection is null
             if (Accounts == null)
             {
-                System.Diagnostics.Debug.WriteLine("RemoveAccount: Accounts collection is null!");
+                _logger.Error("RemoveAccount: Accounts collection is null");
                 return;
             }
             
-            System.Diagnostics.Debug.WriteLine($"RemoveAccount: Looking for account with ID: {accountViewModel.Id}");
+            _logger.Debug("RemoveAccount: Looking for account with ID: {AccountId}", accountViewModel.Id);
             
             // Add comprehensive null checks to prevent NullReferenceException
             var account = Accounts.Where(a => a != null && !string.IsNullOrEmpty(a.Id))
@@ -701,18 +727,19 @@ public partial class AccountManagerViewModel : ObservableObject
             
             if (account != null)
             {
-                System.Diagnostics.Debug.WriteLine($"Removing account: {account.DisplayName} ({account.PlatformId})");
+                _logger.Information("Removing account: {DisplayName} ({PlatformId})", account.DisplayName, account.PlatformId);
                 await DeleteAccountAsync(account);
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine($"Account not found for removal: {accountViewModel.Id}");
-                System.Diagnostics.Debug.WriteLine($"Available accounts: {string.Join(", ", Accounts.Where(a => a != null).Select(a => a.Id))}");
+                _logger.Warning("Account not found for removal: {AccountId}", accountViewModel.Id);
+                _logger.Debug("Available accounts: {AvailableAccounts}", 
+                    string.Join(", ", Accounts.Where(a => a != null).Select(a => $"{a.Id}:{a.DisplayName}")));
             }
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"RemoveAccount failed: {ex}");
+            _logger.Error(ex, "RemoveAccount failed for account: {AccountId}", accountViewModel?.Id);
         }
     }
     

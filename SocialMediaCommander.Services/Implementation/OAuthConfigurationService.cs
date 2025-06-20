@@ -34,8 +34,9 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         Directory.CreateDirectory(_configDirectory);
         _configurations = new Dictionary<SocialPlatform, OAuthConfig>();
         
-        // Load existing configurations
-        _ = Task.Run(LoadConfigurationsAsync);
+        // Note: Removed synchronous async calls from constructor to prevent deadlocks
+        // Configurations will be loaded lazily when first accessed via EnsureConfigurationsLoadedAsync()
+        _logger.Information("OAuthConfigurationService initialized. Configuration loading will be done lazily.");
     }
 
     public async Task<OAuthConfig?> GetConfigurationAsync(SocialPlatform platform)
@@ -253,6 +254,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         if (!File.Exists(configPath))
         {
             // Initialize with default configurations
+            _logger.Information("OAuth configuration file does not exist, creating defaults");
             await InitializeDefaultConfigurationsAsync();
             return;
         }
@@ -260,9 +262,18 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         try
         {
             var json = await File.ReadAllTextAsync(configPath);
+            
+            // Check if file is empty or just contains empty JSON
+            if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
+            {
+                _logger.Warning("OAuth configuration file is empty, initializing defaults");
+                await InitializeDefaultConfigurationsAsync();
+                return;
+            }
+            
             var configs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
 
-            if (configs != null)
+            if (configs != null && configs.Count > 0)
             {
                 lock (_lock)
                 {
@@ -275,6 +286,12 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                         }
                     }
                 }
+                _logger.Information("Loaded {Count} OAuth configurations", configs.Count);
+            }
+            else
+            {
+                _logger.Warning("OAuth configuration file contains no valid configurations, initializing defaults");
+                await InitializeDefaultConfigurationsAsync();
             }
         }
         catch (Exception ex)
@@ -328,13 +345,29 @@ public class OAuthConfigurationService : IOAuthConfigurationService
 
     private async Task EnsureConfigurationsLoadedAsync()
     {
-        // Simple check - in a real implementation you might want more sophisticated loading
+        // Check if configurations are loaded
+        lock (_lock)
+        {
+            if (_configurations.Count > 0)
+            {
+                return; // Already loaded
+            }
+        }
+        
+        // Load configurations if not already loaded
+        _logger.Debug("Configurations not loaded, loading now...");
+        await LoadConfigurationsAsync();
+        
+        // Verify configurations were loaded
         lock (_lock)
         {
             if (_configurations.Count == 0)
             {
-                // Trigger reload
-                _ = Task.Run(LoadConfigurationsAsync);
+                _logger.Warning("No configurations loaded, initializing defaults");
+            }
+            else
+            {
+                _logger.Debug("Configurations loaded successfully: {Count} platforms", _configurations.Count);
             }
         }
     }
