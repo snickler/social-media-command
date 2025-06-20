@@ -220,9 +220,98 @@
                         </StackPanel>
                     </Border>
                     
+                    <!-- Edit/Add Account Form -->
+                    <Border Background="{DynamicResource SMC-Card}"
+                            BorderBrush="{DynamicResource SMC-Card-Border}"
+                            BorderThickness="1"
+                            CornerRadius="12"
+                            Padding="24"
+                            Margin="0,0,0,16"
+                            IsVisible="{Binding IsEditingAccount}">
+                        <StackPanel Spacing="20">
+                            <!-- Form Header -->
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Edit Account" 
+                                           FontSize="20"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource SMC-Foreground}"/>
+                                <TextBlock Text="Update your account information" 
+                                           FontSize="14"
+                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                            </StackPanel>
+                            
+                            <!-- Form Fields -->
+                            <Grid ColumnDefinitions="1*,1*" RowDefinitions="Auto,Auto,Auto,Auto">
+                                
+                                <!-- Username Field -->
+                                <StackPanel Grid.Column="0" Grid.Row="0" Spacing="8" Margin="0,0,8,16">
+                                    <TextBlock Text="Username" 
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource SMC-Foreground}"/>
+                                    <TextBox Text="{Binding NewAccountUsername}"
+                                             Watermark="Enter username"
+                                             Classes="modern"/>
+                                </StackPanel>
+                                
+                                <!-- Display Name Field -->
+                                <StackPanel Grid.Column="1" Grid.Row="0" Spacing="8" Margin="8,0,0,16">
+                                    <TextBlock Text="Display Name" 
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource SMC-Foreground}"/>
+                                    <TextBox Text="{Binding NewAccountDisplayName}"
+                                             Watermark="Enter display name"
+                                             Classes="modern"/>
+                                </StackPanel>
+                                
+                                <!-- Avatar URL Field -->
+                                <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Spacing="8" Margin="0,0,0,16">
+                                    <TextBlock Text="Avatar URL (Optional)" 
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource SMC-Foreground}"/>
+                                    <TextBox Text="{Binding NewAccountAvatar}"
+                                             Watermark="https://example.com/avatar.jpg"
+                                             Classes="modern"/>
+                                </StackPanel>
+                                
+                                <!-- Platform Display -->
+                                <StackPanel Grid.Column="0" Grid.Row="2" Spacing="8" Margin="0,0,0,16">
+                                    <TextBlock Text="Platform" 
+                                               FontWeight="Medium"
+                                               Foreground="{DynamicResource SMC-Foreground}"/>
+                                    <Border Background="{DynamicResource SMC-Muted}"
+                                            BorderBrush="{DynamicResource SMC-Card-Border}"
+                                            BorderThickness="1"
+                                            CornerRadius="8"
+                                            Padding="12,8">
+                                        <TextBlock Text="{Binding SelectedPlatformName}" 
+                                                   FontWeight="Medium"
+                                                   Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                    </Border>
+                                </StackPanel>
+                                
+                                <!-- Action Buttons -->
+                                <StackPanel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="2" 
+                                           Orientation="Horizontal" 
+                                           Spacing="12" 
+                                           HorizontalAlignment="Right"
+                                           Margin="0,8,0,0">
+                                    <Button Content="Cancel" 
+                                            Command="{Binding CancelAccountOperationCommand}"
+                                            Classes="secondary"
+                                            MinWidth="100"/>
+                                    <Button Content="Save Changes" 
+                                            Command="{Binding SaveAccountCommand}"
+                                            Classes="primary"
+                                            MinWidth="120"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    
                     <!-- Account Groups -->
                     <ItemsControl ItemsSource="{Binding AccountViewModels}"
-                                 IsVisible="{Binding HasAccounts}">
+                                 IsVisible="{Binding HasAccounts}"
+                                 x:Name="AccountsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Border Classes="AccountCard">
@@ -284,7 +373,8 @@
                                             <!-- Edit Button -->
                                             <Button Classes="AccountAction"
                                                    BorderBrush="{DynamicResource SMC-Card-Border}"
-                                                   Command="{Binding EditCommand}"
+                                                   Command="{Binding #AccountsList.((vm:AccountManagerViewModel)DataContext).EditAccountCommand}"
+                                                   CommandParameter="{Binding}"
                                                    ToolTip.Tip="Edit Account">
                                                 <TextBlock Text="✏️" FontSize="14"/>
                                             </Button>
@@ -292,7 +382,8 @@
                                             <!-- Delete Button -->
                                             <Button Classes="AccountAction"
                                                    BorderBrush="{DynamicResource SMC-Warning-Border}"
-                                                   Command="{Binding DeleteCommand}"
+                                                   Command="{Binding #AccountsList.((vm:AccountManagerViewModel)DataContext).RemoveAccountCommand}"
+                                                   CommandParameter="{Binding}"
                                                    ToolTip.Tip="Delete Account">
                                                 <TextBlock Text="🗑️" FontSize="14"/>
                                             </Button>

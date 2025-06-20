@@ -129,7 +129,7 @@ public partial class AccountManagerViewModel : ObservableObject
     
     // UI-friendly account view models
     public IEnumerable<AccountItemViewModel> AccountViewModels => 
-        Accounts.Where(a => a != null).Select(a => new AccountItemViewModel(a, EditAccountCommand, RemoveAccountCommand));
+        Accounts.Where(a => a != null).Select(a => new AccountItemViewModel(a));
     
     public string SelectedPlatformName => 
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name;
@@ -198,11 +198,21 @@ public partial class AccountManagerViewModel : ObservableObject
             if (config.ClientId == "YOUR_CLIENT_ID_HERE" || config.ClientSecret == "YOUR_CLIENT_SECRET_HERE" ||
                 string.IsNullOrWhiteSpace(config.ClientId) || string.IsNullOrWhiteSpace(config.ClientSecret))
             {
-                AuthenticationStatus = $"⚠️ OAuth configuration incomplete for {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name}. Please provide valid Client ID and Client Secret in OAuth settings.";
+                AuthenticationStatus = $"⚙️ OAuth setup required for {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name}";
                 _logger.Warning("OAuth configuration has placeholder values for platform: {Platform}", SelectedPlatform);
                 
-                // Clear status after delay
-                _ = Task.Delay(7000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+                // Show helpful configuration guidance
+                var platformName = PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name;
+                var guidanceMessage = GetOAuthSetupGuidance(SelectedPlatform);
+                
+                AuthenticationStatus = $"📋 {platformName} OAuth Setup Required:\n{guidanceMessage}";
+                
+                // TODO: Open OAuth configuration dialog
+                // For now, show detailed guidance
+                _logger.Information("User needs to configure OAuth settings for {Platform}. Guidance: {Guidance}", SelectedPlatform, guidanceMessage);
+                
+                // Keep the guidance visible longer
+                _ = Task.Delay(10000).ContinueWith(_ => AuthenticationStatus = string.Empty);
                 return;
             }
             
@@ -266,6 +276,8 @@ public partial class AccountManagerViewModel : ObservableObject
             if (string.IsNullOrWhiteSpace(NewAccountUsername) || 
                 string.IsNullOrWhiteSpace(NewAccountDisplayName))
             {
+                AuthenticationStatus = "⚠️ Please fill in both username and display name";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
                 return;
             }
             
@@ -273,6 +285,8 @@ public partial class AccountManagerViewModel : ObservableObject
             
             if (IsEditingAccount && CurrentAccount != null)
             {
+                _logger.Information("Updating existing account: {AccountId} ({DisplayName})", CurrentAccount.Id, CurrentAccount.DisplayName);
+                
                 // Update existing account
                 account = new Account
                 {
@@ -295,10 +309,15 @@ public partial class AccountManagerViewModel : ObservableObject
                 if (index >= 0)
                 {
                     Accounts[index] = account;
+                    _logger.Information("Account updated in local collection at index: {Index}", index);
                 }
+                
+                AuthenticationStatus = $"✅ Account '{account.DisplayName}' updated successfully";
             }
             else
             {
+                _logger.Information("Creating new account for platform: {Platform}", SelectedPlatform);
+                
                 // Create new account
                 account = new Account
                 {
@@ -312,15 +331,22 @@ public partial class AccountManagerViewModel : ObservableObject
                 
                 await _accountService.CreateAccountAsync(account);
                 Accounts.Add(account);
+                
+                AuthenticationStatus = $"✅ Account '{account.DisplayName}' created successfully";
+                _logger.Information("New account created and added to collection: {AccountId}", account.Id);
             }
             
-            CancelAccountOperation();
-            OnPropertyChanged(nameof(AccountsForSelectedPlatform));
-            OnPropertyChanged(nameof(HasAccountsForPlatform));
+            // Update computed properties
+            UpdateComputedProperties();
+            
+            // Close the form after a brief delay to show the success message
+            _ = Task.Delay(1500).ContinueWith(_ => CancelAccountOperation());
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Save account failed: {ex.Message}");
+            _logger.Error(ex, "Save account failed. IsEditing: {IsEditing}, Username: {Username}", IsEditingAccount, NewAccountUsername);
+            AuthenticationStatus = $"❌ Failed to save account: {ex.Message}";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
         }
     }
     
@@ -329,14 +355,29 @@ public partial class AccountManagerViewModel : ObservableObject
     {
         try
         {
+            _logger.Information("DeleteAccountAsync called for account: {DisplayName} ({PlatformId}), IsDefault: {IsDefault}", 
+                account.DisplayName, account.PlatformId, account.IsDefault);
+            
             if (account.IsDefault)
             {
-                // Don't allow deleting default accounts
+                // Don't allow deleting default accounts - provide user feedback
+                _logger.Warning("Attempted to delete default account: {DisplayName}. Default accounts cannot be deleted.", account.DisplayName);
+                AuthenticationStatus = $"❌ Cannot delete default account '{account.DisplayName}'. Set another account as default first.";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
                 return;
             }
             
+            _logger.Information("Proceeding with account deletion: {AccountId}", account.Id);
+            
             await _accountService.DeleteAccountAsync(account.Id);
-            Accounts.Remove(account);
+            
+            // Remove from local collection
+            var accountToRemove = Accounts.FirstOrDefault(a => a?.Id == account.Id);
+            if (accountToRemove != null)
+            {
+                Accounts.Remove(accountToRemove);
+                _logger.Information("Account removed from local collection: {AccountId}", account.Id);
+            }
             
             // Remove from selected accounts
             if (SelectedAccountIds.ContainsKey(account.PlatformId))
@@ -344,12 +385,16 @@ public partial class AccountManagerViewModel : ObservableObject
                 SelectedAccountIds[account.PlatformId].Remove(account.Id);
             }
             
-            OnPropertyChanged(nameof(AccountsForSelectedPlatform));
-            OnPropertyChanged(nameof(HasAccountsForPlatform));
+            // Update computed properties
+            UpdateComputedProperties();
+            
+            _logger.Information("Account deletion completed successfully: {DisplayName}", account.DisplayName);
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Delete account failed: {ex.Message}");
+            _logger.Error(ex, "Delete account failed for account: {AccountId}", account.Id);
+            AuthenticationStatus = $"❌ Failed to delete account: {ex.Message}";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
         }
     }
     
@@ -651,30 +696,33 @@ public partial class AccountManagerViewModel : ObservableObject
     {
         _logger.Information("EditAccount command executed");
         
-        // Check if accountViewModel is null
+        // Enhanced validation with more detailed logging
         if (accountViewModel == null)
         {
-            _logger.Warning("EditAccount: accountViewModel is null - this suggests a UI binding issue");
+            _logger.Warning("EditAccount: accountViewModel is null - this suggests a UI binding issue. Check XAML CommandParameter binding.");
+            // Provide user feedback
+            AuthenticationStatus = "⚠️ Unable to edit account - please try again";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
             return;
         }
         
-        // Check if accountViewModel.Id is null or empty
         if (string.IsNullOrEmpty(accountViewModel.Id))
         {
-            _logger.Warning("EditAccount: accountViewModel.Id is null or empty for account: {DisplayName}", accountViewModel.DisplayName);
+            _logger.Warning("EditAccount: accountViewModel.Id is null or empty for account: {DisplayName}. UI binding may be incomplete.", accountViewModel.DisplayName);
+            AuthenticationStatus = "⚠️ Account data incomplete - cannot edit";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
             return;
         }
         
-        // Check if Accounts collection is null
         if (Accounts == null)
         {
-            _logger.Error("EditAccount: Accounts collection is null");
+            _logger.Error("EditAccount: Accounts collection is null - this is a critical error");
+            AuthenticationStatus = "❌ Internal error - please restart the application";
             return;
         }
         
         _logger.Debug("EditAccount: Looking for account with ID: {AccountId}", accountViewModel.Id);
         
-        // Add comprehensive null checks to prevent NullReferenceException
         var account = Accounts.Where(a => a != null && !string.IsNullOrEmpty(a.Id))
                               .FirstOrDefault(a => a.Id == accountViewModel.Id);
         
@@ -685,61 +733,82 @@ public partial class AccountManagerViewModel : ObservableObject
         }
         else
         {
-            _logger.Warning("Account not found for editing: {AccountId}", accountViewModel.Id);
-            _logger.Debug("Available accounts: {AvailableAccounts}", 
+            _logger.Warning("Account not found for editing: {AccountId}. Available accounts: {AvailableAccounts}", 
+                accountViewModel.Id,
                 string.Join(", ", Accounts.Where(a => a != null).Select(a => $"{a.Id}:{a.DisplayName}")));
+            
+            AuthenticationStatus = "⚠️ Account not found - it may have been removed";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
+            
+            // Refresh accounts in case of sync issues
+            _ = Task.Run(async () => await RefreshAccountsAsync());
         }
     }
     
     [RelayCommand]
-    private async Task RemoveAccount(AccountItemViewModel accountViewModel)
+    private async Task RemoveAccount(AccountItemViewModel? accountViewModel)
     {
         _logger.Information("RemoveAccount command executed");
         
         try
         {
-            // Check if accountViewModel is null
+            // Enhanced validation with better user feedback
             if (accountViewModel == null)
             {
-                _logger.Warning("RemoveAccount: accountViewModel is null - this suggests a UI binding issue");
+                _logger.Warning("RemoveAccount: accountViewModel is null - this suggests a UI binding issue. Check XAML CommandParameter binding.");
+                AuthenticationStatus = "⚠️ Unable to remove account - please try again";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
                 return;
             }
             
-            // Check if accountViewModel.Id is null or empty
             if (string.IsNullOrEmpty(accountViewModel.Id))
             {
-                _logger.Warning("RemoveAccount: accountViewModel.Id is null or empty for account: {DisplayName}", accountViewModel.DisplayName);
+                _logger.Warning("RemoveAccount: accountViewModel.Id is null or empty for account: {DisplayName}. UI binding may be incomplete.", accountViewModel.DisplayName);
+                AuthenticationStatus = "⚠️ Account data incomplete - cannot remove";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
                 return;
             }
             
-            // Check if Accounts collection is null
             if (Accounts == null)
             {
-                _logger.Error("RemoveAccount: Accounts collection is null");
+                _logger.Error("RemoveAccount: Accounts collection is null - this is a critical error");
+                AuthenticationStatus = "❌ Internal error - please restart the application";
                 return;
             }
             
             _logger.Debug("RemoveAccount: Looking for account with ID: {AccountId}", accountViewModel.Id);
             
-            // Add comprehensive null checks to prevent NullReferenceException
             var account = Accounts.Where(a => a != null && !string.IsNullOrEmpty(a.Id))
                                   .FirstOrDefault(a => a.Id == accountViewModel.Id);
             
             if (account != null)
             {
                 _logger.Information("Removing account: {DisplayName} ({PlatformId})", account.DisplayName, account.PlatformId);
+                AuthenticationStatus = $"🗑️ Removing {account.DisplayName}...";
+                
                 await DeleteAccountAsync(account);
+                
+                AuthenticationStatus = $"✅ {account.DisplayName} removed successfully";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
             }
             else
             {
-                _logger.Warning("Account not found for removal: {AccountId}", accountViewModel.Id);
-                _logger.Debug("Available accounts: {AvailableAccounts}", 
+                _logger.Warning("Account not found for removal: {AccountId}. Available accounts: {AvailableAccounts}", 
+                    accountViewModel.Id,
                     string.Join(", ", Accounts.Where(a => a != null).Select(a => $"{a.Id}:{a.DisplayName}")));
+                
+                AuthenticationStatus = "⚠️ Account not found - it may have already been removed";
+                _ = ClearAuthenticationStatusAfterDelayAsync();
+                
+                // Refresh accounts to sync UI
+                await RefreshAccountsAsync();
             }
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "RemoveAccount failed for account: {AccountId}", accountViewModel?.Id);
+            AuthenticationStatus = $"❌ Failed to remove account: {ex.Message}";
+            _ = ClearAuthenticationStatusAfterDelayAsync();
         }
     }
     
@@ -753,6 +822,19 @@ public partial class AccountManagerViewModel : ObservableObject
             SocialPlatform.Threads => "T",
             SocialPlatform.Facebook => "f",
             _ => "?"
+        };
+    }
+    
+    private string GetOAuthSetupGuidance(SocialPlatform platform)
+    {
+        return platform switch
+        {
+            SocialPlatform.BlueSky => "1. Go to BlueSky Developer Portal\n2. Create new App\n3. Copy Client ID & Secret to OAuth Config",
+            SocialPlatform.X => "1. Visit developer.twitter.com\n2. Create Project & App\n3. Generate OAuth 2.0 Client ID & Secret\n4. Add to OAuth Config",
+            SocialPlatform.LinkedIn => "1. Go to LinkedIn Developer Console\n2. Create new Application\n3. Get Client ID & Client Secret\n4. Configure OAuth settings",
+            SocialPlatform.Threads => "1. Visit developers.facebook.com\n2. Create Threads App\n3. Get App ID & App Secret\n4. Configure OAuth redirect",
+            SocialPlatform.Facebook => "1. Go to developers.facebook.com\n2. Create App for Pages\n3. Get App ID & App Secret\n4. Add OAuth settings",
+            _ => "Check platform's developer documentation for OAuth setup instructions."
         };
     }
     
@@ -849,10 +931,6 @@ public class AccountItemViewModel
     public bool IsConnected { get; set; } = true;
     public bool RequiresReconnection { get; set; } = false;
     
-    // Commands for direct binding
-    public IRelayCommand? EditCommand { get; set; }
-    public IRelayCommand? DeleteCommand { get; set; }
-    
     // UI Properties
     public string AvatarText => DisplayName.FirstOrDefault().ToString().ToUpper();
     public string PlatformColor => PlatformConfigurations.GetPlatformConfig(PlatformId).Color;
@@ -869,11 +947,5 @@ public class AccountItemViewModel
         IsDefault = account.IsDefault;
         IsConnected = account.Tokens != null && !account.Tokens.IsExpired;
         RequiresReconnection = account.Tokens?.IsExpired == true;
-    }
-    
-    public AccountItemViewModel(Account account, IRelayCommand editCommand, IRelayCommand deleteCommand) : this(account)
-    {
-        EditCommand = editCommand;
-        DeleteCommand = deleteCommand;
     }
 } 

@@ -151,7 +151,7 @@ public partial class SchedulerViewModel : ObservableObject
 
         try
         {
-            await LoadScheduledPostsAsync();
+            LoadScheduledPosts();
             await LoadAutomationRulesAsync();
             await LoadScheduleTemplatesAsync();
             UpdateStatistics();
@@ -463,7 +463,7 @@ public partial class SchedulerViewModel : ObservableObject
     {
         try
         {
-            await LoadScheduledPostsAsync();
+            LoadScheduledPosts();
             await LoadAutomationRulesAsync();
             await LoadScheduleTemplatesAsync();
             UpdateStatistics();

@@ -198,7 +198,46 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         if (config == null) return false;
 
         var validation = await ValidateConfigurationAsync(platform, config);
-        return validation.IsValid;
+        return validation.IsValid && !HasPlaceholderValues(config);
+    }
+
+    public bool HasPlaceholderValues(OAuthConfig config)
+    {
+        return config.ClientId == "YOUR_CLIENT_ID_HERE" || 
+               config.ClientSecret == "YOUR_CLIENT_SECRET_HERE" ||
+               string.IsNullOrWhiteSpace(config.ClientId) || 
+               string.IsNullOrWhiteSpace(config.ClientSecret);
+    }
+    
+    public async Task<ConfigurationStatus> GetConfigurationStatusAsync(SocialPlatform platform)
+    {
+        var config = await GetConfigurationAsync(platform);
+        
+        if (config == null)
+        {
+            return new ConfigurationStatus
+            {
+                IsConfigured = false,
+                HasPlaceholders = false,
+                Status = "Not configured",
+                Message = "OAuth configuration not found. Default configuration will be created."
+            };
+        }
+        
+        var hasPlaceholders = HasPlaceholderValues(config);
+        var validation = await ValidateConfigurationAsync(platform, config);
+        
+        return new ConfigurationStatus
+        {
+            IsConfigured = validation.IsValid && !hasPlaceholders,
+            HasPlaceholders = hasPlaceholders,
+            Status = hasPlaceholders ? "Needs setup" : validation.IsValid ? "Ready" : "Invalid",
+            Message = hasPlaceholders 
+                ? "Please replace placeholder values with your actual OAuth credentials"
+                : validation.IsValid 
+                    ? "OAuth configuration is ready to use"
+                    : $"Configuration errors: {string.Join(", ", validation.Errors)}"
+        };
     }
 
     public async Task ImportConfigurationsAsync(string filePath)
