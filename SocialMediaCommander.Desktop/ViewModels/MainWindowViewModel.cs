@@ -98,9 +98,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     #region Account Management Commands - Async optimized
     
     [RelayCommand]
-    private async Task ManageAccountsAsync()
+    private void ManageAccounts()
     {
-        Console.WriteLine("ManageAccountsAsync command executed!");
+        Console.WriteLine("ManageAccounts command executed!");
         System.Diagnostics.Debug.WriteLine("Opening Account Management");
         
         IsAccountManagerVisible = !IsAccountManagerVisible;

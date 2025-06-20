@@ -168,7 +168,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         _accountService = accountService;
         LoadSettings();
-        LoadStatistics();
+        _ = LoadStatisticsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
 
     [RelayCommand]
@@ -380,7 +380,7 @@ public partial class SettingsViewModel : ObservableObject
         DefaultMediaFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
     }
 
-    private async void LoadStatistics()
+    private async Task LoadStatisticsAsync()
     {
         try
         {

@@ -74,7 +74,7 @@ public partial class AnalyticsDashboardViewModel : ObservableObject
 
         InitializeTimeRangeOptions();
         SelectedTimeRange = TimeRangeOptions.FirstOrDefault(t => t.Id == "30d");
-        LoadInitialData();
+        _ = LoadInitialDataAsync(); // Fire-and-forget with discard to suppress CS4014
 
         PropertyChanged += OnPropertyChanged;
     }
@@ -177,7 +177,7 @@ public partial class AnalyticsDashboardViewModel : ObservableObject
         SelectedDateTo = endDate;
     }
 
-    private async void LoadInitialData()
+    private async Task LoadInitialDataAsync()
     {
         await LoadAnalyticsData();
     }

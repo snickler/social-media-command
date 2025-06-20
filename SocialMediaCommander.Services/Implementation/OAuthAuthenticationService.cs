@@ -418,10 +418,10 @@ public class OAuthAuthenticationService : IAuthenticationService
     public OAuthConfig GetOAuthConfig(SocialPlatform platform)
     {
         // This method should be synchronous according to the interface
-        // We'll get the configuration synchronously by calling the async method
+        // Using GetAwaiter().GetResult() instead of .Wait()/.Result to preserve exception details
+        // as recommended by Microsoft best practices
         var task = _configService.GetConfigurationAsync(platform);
-        task.Wait();
-        return task.Result ?? _configService.GetDefaultConfiguration(platform);
+        return task.GetAwaiter().GetResult() ?? _configService.GetDefaultConfiguration(platform);
     }
 
     public void Dispose()

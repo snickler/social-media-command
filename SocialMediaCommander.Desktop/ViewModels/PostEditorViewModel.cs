@@ -365,7 +365,7 @@ public partial class PostEditorViewModel : ObservableObject
         
         FilterPlatformsForThreadSupport();
         UpdateCharacterCounts();
-        UpdatePreviews();
+        _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
         OnPropertyChanged(nameof(HasSelectedPlatforms));
         OnPropertyChanged(nameof(CanPost));
         OnPropertyChanged(nameof(StatusMessage));
@@ -414,36 +414,44 @@ public partial class PostEditorViewModel : ObservableObject
         return content?.Length ?? 0;
     }
     
-    private async void UpdatePreviews()
+    private async Task UpdatePreviewsAsync()
     {
-        PlatformPreviews.Clear();
-        
-        var post = CreatePostFromViewModel();
-        if (!post.TargetPlatforms.Any()) return;
-        
-        var previews = await _postService.GetPostPreviewsAsync(post);
-        
-        foreach (var preview in previews)
+        try
         {
-            var platformConfig = PlatformConfigurations.GetPlatformConfig(preview.Key);
-            var characterCount = CalculateCharacterCount(preview.Value, preview.Key);
+            PlatformPreviews.Clear();
             
-            PlatformPreviews.Add(new PlatformPreview
+            var post = CreatePostFromViewModel();
+            if (!post.TargetPlatforms.Any()) return;
+            
+            var previews = await _postService.GetPostPreviewsAsync(post);
+            
+            foreach (var preview in previews)
             {
-                Platform = preview.Key,
-                PlatformName = platformConfig.Name,
-                FormattedContent = preview.Value,
-                RawContent = post.Content,
-                Hashtags = post.Hashtags.ToList(),
-                HasHashtags = post.Hashtags.Any(),
-                IsThread = post.IsThread,
-                ThreadPostCount = post.ThreadPosts.Count,
-                HasMedia = post.Media.Any(),
-                MediaCount = post.Media.Count,
-                CharacterCount = characterCount,
-                CharacterLimit = platformConfig.CharacterLimit,
-                IsOverLimit = platformConfig.CharacterLimit.HasValue && characterCount > platformConfig.CharacterLimit.Value
-            });
+                var platformConfig = PlatformConfigurations.GetPlatformConfig(preview.Key);
+                var characterCount = CalculateCharacterCount(preview.Value, preview.Key);
+                
+                PlatformPreviews.Add(new PlatformPreview
+                {
+                    Platform = preview.Key,
+                    PlatformName = platformConfig.Name,
+                    FormattedContent = preview.Value,
+                    RawContent = post.Content,
+                    Hashtags = post.Hashtags.ToList(),
+                    HasHashtags = post.Hashtags.Any(),
+                    IsThread = post.IsThread,
+                    ThreadPostCount = post.ThreadPosts.Count,
+                    HasMedia = post.Media.Any(),
+                    MediaCount = post.Media.Count,
+                    CharacterCount = characterCount,
+                    CharacterLimit = platformConfig.CharacterLimit,
+                    IsOverLimit = platformConfig.CharacterLimit.HasValue && characterCount > platformConfig.CharacterLimit.Value
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log error but don't throw to prevent UI crashes
+            System.Diagnostics.Debug.WriteLine($"Error updating previews: {ex.Message}");
         }
     }
     
@@ -462,17 +470,17 @@ public partial class PostEditorViewModel : ObservableObject
     partial void OnContentChanged(string value)
     {
         UpdateCharacterCounts();
-        UpdatePreviews();
+        _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
     
     partial void OnPromoModeChanged(bool value)
     {
-        UpdatePreviews();
+        _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
     
     partial void OnIsThreadChanged(bool value)
     {
-        UpdatePreviews();
+        _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
     
     partial void OnThreadsOnlyModeChanged(bool value)
@@ -505,7 +513,7 @@ public partial class PostEditorViewModel : ObservableObject
         {
             case nameof(Content):
                 UpdateCharacterCounts();
-                UpdatePreviews();
+                _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
                 OnPropertyChanged(nameof(HasContent));
                 OnPropertyChanged(nameof(CanPost));
                 OnPropertyChanged(nameof(StatusMessage));
@@ -518,7 +526,7 @@ public partial class PostEditorViewModel : ObservableObject
                 }
                 FilterPlatformsForThreadSupport();
                 UpdateCharacterCounts();
-                UpdatePreviews();
+                _ = UpdatePreviewsAsync(); // Fire-and-forget with discard to suppress CS4014
                 OnPropertyChanged(nameof(StatusMessage));
                 OnPropertyChanged(nameof(PostButtonText));
                 break;

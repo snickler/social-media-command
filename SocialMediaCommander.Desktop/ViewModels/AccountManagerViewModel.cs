@@ -94,7 +94,7 @@ public partial class AccountManagerViewModel : ObservableObject
         if (_authenticationService is OAuthAuthenticationService oauthService)
         {
             Console.WriteLine("AccountManagerViewModel constructor: Subscribing to OAuth callback");
-            oauthService.OnAuthenticationCallback += HandleOAuthCallback;
+            oauthService.OnAuthenticationCallback += (code, state) => _ = HandleOAuthCallbackAsync(code, state);
             Console.WriteLine("AccountManagerViewModel constructor: OAuth callback subscribed");
         }
         else
@@ -643,7 +643,7 @@ public partial class AccountManagerViewModel : ObservableObject
     private void AddAccountForPlatform(SocialPlatform platform)
     {
         SelectedPlatform = platform;
-        StartAddAccount();
+        _ = StartAddAccount(); // Fire-and-forget with discard to suppress CS4014
     }
     
     [RelayCommand]
@@ -767,7 +767,7 @@ public partial class AccountManagerViewModel : ObservableObject
     
     #endregion
     
-    private async void HandleOAuthCallback(string authorizationCode, string state)
+    private async Task HandleOAuthCallbackAsync(string authorizationCode, string state)
     {
         try
         {
@@ -803,12 +803,8 @@ public partial class AccountManagerViewModel : ObservableObject
                 
                 AuthenticationStatus = $"Successfully connected {result.UserProfile.DisplayName}!";
                 
-                // Clear status after delay
-                _ = Task.Delay(3000).ContinueWith(_ => 
-                {
-                    AuthenticationStatus = "";
-                    IsAuthenticating = false;
-                });
+                // Clear status after delay - using proper async pattern
+                _ = ClearAuthenticationStatusAfterDelayAsync();
             }
             else
             {
@@ -821,6 +817,13 @@ public partial class AccountManagerViewModel : ObservableObject
             AuthenticationStatus = $"Authentication error: {ex.Message}";
             IsAuthenticating = false;
         }
+    }
+    
+    private async Task ClearAuthenticationStatusAfterDelayAsync()
+    {
+        await Task.Delay(3000);
+        AuthenticationStatus = "";
+        IsAuthenticating = false;
     }
 }
 

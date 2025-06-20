@@ -139,7 +139,7 @@ public partial class SchedulerViewModel : ObservableObject
         _postService = postService;
         _accountService = accountService;
         
-        LoadInitialData();
+        _ = LoadInitialDataAsync(); // Fire-and-forget with discard to suppress CS4014
         StartAutomationEngine();
     }
 
@@ -459,56 +459,63 @@ public partial class SchedulerViewModel : ObservableObject
         });
     }
 
-    private async void LoadInitialData()
+    private async Task LoadInitialDataAsync()
     {
-        await LoadScheduledPostsAsync();
-        await LoadAutomationRulesAsync();
-        await LoadScheduleTemplatesAsync();
-        UpdateStatistics();
+        try
+        {
+            await LoadScheduledPostsAsync();
+            await LoadAutomationRulesAsync();
+            await LoadScheduleTemplatesAsync();
+            UpdateStatistics();
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load initial data: {ex.Message}");
+        }
     }
 
-    private async Task LoadScheduledPostsAsync()
+    private void LoadScheduledPosts()
     {
         try
         {
             // Simulate loading scheduled posts
             ScheduledPosts.Clear();
             
-                         var samplePosts = new[]
-             {
-                 new ScheduledPostViewModel
-                 {
-                     Id = "1",
-                     Content = "🚀 Exciting news! Our new feature is launching next week. Stay tuned for updates! #Innovation #TechNews",
-                     ScheduledTime = DateTime.Today.AddHours(14),
-                     Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn },
-                     Status = PostStatus.Publishing,
-                     CreatedAt = DateTime.Now.AddDays(-1),
-                     Author = "Marketing Team"
-                 },
-                 new ScheduledPostViewModel
-                 {
-                     Id = "2",
-                     Content = "📊 Weekly analytics report shows 25% increase in engagement. Thank you for your continued support!",
-                     ScheduledTime = DateTime.Today.AddDays(1).AddHours(10),
-                     Platforms = new List<SocialPlatform> { SocialPlatform.Facebook, SocialPlatform.BlueSky },
-                     Status = PostStatus.Publishing,
-                     CreatedAt = DateTime.Now.AddHours(-3),
-                     Author = "Analytics Team"
-                 },
-                 new ScheduledPostViewModel
-                 {
-                     Id = "3",
-                     Content = "🎯 Pro tip: Use our advanced scheduling features to optimize your social media presence!",
-                     ScheduledTime = DateTime.Today.AddDays(2).AddHours(16),
-                     Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.Facebook, SocialPlatform.LinkedIn },
-                     Status = PostStatus.Publishing,
-                     CreatedAt = DateTime.Now.AddMinutes(-45),
-                     Author = "Content Team",
-                     IsRecurring = true,
-                     RecurrencePattern = "Weekly"
-                 }
-             };
+            var samplePosts = new[]
+            {
+                new ScheduledPostViewModel
+                {
+                    Id = "1",
+                    Content = "🚀 Exciting news! Our new feature is launching next week. Stay tuned for updates! #Innovation #TechNews",
+                    ScheduledTime = DateTime.Today.AddHours(14),
+                    Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn },
+                    Status = PostStatus.Publishing,
+                    CreatedAt = DateTime.Now.AddDays(-1),
+                    Author = "Marketing Team"
+                },
+                new ScheduledPostViewModel
+                {
+                    Id = "2",
+                    Content = "📊 Weekly analytics report shows 25% increase in engagement. Thank you for your continued support!",
+                    ScheduledTime = DateTime.Today.AddDays(1).AddHours(10),
+                    Platforms = new List<SocialPlatform> { SocialPlatform.Facebook, SocialPlatform.BlueSky },
+                    Status = PostStatus.Publishing,
+                    CreatedAt = DateTime.Now.AddHours(-3),
+                    Author = "Analytics Team"
+                },
+                new ScheduledPostViewModel
+                {
+                    Id = "3",
+                    Content = "🎯 Pro tip: Use our advanced scheduling features to optimize your social media presence!",
+                    ScheduledTime = DateTime.Today.AddDays(2).AddHours(16),
+                    Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.Facebook, SocialPlatform.LinkedIn },
+                    Status = PostStatus.Publishing,
+                    CreatedAt = DateTime.Now.AddMinutes(-45),
+                    Author = "Content Team",
+                    IsRecurring = true,
+                    RecurrencePattern = "Weekly"
+                }
+            };
 
             foreach (var post in samplePosts)
             {

@@ -161,7 +161,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task LoadDefaults()
+    private void LoadDefaults()
     {
         if (!CanLoadDefaults) return;
 
@@ -241,7 +241,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ImportConfigurations()
+    private void ImportConfigurations()
     {
         // This would typically open a file dialog
         // For now, we'll just show a placeholder message
@@ -249,7 +249,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ExportConfigurations()
+    private void ExportConfigurations()
     {
         // This would typically open a save file dialog
         // For now, we'll just show a placeholder message
@@ -361,7 +361,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
         };
     }
 
-    private async void ValidateConfiguration()
+    private async Task ValidateConfigurationAsync()
     {
         try
         {
@@ -410,10 +410,10 @@ public partial class OAuthConfigurationViewModel : ObservableObject
             case nameof(RedirectUri):
             case nameof(ScopesText):
                 HasUnsavedChanges = true;
-                _ = Task.Run(ValidateConfiguration);
+                _ = ValidateConfigurationAsync(); // Fire-and-forget with discard to suppress CS4014
                 break;
             case nameof(SelectedPlatform):
-                _ = Task.Run(() => LoadConfigurationAsync(SelectedPlatform));
+                _ = LoadConfigurationAsync(SelectedPlatform); // Fire-and-forget with discard to suppress CS4014
                 break;
         }
 

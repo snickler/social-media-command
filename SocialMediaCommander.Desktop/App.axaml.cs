@@ -15,8 +15,6 @@ using SocialMediaCommander.Core.Services;
 using Serilog;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
-using System.Diagnostics;
 
 namespace SocialMediaCommander.Desktop;
 
