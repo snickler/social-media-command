@@ -528,7 +528,7 @@ public partial class SchedulerViewModel : ObservableObject
         }
     }
 
-    private async Task LoadAutomationRulesAsync()
+    private Task LoadAutomationRulesAsync()
     {
         try
         {
@@ -578,14 +578,17 @@ public partial class SchedulerViewModel : ObservableObject
             {
                 AutomationRules.Add(rule);
             }
+            
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to load automation rules: {ex.Message}");
+            return Task.CompletedTask;
         }
     }
 
-    private async Task LoadScheduleTemplatesAsync()
+    private Task LoadScheduleTemplatesAsync()
     {
         try
         {
@@ -617,10 +620,13 @@ public partial class SchedulerViewModel : ObservableObject
             {
                 ScheduleTemplates.Add(template);
             }
+            
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"Failed to load schedule templates: {ex.Message}");
+            return Task.CompletedTask;
         }
     }
 

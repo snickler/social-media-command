@@ -130,7 +130,7 @@ public class BlueSkyService : IBlueSkyService
                     TargetPlatforms = new List<SocialPlatform> { Platform }
                 };
 
-                var threadResult = await PostReplyAsync(threadPostData, account, replyTo);
+                var threadResult = await PostReplyAsync(threadPostData, account, replyTo ?? throw new InvalidOperationException("Reply URI cannot be null"));
                 results.Add(threadResult);
 
                 if (!threadResult.Success)
@@ -275,11 +275,11 @@ public class BlueSkyService : IBlueSkyService
         }
     }
 
-    public async Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
+    public Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
     {
         // BlueSky doesn't have a trending hashtags API yet
         // Return empty for now
-        return Enumerable.Empty<string>();
+        return Task.FromResult(Enumerable.Empty<string>());
     }
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
@@ -322,9 +322,9 @@ public class BlueSkyService : IBlueSkyService
         }
     }
 
-    public async Task<PlatformLimits> GetPlatformLimitsAsync()
+    public Task<PlatformLimits> GetPlatformLimitsAsync()
     {
-        return new PlatformLimits
+        return Task.FromResult(new PlatformLimits
         {
             CharacterLimit = 300,
             MaxMediaCount = 4,
@@ -333,7 +333,7 @@ public class BlueSkyService : IBlueSkyService
             MaxThreadLength = 25, // BlueSky supports reasonable thread lengths
             PostingInterval = TimeSpan.FromSeconds(1),
             DailyPostLimit = 300
-        };
+        });
     }
 
     public async Task<bool> CreateSessionAsync(Account account)
