@@ -3,11 +3,14 @@ using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Desktop.ViewModels;
+using FluentAssertions;
+using Serilog;
+using Serilog.Core;
 
 namespace SocialMediaCommander.Tests.Integration;
 
 /// <summary>
-/// Integration tests for account management functionality
+/// Comprehensive integration tests for AccountManagerViewModel account management functionality
 /// </summary>
 public class AccountManagementIntegrationTests : IDisposable
 {
@@ -23,13 +26,20 @@ public class AccountManagementIntegrationTests : IDisposable
         services.AddHttpClient();
         services.AddSingleton<IAccountService, InMemoryAccountService>();
         services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
-        services.AddSingleton<IAuthenticationService, OAuthAuthenticationService>();
+        services.AddSingleton<IAuthenticationService>(provider => 
+            new OAuthAuthenticationService(
+                provider.GetRequiredService<HttpClient>(),
+                provider.GetRequiredService<IOAuthConfigurationService>()
+            ));
+        services.AddSingleton<ILogger>(Logger.None); // Add logger for tests
         
         _serviceProvider = services.BuildServiceProvider();
         _accountService = _serviceProvider.GetRequiredService<IAccountService>();
         _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
         _oauthConfigService = _serviceProvider.GetRequiredService<IOAuthConfigurationService>();
-        _viewModel = new AccountManagerViewModel(_accountService, _authService);
+        var logger = _serviceProvider.GetRequiredService<ILogger>();
+        
+        _viewModel = new AccountManagerViewModel(_accountService, _authService, _oauthConfigService);
     }
 
     [Fact]
@@ -202,9 +212,9 @@ public class AccountManagementIntegrationTests : IDisposable
         var initialCount = _viewModel.Accounts.Count;
 
         // Act
-        if (_viewModel.DeleteAccountAsyncCommand.CanExecute(account))
+        if (_viewModel.DeleteAccountCommand.CanExecute(account))
         {
-            await _viewModel.DeleteAccountAsyncCommand.ExecuteAsync(account);
+            await _viewModel.DeleteAccountCommand.ExecuteAsync(account);
         }
 
         // Assert
@@ -222,9 +232,9 @@ public class AccountManagementIntegrationTests : IDisposable
         var initialCount = _viewModel.Accounts.Count;
 
         // Act
-        if (_viewModel.SaveAccountAsyncCommand.CanExecute(null))
+        if (_viewModel.SaveAccountCommand.CanExecute(null))
         {
-            await _viewModel.SaveAccountAsyncCommand.ExecuteAsync(null);
+            await _viewModel.SaveAccountCommand.ExecuteAsync(null);
         }
 
         // Assert
@@ -239,7 +249,7 @@ public class AccountManagementIntegrationTests : IDisposable
         var account = await CreateTestAccount();
 
         // Act
-        var command = _viewModel.SetAsDefaultAccountAsyncCommand;
+        var command = _viewModel.SetAsDefaultAccountCommand;
 
         // Assert
         command.Should().NotBeNull("SetAsDefaultAccountAsyncCommand should be available");
@@ -250,7 +260,7 @@ public class AccountManagementIntegrationTests : IDisposable
     public async Task RefreshAccountsCommand_ShouldBeAvailable()
     {
         // Arrange & Act
-        var command = _viewModel.RefreshAccountsAsyncCommand;
+        var command = _viewModel.RefreshAccountsCommand;
 
         // Assert
         command.Should().NotBeNull("RefreshAccountsAsyncCommand should be available");

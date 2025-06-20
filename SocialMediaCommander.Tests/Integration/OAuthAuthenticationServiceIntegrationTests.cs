@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
 using SocialMediaCommander.Services.Interfaces;
+using FluentAssertions;
 
 namespace SocialMediaCommander.Tests.Integration;
 
@@ -13,18 +14,23 @@ namespace SocialMediaCommander.Tests.Integration;
 public class OAuthAuthenticationServiceIntegrationTests : IDisposable
 {
     private readonly HttpClient _httpClient;
-    private readonly OAuthAuthenticationService _authService;
+    private readonly IAuthenticationService _authService;
     private readonly ServiceProvider _serviceProvider;
 
     public OAuthAuthenticationServiceIntegrationTests()
     {
         var services = new ServiceCollection();
         services.AddHttpClient();
-        services.AddSingleton<IAuthenticationService, OAuthAuthenticationService>();
+        services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
+        services.AddSingleton<IAuthenticationService>(provider =>
+            new OAuthAuthenticationService(
+                provider.GetRequiredService<HttpClient>(),
+                provider.GetRequiredService<IOAuthConfigurationService>()
+            ));
         
         _serviceProvider = services.BuildServiceProvider();
         _httpClient = _serviceProvider.GetRequiredService<HttpClient>();
-        _authService = new OAuthAuthenticationService(_httpClient);
+        _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
     }
 
     [Theory]
@@ -274,7 +280,7 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
 
     public void Dispose()
     {
-        _authService?.Dispose();
+        (_authService as IDisposable)?.Dispose();
         _serviceProvider?.Dispose();
     }
 } 

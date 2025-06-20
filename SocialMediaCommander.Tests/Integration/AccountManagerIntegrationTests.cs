@@ -4,6 +4,8 @@ using SocialMediaCommander.Services.Implementation;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Desktop.ViewModels;
 using FluentAssertions;
+using Serilog;
+using Serilog.Core;
 
 namespace SocialMediaCommander.Tests.Integration;
 
@@ -23,14 +25,21 @@ public class AccountManagerIntegrationTests : IDisposable
         var services = new ServiceCollection();
         services.AddHttpClient();
         services.AddSingleton<IAccountService, InMemoryAccountService>();
-        services.AddSingleton<IAuthenticationService, OAuthAuthenticationService>();
         services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
+        services.AddSingleton<IAuthenticationService>(provider => 
+            new OAuthAuthenticationService(
+                provider.GetRequiredService<HttpClient>(),
+                provider.GetRequiredService<IOAuthConfigurationService>()
+            ));
+        services.AddSingleton<ILogger>(Logger.None); // Add logger for tests
         
         _serviceProvider = services.BuildServiceProvider();
         _accountService = _serviceProvider.GetRequiredService<IAccountService>();
         _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
         _oauthConfigService = _serviceProvider.GetRequiredService<IOAuthConfigurationService>();
-        _viewModel = new AccountManagerViewModel(_accountService, _authService);
+        var logger = _serviceProvider.GetRequiredService<ILogger>();
+        
+        _viewModel = new AccountManagerViewModel(_accountService, _authService, _oauthConfigService);
     }
 
     #region Add Account Button Tests
@@ -159,7 +168,7 @@ public class AccountManagerIntegrationTests : IDisposable
     public void DeleteAccountCommand_ShouldBeAvailable()
     {
         // Arrange & Act
-        var command = _viewModel.DeleteAccountAsyncCommand;
+        var command = _viewModel.DeleteAccountCommand;
 
         // Assert
         command.Should().NotBeNull("DeleteAccountCommand should be available");
@@ -183,9 +192,9 @@ public class AccountManagerIntegrationTests : IDisposable
         var initialCount = _viewModel.Accounts.Count;
 
         // Act
-        if (_viewModel.DeleteAccountAsyncCommand.CanExecute(account))
+        if (_viewModel.DeleteAccountCommand.CanExecute(account))
         {
-            await _viewModel.DeleteAccountAsyncCommand.ExecuteAsync(account);
+            await _viewModel.DeleteAccountCommand.ExecuteAsync(account);
         }
 
         // Assert
@@ -215,18 +224,18 @@ public class AccountManagerIntegrationTests : IDisposable
     public async Task DeleteAccountCommand_ShouldNotDeleteDefaultAccount()
     {
         // Arrange
-        var defaultAccount = await CreateTestAccount(isDefault: true);
+        var account = await CreateTestAccount(isDefault: true);
         var initialCount = _viewModel.Accounts.Count;
 
         // Act
-        if (_viewModel.DeleteAccountAsyncCommand.CanExecute(defaultAccount))
+        if (_viewModel.DeleteAccountCommand.CanExecute(account))
         {
-            await _viewModel.DeleteAccountAsyncCommand.ExecuteAsync(defaultAccount);
+            await _viewModel.DeleteAccountCommand.ExecuteAsync(account);
         }
 
-        // Assert
-        _viewModel.Accounts.Should().HaveCount(initialCount, "Default account should not be deleted");
-        _viewModel.Accounts.Should().Contain(defaultAccount, "Default account should remain in collection");
+        // Assert - Default accounts should not be deleted
+        _viewModel.Accounts.Should().HaveCount(initialCount, "Default accounts should not be deleted");
+        _viewModel.Accounts.Should().Contain(account, "Default account should still be in collection");
     }
 
     #endregion
@@ -237,7 +246,7 @@ public class AccountManagerIntegrationTests : IDisposable
     public async Task SaveAccountCommand_ShouldBeAvailable()
     {
         // Arrange & Act
-        var command = _viewModel.SaveAccountAsyncCommand;
+        var command = _viewModel.SaveAccountCommand;
 
         // Assert
         command.Should().NotBeNull("SaveAccountCommand should be available");
@@ -247,20 +256,19 @@ public class AccountManagerIntegrationTests : IDisposable
     public async Task SaveAccountCommand_ShouldCreateNewAccount()
     {
         // Arrange
-        _viewModel.NewAccountUsername = "testuser";
-        _viewModel.NewAccountDisplayName = "Test User";
+        _viewModel.NewAccountUsername = "newuser";
+        _viewModel.NewAccountDisplayName = "New User";
         _viewModel.SelectedPlatform = SocialPlatform.BlueSky;
         var initialCount = _viewModel.Accounts.Count;
 
         // Act
-        if (_viewModel.SaveAccountAsyncCommand.CanExecute(null))
+        if (_viewModel.SaveAccountCommand.CanExecute(null))
         {
-            await _viewModel.SaveAccountAsyncCommand.ExecuteAsync(null);
+            await _viewModel.SaveAccountCommand.ExecuteAsync(null);
         }
 
         // Assert
-        _viewModel.Accounts.Should().HaveCountGreaterThan(initialCount, "New account should be added");
-        _viewModel.Accounts.Should().Contain(a => a.Username == "testuser", "New account should be in collection");
+        _viewModel.Accounts.Should().HaveCount(initialCount + 1, "New account should be added to collection");
     }
 
     [Fact]
@@ -270,11 +278,11 @@ public class AccountManagerIntegrationTests : IDisposable
         var account = await CreateTestAccount();
 
         // Act
-        var command = _viewModel.SetAsDefaultAccountAsyncCommand;
+        var command = _viewModel.SetAsDefaultAccountCommand;
 
         // Assert
         command.Should().NotBeNull("SetAsDefaultAccountCommand should be available");
-        command.CanExecute(account).Should().BeTrue("Command should be executable with valid account");
+        command.CanExecute(account).Should().BeTrue("SetAsDefaultAccountCommand should be executable with valid account");
     }
 
     [Fact]

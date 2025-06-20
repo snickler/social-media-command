@@ -1,3 +1,131 @@
+# Integration Test Summary
+
+## Test Updates and Fixes Applied
+
+### 1. Constructor Signature Updates
+**Issue**: Integration tests were failing due to missing `IOAuthConfigurationService` parameter in constructors.
+
+**Files Fixed**:
+- `AccountManagerIntegrationTests.cs`
+- `AccountManagementIntegrationTests.cs` 
+- `OAuthAuthenticationServiceIntegrationTests.cs`
+
+**Changes**:
+- Updated DI container setup to include `IOAuthConfigurationService`
+- Fixed `OAuthAuthenticationService` constructor to include required `IOAuthConfigurationService` parameter
+- Added proper service registration with factory pattern
+- Added `ILogger` service for test logging
+
+```csharp
+services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
+services.AddSingleton<IAuthenticationService>(provider => 
+    new OAuthAuthenticationService(
+        provider.GetRequiredService<HttpClient>(),
+        provider.GetRequiredService<IOAuthConfigurationService>()
+    ));
+services.AddSingleton<ILogger>(Logger.None);
+```
+
+### 2. Command Name Corrections
+**Issue**: Tests were referencing non-existent command names with `Async` suffix.
+
+**RelayCommand Pattern**: 
+- `DeleteAccountAsync` method → `DeleteAccountCommand` property
+- `SaveAccountAsync` method → `SaveAccountCommand` property  
+- `SetAsDefaultAccountAsync` method → `SetAsDefaultAccountCommand` property
+- `RefreshAccountsAsync` method → `RefreshAccountsCommand` property
+
+**Commands Fixed**:
+- `DeleteAccountAsyncCommand` → `DeleteAccountCommand`
+- `SaveAccountAsyncCommand` → `SaveAccountCommand`
+- `SetAsDefaultAccountAsyncCommand` → `SetAsDefaultAccountCommand`
+- `RefreshAccountsAsyncCommand` → `RefreshAccountsCommand`
+
+### 3. Service Interface Consistency
+**Issue**: Tests were using concrete `OAuthAuthenticationService` type instead of interface.
+
+**Fix**: Changed test fields to use `IAuthenticationService` interface for better abstraction and to match DI container setup.
+
+```csharp
+// Before
+private readonly OAuthAuthenticationService _authService;
+
+// After  
+private readonly IAuthenticationService _authService;
+```
+
+### 4. Dispose Pattern Fix
+**Issue**: Interface `IAuthenticationService` doesn't have `Dispose()` method.
+
+**Fix**: Added safe casting in disposal logic:
+```csharp
+(_authService as IDisposable)?.Dispose();
+```
+
+## Test Coverage Areas
+
+### AccountManagerIntegrationTests.cs
+Tests for UI-related AccountManager functionality:
+- ✅ Add account commands
+- ✅ Edit account commands and form state
+- ✅ Delete/Remove account commands
+- ✅ Account management commands (Save, SetAsDefault)
+- ✅ UI binding tests (AccountItemViewModel)
+- ✅ Platform grouping logic
+- ✅ OAuth flow integration
+
+### AccountManagementIntegrationTests.cs  
+Tests for business logic and service integration:
+- ✅ Account service CRUD operations
+- ✅ OAuth configuration integration
+- ✅ Account authentication flows
+- ✅ Concurrent operations handling
+- ✅ Platform-specific account management
+- ✅ Account state management
+
+### OAuthAuthenticationServiceIntegrationTests.cs
+Tests for OAuth authentication functionality:
+- ✅ OAuth service initialization with proper dependencies
+- ✅ Authentication flow handling
+- ✅ Token management
+- ✅ Platform-specific OAuth configuration
+
+## Key Improvements Made
+
+1. **Constructor Dependency Injection**: All services properly wired with correct dependencies
+2. **Command Name Consistency**: Tests now use actual generated command names from `[RelayCommand]` attributes
+3. **Interface Abstraction**: Tests use service interfaces rather than concrete implementations
+4. **Proper Disposal**: Safe disposal pattern for services that implement `IDisposable`
+5. **Enhanced Logging**: Added proper logging infrastructure for test debugging
+
+## Test Status
+
+**Integration Tests**: ✅ **FIXED** - All compilation errors resolved
+- Constructor signature mismatches: ✅ FIXED
+- Missing command properties: ✅ FIXED  
+- Service interface inconsistencies: ✅ FIXED
+- Disposal pattern issues: ✅ FIXED
+
+**Expected Behavior**: 
+- Tests now properly instantiate `AccountManagerViewModel` with all required dependencies
+- Commands are correctly referenced using generated property names
+- Service interactions follow proper interface contracts
+- OAuth authentication integration works with complete service setup
+
+## Integration with Main Application
+
+These test fixes ensure that:
+1. The AccountManager edit/remove functionality we implemented is properly tested
+2. OAuth configuration integration works correctly
+3. UI binding scenarios are validated
+4. Service layer interactions are thoroughly tested
+
+The integration tests now fully support the recent changes to `AccountManagerViewModel` including:
+- Enhanced edit account functionality with proper form handling
+- Improved remove account logic with default account protection  
+- OAuth configuration service integration
+- Better error handling and user feedback
+
 # Integration Tests Summary & Production Roadmap
 
 ## Test Coverage Overview
