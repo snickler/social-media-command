@@ -47,6 +47,11 @@ public static class ServiceCollectionExtensions
         // Enhanced Services
         services.AddScoped<IAIService, FoundryLocalAIService>();
         
+        // Performance-Optimized Services
+        services.AddSingleton<PerformanceOptimizedService>();
+        services.AddSingleton<AdvancedLoggingService>();
+        services.AddScoped<OptimizedAsyncService>();
+        
         // ViewModels
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<PostEditorViewModel>();
