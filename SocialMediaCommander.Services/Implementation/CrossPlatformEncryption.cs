@@ -91,31 +91,30 @@ public static class CrossPlatformEncryption
     {
         // Create a deterministic key based on machine and user characteristics
         var keyMaterial = new StringBuilder();
-        
+
         // Add machine identifier
         keyMaterial.Append(Environment.MachineName);
-        
+
         // Add user identifier
         keyMaterial.Append(Environment.UserName);
-        
+
         // Add OS information
         keyMaterial.Append(Environment.OSVersion.ToString());
-        
+
         // Add optional entropy if provided
         if (!string.IsNullOrEmpty(optionalEntropy))
         {
             keyMaterial.Append(optionalEntropy);
         }
-        
+
         // Add a salt to make the key more secure
         keyMaterial.Append("SocialMediaCommander_SecureStorage_v1.0");
-        
+
         // Generate SHA-256 hash as the key
-        using var sha256 = SHA256.Create();
         var keyBytes = Encoding.UTF8.GetBytes(keyMaterial.ToString());
-        return sha256.ComputeHash(keyBytes);
+        return SHA256.HashData(keyBytes);
     }
-    
+
     /// <summary>
     /// Gets a description of the encryption method being used
     /// </summary>
