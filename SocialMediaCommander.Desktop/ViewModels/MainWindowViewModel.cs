@@ -45,6 +45,18 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     
     [ObservableProperty]
     private bool isAIAssistantVisible = false;
+    
+    [ObservableProperty]
+    private string encryptionStatus = "Initializing...";
+    
+    [ObservableProperty]
+    private string dataIntegrityStatus = "Unknown";
+    
+    [ObservableProperty]
+    private bool isDataSecure = false;
+
+    private readonly IDataIntegrityService _dataIntegrityService;
+    private readonly ISettingsService _settingsService;
 
     public MainWindowViewModel(
         PostEditorViewModel postEditor,
@@ -53,7 +65,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         AnalyticsDashboardViewModel analyticsDashboard,
         SettingsViewModel settings,
         SchedulerViewModel scheduler,
-        AIAssistantViewModel aiAssistant)
+        AIAssistantViewModel aiAssistant,
+        IDataIntegrityService dataIntegrityService,
+        ISettingsService settingsService)
     {
         Console.WriteLine("MainWindowViewModel constructor called with DI");
         
@@ -64,11 +78,16 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Settings = settings;
         Scheduler = scheduler;
         AIAssistant = aiAssistant;
+        _dataIntegrityService = dataIntegrityService;
+        _settingsService = settingsService;
         
         // Subscribe to error events for user notifications with weak references to prevent memory leaks
         PostEditor.OnError += HandlePostEditorError;
         PostEditor.OnPostPublished += HandlePostPublished;
         PostEditor.OnDraftSaved += HandleDraftSaved;
+        
+        // Initialize status information
+        _ = InitializeStatusAsync();
         
         Console.WriteLine("MainWindowViewModel initialization complete with DI");
     }
@@ -191,6 +210,77 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         System.Diagnostics.Debug.WriteLine("Switching to Compose Only layout");
         CurrentLayoutMode = LayoutMode.ComposeOnly;
         UpdateViewLayoutEfficient();
+    }
+    
+    #endregion
+    
+    #region Status and Initialization
+    
+    /// <summary>
+    /// Initializes encryption and data integrity status
+    /// </summary>
+    private async Task InitializeStatusAsync()
+    {
+        try
+        {
+            // Update encryption status
+            EncryptionStatus = CrossPlatformEncryption.GetEncryptionMethod();
+            
+            // Check data integrity
+            var integrityReport = await _dataIntegrityService.ValidateDataIntegrityAsync();
+            DataIntegrityStatus = integrityReport.OverallStatus switch
+            {
+                IntegrityStatus.Healthy => "Healthy",
+                IntegrityStatus.Warning => $"Warning ({integrityReport.TotalIssues} issues)",
+                IntegrityStatus.Error => $"Error ({integrityReport.TotalIssues} issues)",
+                _ => "Unknown"
+            };
+            
+            IsDataSecure = integrityReport.OverallStatus != IntegrityStatus.Error;
+            
+            Console.WriteLine($"Status initialized - Encryption: {EncryptionStatus}, Integrity: {DataIntegrityStatus}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to initialize status: {ex.Message}");
+            EncryptionStatus = "Error";
+            DataIntegrityStatus = "Error";
+            IsDataSecure = false;
+        }
+    }
+    
+    [RelayCommand]
+    private async Task RefreshDataIntegrityAsync()
+    {
+        try
+        {
+            var integrityReport = await _dataIntegrityService.ValidateDataIntegrityAsync();
+            DataIntegrityStatus = integrityReport.OverallStatus switch
+            {
+                IntegrityStatus.Healthy => "Healthy",
+                IntegrityStatus.Warning => $"Warning ({integrityReport.TotalIssues} issues)",
+                IntegrityStatus.Error => $"Error ({integrityReport.TotalIssues} issues)",
+                _ => "Unknown"
+            };
+            
+            IsDataSecure = integrityReport.OverallStatus != IntegrityStatus.Error;
+            
+            // Auto-repair if there are repairable issues
+            if (integrityReport.RepairableIssues > 0)
+            {
+                await _dataIntegrityService.RepairDataAsync(integrityReport);
+                Console.WriteLine($"Auto-repaired {integrityReport.RepairableIssues} data integrity issues");
+                
+                // Re-check after repair
+                await RefreshDataIntegrityAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to refresh data integrity: {ex.Message}");
+            DataIntegrityStatus = "Error";
+            IsDataSecure = false;
+        }
     }
     
     #endregion
