@@ -305,8 +305,8 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             // Read encrypted data
             var encryptedData = await File.ReadAllBytesAsync(configPath);
             
-            // Decrypt using Windows DPAPI (user-specific encryption)
-            var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
+            // Decrypt using cross-platform encryption
+            var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_OAuth");
             var json = Encoding.UTF8.GetString(decryptedData);
             
             // Check if file is empty or just contains empty JSON
@@ -342,7 +342,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         }
         catch (CryptographicException ex)
         {
-            _logger.Error(ex, "Failed to decrypt OAuth configurations - may have been encrypted by different user");
+            _logger.Error(ex, "Failed to decrypt OAuth configurations - may have been encrypted by different user or platform");
             await InitializeDefaultConfigurationsAsync();
         }
         catch (Exception ex)
@@ -373,9 +373,9 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 WriteIndented = true
             });
 
-            // Encrypt the JSON data using Windows DPAPI (user-specific encryption)
+            // Encrypt the JSON data using cross-platform encryption
             var data = Encoding.UTF8.GetBytes(json);
-            var encryptedData = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            var encryptedData = CrossPlatformEncryption.Protect(data, "SocialMediaCommander_OAuth");
 
             await File.WriteAllBytesAsync(configPath, encryptedData);
             _logger.Debug("Saved {Count} OAuth configurations to encrypted storage", saveConfigs.Count);

@@ -1,498 +1,246 @@
-# Social Media Commander - Enhanced Features v2.0
+# Social Media Commander - Enhanced Features Documentation
 
-## 🚀 Overview
+## Overview
+This document outlines the comprehensive enhancements made to the Social Media Commander application, focusing on security, data integrity, cross-platform compatibility, and user experience improvements.
 
-Social Media Commander v2.0 introduces cutting-edge enhancements that transform it into the ultimate social media management platform with AI-powered content generation, enterprise-grade authentication, Model Context Protocol (MCP) integration, and deep Windows system integration.
+## 🔐 Security Enhancements
 
-## ✨ New Features
+### 1. Cross-Platform Encryption System
+**File**: `SocialMediaCommander.Services/Implementation/CrossPlatformEncryption.cs`
 
-### 🤖 AI Integration with Foundry Local
-
-**Powered by Ollama/LLaMA for Local AI Processing**
-
-- **Content Generation**: Generate platform-specific content using local LLM models
-- **Content Optimization**: AI-powered suggestions for better engagement
-- **Hashtag Generation**: Intelligent hashtag recommendations
-- **Thread Creation**: Convert single posts into engaging thread series
-- **Multi-language Support**: Translate content to multiple languages
-- **Sentiment Analysis**: Real-time content sentiment scoring
-- **Performance Prediction**: AI-based engagement forecasting
-- **A/B Testing**: Generate content variations for testing
-
-#### Configuration
-```json
-{
-  "AI": {
-    "ModelName": "llama3.2",
-    "BaseUrl": "http://localhost:11434",
-    "Temperature": 0.7,
-    "MaxTokens": 2048
-  }
-}
-```
-
-#### Usage
-```csharp
-var aiRequest = new AIContentRequest
-{
-    Prompt = "Create engaging content about AI in social media",
-    ContentType = AIContentType.Post,
-    Tone = AITone.Professional,
-    TargetPlatforms = [SocialPlatform.X, SocialPlatform.LinkedIn],
-    IncludeHashtags = true
-};
-
-var response = await _aiService.GenerateContentAsync(aiRequest);
-```
-
-### 🔐 Advanced Authentication with Duende IdentityServer
-
-**Enterprise-Grade Security and Identity Management**
-
-- **OAuth 2.0 / OpenID Connect**: Industry-standard authentication
-- **Multi-Factor Authentication (MFA)**: TOTP, SMS, Email verification
-- **Biometric Authentication**: Windows Hello integration
-- **Device Trust Management**: Trusted device registration
-- **Session Management**: Multi-device session control
-- **Role-Based Access Control (RBAC)**: Granular permissions
-- **Security Event Logging**: Comprehensive audit trails
-- **Account Lockout Protection**: Brute force prevention
-
-#### Features
-- **Two-Factor Authentication**: QR code setup with backup codes
-- **Biometric Login**: Fingerprint and facial recognition
-- **Trusted Devices**: Remember secure devices
-- **Session Control**: View and terminate active sessions
-- **Security Dashboard**: Real-time security events
-
-#### Configuration
-```json
-{
-  "AdvancedAuth": {
-    "Authority": "https://localhost:5001",
-    "ClientId": "social-media-commander",
-    "Scopes": ["openid", "profile", "email", "social-media-api"],
-    "RequireHttps": true
-  }
-}
-```
-
-### 🔗 Model Context Protocol (MCP) Integration
-
-**Connect to External AI Services and Tools**
-
-- **Server Management**: Register and manage MCP servers
-- **Real-time Communication**: WebSocket and HTTP support
-- **Tool Execution**: Execute remote tools and functions
-- **Resource Access**: Read and write external resources
-- **Session Management**: Maintain stateful connections
-- **Health Monitoring**: Server health checks and analytics
-- **Social Media Operations**: MCP-powered platform integrations
-
-#### Supported Protocols
-- **HTTP/HTTPS**: RESTful API integration
-- **WebSocket**: Real-time bidirectional communication
-- **gRPC**: High-performance RPC calls
-- **TCP**: Direct socket connections
-
-#### Configuration
-```json
-{
-  "MCP": {
-    "Servers": [
-      {
-        "Name": "AI Content Server",
-        "Endpoint": "ws://localhost:8080/mcp",
-        "ServerType": "WebSocket",
-        "AuthConfig": {
-          "AuthType": "Bearer",
-          "BearerToken": "your-token"
-        }
-      }
-    ]
-  }
-}
-```
-
-### 🪟 Windows Actions Integration
-
-**Deep Windows System Integration**
-
-- **Task Scheduler**: Create and manage Windows scheduled tasks
-- **PowerShell Execution**: Run PowerShell scripts and commands
-- **System Monitoring**: Real-time system information
-- **Registry Operations**: Read/write Windows registry (with permissions)
-- **Process Management**: Monitor and control running processes
-- **Service Control**: Start/stop Windows services
-- **Event Monitoring**: Listen to Windows event logs
-- **File System Watching**: Monitor file and folder changes
-- **Notifications**: Native Windows 10/11 toast notifications
-
-#### Capabilities
-- **Automated Workflows**: Trigger social media actions based on system events
-- **System Integration**: Post system status updates
-- **Scheduled Operations**: Time-based automation
-- **Event-Driven Actions**: React to Windows events
-- **Performance Monitoring**: Track system metrics
-
-#### Configuration
-```json
-{
-  "WindowsIntegration": {
-    "EnableNotifications": true,
-    "EnableTaskScheduler": true,
-    "EnablePowerShell": true,
-    "EnableSystemMonitoring": true,
-    "AllowedPowerShellCommands": [
-      "Get-Process",
-      "Get-Service"
-    ]
-  }
-}
-```
-
-## 🛠️ Technical Architecture
-
-### Enhanced Service Layer
-
-```
-┌─────────────────────────────────────────────────┐
-│                  Desktop UI                     │
-├─────────────────────────────────────────────────┤
-│              Enhanced ViewModels                │
-│  • AIAssistantViewModel                        │
-│  • AdvancedAuthViewModel                       │
-│  • MCPManagerViewModel                         │
-│  • WindowsIntegrationViewModel                 │
-├─────────────────────────────────────────────────┤
-│               Service Interfaces                │
-│  • IAIService                                  │
-│  • IAdvancedAuthService                        │
-│  • IMCPService                                 │
-│  • IWindowsIntegrationService                  │
-├─────────────────────────────────────────────────┤
-│              Service Implementations            │
-│  • FoundryLocalAIService                      │
-│  • DuendeAdvancedAuthService                   │
-│  • MCPClientService                           │
-│  • WindowsIntegrationService                   │
-├─────────────────────────────────────────────────┤
-│                Core Models                      │
-│  • AI Models (AIContentRequest, etc.)         │
-│  • Auth Models (AdvancedUserProfile, etc.)    │
-│  • MCP Models (MCPServer, etc.)               │
-│  • Windows Models (WindowsAction, etc.)       │
-└─────────────────────────────────────────────────┘
-```
-
-### Dependencies Added
-
-#### Core Libraries
-- **Microsoft.ML**: Machine learning capabilities
-- **System.Reactive**: Reactive programming
-- **FluentValidation**: Input validation
-- **Microsoft.Extensions.*****: Dependency injection and configuration
-
-#### AI Integration
-- **OllamaSharp**: Ollama API client
-- **Microsoft.SemanticKernel**: AI orchestration framework
-- **Microsoft.ML.Tokenizers**: Text tokenization
-
-#### Advanced Authentication
-- **Duende.IdentityServer**: OAuth2/OIDC server
-- **IdentityModel**: Token handling
-- **QRCoder**: QR code generation for 2FA
-- **OtpNet**: TOTP implementation
-
-#### MCP Integration
-- **Grpc.Net.Client**: gRPC client
-- **Google.Protobuf**: Protocol buffers
-- **System.IO.Pipelines**: High-performance I/O
-
-#### Windows Integration
-- **System.Management**: WMI access
-- **Microsoft.PowerShell.SDK**: PowerShell execution
-- **TaskScheduler**: Windows Task Scheduler API
-- **System.Diagnostics.EventLog**: Windows event logs
-
-#### Enhanced UI
-- **Avalonia.Controls.*****: Extended UI controls
-- **LiveChartsCore**: Charts and visualization
-- **Markdig**: Markdown processing
-
-## 🚀 Getting Started
-
-### Prerequisites
-
-1. **.NET 9.0 SDK** or later
-2. **Ollama** (for AI features)
-   ```bash
-   # Install Ollama
-   curl -fsSL https://ollama.ai/install.sh | sh
-   
-   # Pull LLaMA model
-   ollama pull llama3.2
-   ```
-3. **Windows 10/11** (for Windows integration features)
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/your-org/social-media-command.git
-   cd social-media-command
-   ```
-
-2. **Restore packages**
-   ```bash
-   dotnet restore
-   ```
-
-3. **Configure settings**
-   ```bash
-   cp appsettings.enhanced.json appsettings.json
-   # Edit appsettings.json with your configuration
-   ```
-
-4. **Build and run**
-   ```bash
-   dotnet build
-   dotnet run --project SocialMediaCommander.Desktop
-   ```
-
-### Configuration
-
-#### AI Setup
-1. Install and start Ollama
-2. Pull required models: `ollama pull llama3.2`
-3. Configure AI settings in `appsettings.json`
-
-#### Advanced Auth Setup
-1. Set up Duende IdentityServer (or use external provider)
-2. Configure client credentials
-3. Set up OAuth2 scopes and permissions
-
-#### MCP Setup
-1. Deploy MCP servers (if using external services)
-2. Configure server endpoints and authentication
-3. Register available tools and resources
-
-#### Windows Integration Setup
-1. Run application as Administrator (for some features)
-2. Configure PowerShell execution policy if needed
-3. Set up Windows Task Scheduler permissions
-
-## 📖 Usage Examples
-
-### AI Content Generation
+- **Windows**: Uses Windows Data Protection API (DPAPI) for maximum security
+- **Linux/macOS**: Uses AES-256 encryption with machine/user-specific key derivation
+- **Features**:
+  - Automatic platform detection
+  - User and machine-specific encryption
+  - No master password required
+  - Secure key derivation using SHA-256
 
 ```csharp
-// Generate AI content
-var request = new AIContentRequest
-{
-    Prompt = "Write about the future of AI in social media marketing",
-    ContentType = AIContentType.Post,
-    Tone = AITone.Professional,
-    TargetPlatforms = new[] { SocialPlatform.LinkedIn, SocialPlatform.X },
-    IncludeHashtags = true,
-    MaxLength = 280
-};
-
-var response = await aiService.GenerateContentAsync(request);
-
-// Optimize content
-var optimizationRequest = new AIOptimizationRequest
-{
-    Content = response.GeneratedContent.First().Content,
-    Platform = SocialPlatform.LinkedIn,
-    OptimizationType = AIOptimizationType.Engagement
-};
-
-var optimized = await aiService.OptimizeContentAsync(optimizationRequest);
+// Usage Example
+var encrypted = CrossPlatformEncryption.Protect(data, "optional_entropy");
+var decrypted = CrossPlatformEncryption.Unprotect(encrypted, "optional_entropy");
 ```
 
-### Advanced Authentication
+### 2. Enhanced Account Storage
+**File**: `SocialMediaCommander.Services/Implementation/SecureAccountService.cs`
+
+- **Encrypted Storage**: All account data is encrypted at rest
+- **Location**: `%APPDATA%\SocialMediaCommander\Data\accounts.encrypted`
+- **Features**:
+  - Thread-safe operations
+  - Automatic migration from in-memory storage
+  - Graceful error handling and recovery
+  - OAuth configuration storage per account
+
+### 3. Secure OAuth Configuration
+**File**: `SocialMediaCommander.Services/Implementation/OAuthConfigurationService.cs`
+
+- **Encrypted Storage**: OAuth secrets are encrypted separately
+- **Location**: `%APPDATA%\SocialMediaCommander\Config\oauth-configs.encrypted`
+- **Enhanced Security**: Client secrets are never stored in plain text
+
+## 🔄 Data Management & Backup System
+
+### 1. Comprehensive Backup Service
+**File**: `SocialMediaCommander.Services/Implementation/BackupService.cs`
+
+- **Encrypted Backups**: All backups are compressed and encrypted
+- **Location**: `%APPDATA%\SocialMediaCommander\Backups\`
+- **Features**:
+  - Automatic backup creation
+  - Backup metadata and versioning
+  - Selective restore capabilities
+  - Backup integrity verification
 
 ```csharp
-// Enable 2FA
-var secret = await authService.EnableTwoFactorAsync(userId);
-var qrCode = GenerateQRCode(secret);
+// Create a backup
+var backupPath = await backupService.CreateBackupAsync("MyBackup");
 
-// Verify 2FA
-var isValid = await authService.VerifyTwoFactorAsync(userId, code);
+// Restore from backup
+await backupService.RestoreFromBackupAsync(backupPath);
 
-// Add trusted device
-var device = await authService.AddTrustedDeviceAsync(
-    userId, "My Laptop", "Windows PC", userAgent, ipAddress);
-
-// Get security events
-var events = await authService.GetSecurityEventsAsync(userId, 50);
+// List available backups
+var backups = await backupService.GetAvailableBackupsAsync();
 ```
 
-### MCP Integration
+### 2. Data Integrity Validation
+**File**: `SocialMediaCommander.Services/Implementation/DataIntegrityService.cs`
+
+- **Comprehensive Validation**: Validates accounts, OAuth configs, and file integrity
+- **Automatic Repair**: Can fix common data integrity issues
+- **Checksum Verification**: Uses SHA-256 checksums for file integrity
+- **Features**:
+  - Duplicate account detection
+  - Missing field validation
+  - Corrupted file detection
+  - Automatic repair capabilities
 
 ```csharp
-// Register MCP server
-var server = new MCPServer
-{
-    Name = "Content Analysis Server",
-    Endpoint = "ws://localhost:8080/mcp",
-    ServerType = MCPServerType.WebSocket
-};
+// Validate data integrity
+var report = await dataIntegrityService.ValidateDataIntegrityAsync();
 
-await mcpService.RegisterServerAsync(server);
-
-// Execute MCP tool
-var response = await mcpService.ExecuteToolAsync(
-    serverId, "analyze_content", new { content = "Hello world!" });
-
-// Read MCP resource
-var resource = await mcpService.ReadResourceAsync(
-    serverId, "content://templates/marketing");
+// Repair issues
+var repaired = await dataIntegrityService.RepairDataAsync(report);
 ```
 
-### Windows Integration
+## ⚙️ Settings & Configuration Management
+
+### 1. Enhanced Settings Service
+**File**: `SocialMediaCommander.Services/Implementation/SettingsService.cs`
+
+- **Encrypted Storage**: Settings are encrypted for security
+- **Location**: `%APPDATA%\SocialMediaCommander\Settings\app-settings.encrypted`
+- **Features**:
+  - Type-safe setting access
+  - Import/export functionality
+  - Default value management
+  - Custom settings dictionary
 
 ```csharp
-// Show Windows notification
-var notification = new WindowsNotification
-{
-    Title = "Post Published",
-    Message = "Your post has been published to LinkedIn",
-    Type = WindowsNotificationType.Success
-};
+// Get/Set specific settings
+var theme = await settingsService.GetSettingAsync<string>("Theme", "Auto");
+await settingsService.SetSettingAsync("Theme", "Dark");
 
-await windowsService.ShowNotificationAsync(notification);
-
-// Execute PowerShell
-var result = await windowsService.ExecutePowerShellCommandAsync(
-    "Get-Process | Where-Object {$_.CPU -gt 100}");
-
-// Create scheduled task
-var task = new WindowsScheduledTask
-{
-    Name = "Daily Social Media Report",
-    Description = "Generate daily analytics report",
-    Trigger = new WindowsTaskTrigger
-    {
-        TriggerType = WindowsTaskTriggerType.Daily,
-        StartTime = DateTime.Today.AddHours(9)
-    }
-};
-
-await windowsService.CreateScheduledTaskAsync(task);
+// Export/Import settings
+await settingsService.ExportSettingsAsync("my-settings.json");
+await settingsService.ImportSettingsAsync("my-settings.json");
 ```
 
-## 🔧 Configuration Reference
+### 2. Comprehensive Settings Model
+**Class**: `AppSettings`
 
-### Complete Configuration Example
+Includes settings for:
+- **UI**: Theme, language, startup view, notifications
+- **Security**: Auto-lock, encryption, backup settings
+- **Performance**: Caching, request limits, timeouts
+- **Privacy**: Analytics, crash reporting, logging
+- **Advanced**: Debug logging, file sizes, custom settings
 
-See `appsettings.enhanced.json` for a complete configuration example with all features enabled.
+## 🎨 User Interface Enhancements
 
-### Environment Variables
+### 1. Enhanced Account Manager
+**File**: `SocialMediaCommander.Desktop/ViewModels/AccountManagerViewModel.cs`
 
-- `SMC_AI_MODEL`: Override AI model name
-- `SMC_AI_URL`: Override AI service URL
-- `SMC_AUTH_AUTHORITY`: Override auth server URL
-- `SMC_MCP_SERVERS`: JSON array of MCP server configurations
-- `SMC_WINDOWS_FEATURES`: Comma-separated list of enabled Windows features
+- **OAuth Integration**: Full OAuth configuration per account
+- **Platform Selection**: Working dropdown with all supported platforms
+- **Visual Indicators**: Platform-specific colors and icons
+- **Real-time Validation**: OAuth configuration testing
 
-## 🛡️ Security Considerations
+### 2. Improved Settings View
+**File**: `SocialMediaCommander.Desktop/ViewModels/SettingsViewModel.cs`
 
-### AI Security
-- Local AI processing (no data sent to external services)
-- Content filtering and validation
-- Rate limiting on AI requests
+- **Real Settings Integration**: Connected to actual SettingsService
+- **Backup Management**: Real backup creation and management
+- **Data Integrity**: Integration with integrity validation
+- **Enhanced UI**: Better status messages and loading indicators
 
-### Authentication Security
-- OAuth2/OIDC compliance
-- Multi-factor authentication
-- Device trust management
-- Session security
+## 📁 File Structure
 
-### MCP Security
-- Server authentication and authorization
-- Encrypted communications
-- Request validation and sanitization
-
-### Windows Security
-- Elevation prompts for privileged operations
-- PowerShell execution policy enforcement
-- Registry operation restrictions
-
-## 📊 Performance Optimizations
-
-### AI Performance
-- Model caching and warm-up
-- Request batching
-- Async processing
-- Memory optimization
-
-### Authentication Performance
-- Token caching
-- Session pooling
-- Background token refresh
-
-### MCP Performance
-- Connection pooling
-- Request multiplexing
-- Health check optimization
-
-### Windows Performance
-- Background monitoring
-- Efficient event handling
-- Resource cleanup
-
-## 🧪 Testing
-
-### Unit Tests
-```bash
-dotnet test SocialMediaCommander.Tests
+```
+%APPDATA%\SocialMediaCommander\
+├── Data\
+│   └── accounts.encrypted          # Encrypted account data
+├── Config\
+│   └── oauth-configs.encrypted     # Encrypted OAuth configurations
+├── Settings\
+│   └── app-settings.encrypted      # Encrypted application settings
+├── Backups\
+│   ├── SocialMediaCommander_Backup_20241201_143022.smcbackup
+│   └── ... (other backup files)
+├── Integrity\
+│   └── checksums.json             # File integrity checksums
+└── Logs\
+    └── ... (application logs)
 ```
 
-### Integration Tests
-```bash
-dotnet test SocialMediaCommander.Tests --filter Category=Integration
+## 🔧 Service Registration
+
+All new services are properly registered in the dependency injection container:
+
+```csharp
+// Enhanced Security Services
+services.AddScoped<IBackupService, BackupService>();
+services.AddScoped<IDataIntegrityService, DataIntegrityService>();
+services.AddSingleton<ISettingsService, SettingsService>();
 ```
 
-### AI Tests
-```bash
-# Requires Ollama running
-dotnet test SocialMediaCommander.Tests --filter Category=AI
-```
+## 🚀 Performance Optimizations
 
-## 🤝 Contributing
+### 1. Async/Await Patterns
+- All I/O operations are asynchronous
+- Non-blocking UI operations
+- Proper ConfigureAwait(false) usage
 
-1. Fork the repository
-2. Create a feature branch
-3. Implement your changes
-4. Add tests
-5. Submit a pull request
+### 2. Memory Management
+- ArrayPool usage for temporary buffers
+- Proper disposal patterns
+- Weak event references to prevent memory leaks
 
-## 📄 License
+### 3. Caching
+- Settings caching for improved performance
+- Lazy loading of encrypted data
+- Thread-safe operations with proper locking
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## 🛡️ Security Features Summary
 
-## 🆘 Support
+1. **Encryption at Rest**: All sensitive data is encrypted
+2. **Platform-Specific Security**: Uses best available encryption per platform
+3. **No Plain Text Secrets**: OAuth secrets never stored in plain text
+4. **User-Specific Encryption**: Data can only be decrypted by the same user
+5. **Integrity Validation**: Regular data integrity checks
+6. **Secure Backups**: Encrypted and compressed backups
+7. **Automatic Recovery**: Graceful fallback and error recovery
 
-- **Documentation**: [Wiki](https://github.com/your-org/social-media-command/wiki)
-- **Issues**: [GitHub Issues](https://github.com/your-org/social-media-command/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/social-media-command/discussions)
+## 🔄 Migration & Compatibility
 
-## 🗺️ Roadmap
+### Automatic Migration
+- Seamless migration from in-memory to encrypted storage
+- Backward compatibility with existing data
+- Graceful handling of encryption failures
 
-### v2.1 (Planned)
-- **Voice Commands**: Speech-to-text content creation
-- **Visual AI**: Image generation and optimization
-- **Team Collaboration**: Multi-user workspaces
-- **Advanced Analytics**: ML-powered insights
+### Cross-Platform Support
+- Windows: DPAPI encryption
+- Linux/macOS: AES-256 encryption
+- Consistent API across all platforms
 
-### v2.2 (Planned)
-- **Mobile App**: Companion mobile application
-- **API Gateway**: RESTful API for integrations
-- **Webhook Support**: Real-time event notifications
-- **Custom Plugins**: Extensible plugin architecture
+## 📊 Data Integrity Features
+
+### Validation Types
+1. **Account Validation**: Missing fields, duplicates, token expiry
+2. **OAuth Validation**: Missing credentials, invalid configurations
+3. **File Integrity**: Checksum verification, corruption detection
+
+### Repair Capabilities
+- Generate missing IDs
+- Remove duplicate accounts
+- Fix missing display names
+- Update integrity checksums
+
+## 🎯 Key Benefits
+
+1. **Enhanced Security**: Enterprise-grade encryption for all sensitive data
+2. **Data Reliability**: Comprehensive backup and integrity validation
+3. **User Experience**: Improved UI with real functionality
+4. **Cross-Platform**: Works consistently across Windows, Linux, and macOS
+5. **Maintainability**: Clean architecture with proper separation of concerns
+6. **Extensibility**: Modular design allows easy addition of new features
+
+## 🔮 Future Enhancements
+
+### Planned Features
+1. **Cloud Backup Integration**: Support for cloud storage providers
+2. **Multi-User Support**: User profiles and permissions
+3. **Advanced Analytics**: Usage statistics and performance metrics
+4. **Plugin System**: Extensible architecture for third-party plugins
+5. **Mobile Companion**: Mobile app for remote management
+
+### Security Roadmap
+1. **Hardware Security Module (HSM)** integration
+2. **Multi-factor authentication** for sensitive operations
+3. **Audit logging** for security events
+4. **Certificate-based authentication** for enterprise environments
 
 ---
 
-**Social Media Commander v2.0** - The Ultimate Social Media Management Platform with AI, Advanced Security, and System Integration. 
+*This documentation reflects the current state of enhancements made to Social Media Commander. The application now provides enterprise-grade security, reliability, and user experience while maintaining ease of use and cross-platform compatibility.* 

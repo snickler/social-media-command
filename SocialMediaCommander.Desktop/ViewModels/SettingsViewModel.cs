@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -17,6 +18,9 @@ namespace SocialMediaCommander.Desktop.ViewModels;
 public partial class SettingsViewModel : ObservableObject
 {
     private readonly IAccountService _accountService;
+    private readonly ISettingsService _settingsService;
+    private readonly IBackupService _backupService;
+    private readonly IDataIntegrityService _dataIntegrityService;
 
     // Theme & Appearance
     [ObservableProperty]
@@ -164,10 +168,18 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _statusMessage = "";
 
-    public SettingsViewModel(IAccountService accountService)
+    public SettingsViewModel(
+        IAccountService accountService, 
+        ISettingsService settingsService,
+        IBackupService backupService,
+        IDataIntegrityService dataIntegrityService)
     {
         _accountService = accountService;
-        LoadSettings();
+        _settingsService = settingsService;
+        _backupService = backupService;
+        _dataIntegrityService = dataIntegrityService;
+        
+        _ = LoadSettingsAsync(); // Fire-and-forget with discard to suppress CS4014
         _ = LoadStatisticsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
 
@@ -179,12 +191,21 @@ public partial class SettingsViewModel : ObservableObject
 
         try
         {
-            await Task.Delay(1000); // Simulate save operation
+            var settings = await _settingsService.GetSettingsAsync();
             
-            // In a real implementation, this would save to configuration file or database
-            System.Diagnostics.Debug.WriteLine("Settings saved successfully");
+            // Update settings from UI properties
+            settings.Theme = SelectedTheme;
+            settings.Language = SelectedLanguage;
+            settings.ShowNotifications = EnableNotifications;
+            settings.AllowAnalytics = EnableAnalytics;
+            settings.AllowCrashReporting = EnableCrashReporting;
+            settings.AutoSaveInterval = TimeSpan.FromMinutes(AutoSaveInterval);
+            settings.LastModified = DateTime.UtcNow;
+            
+            await _settingsService.SaveSettingsAsync(settings);
             
             StatusMessage = "Settings saved successfully!";
+            System.Diagnostics.Debug.WriteLine("Settings saved successfully");
             await Task.Delay(2000);
             StatusMessage = "";
         }
@@ -329,15 +350,16 @@ public partial class SettingsViewModel : ObservableObject
 
         try
         {
-            await Task.Delay(2000);
+            var backupPath = await _backupService.CreateBackupAsync();
             LastBackupDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
-            StatusMessage = "Backup created successfully!";
-            await Task.Delay(2000);
+            StatusMessage = $"Backup created successfully! Saved to: {Path.GetFileName(backupPath)}";
+            await Task.Delay(3000);
             StatusMessage = "";
         }
         catch (Exception ex)
         {
             StatusMessage = $"Error creating backup: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"Backup creation failed: {ex.Message}");
         }
         finally
         {
@@ -372,12 +394,33 @@ public partial class SettingsViewModel : ObservableObject
         StatusMessage = "";
     }
 
-    private void LoadSettings()
+    private async Task LoadSettingsAsync()
     {
-        // In a real implementation, this would load settings from configuration
-        ApplicationVersion = "1.2.0";
-        CacheSize = 1024 * 1024 * 15; // 15 MB
-        DefaultMediaFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        try
+        {
+            var settings = await _settingsService.GetSettingsAsync();
+            
+            // Apply settings to properties
+            SelectedTheme = settings.Theme;
+            SelectedLanguage = settings.Language;
+            EnableNotifications = settings.ShowNotifications;
+            EnableAnalytics = settings.AllowAnalytics;
+            EnableCrashReporting = settings.AllowCrashReporting;
+            EnableAutoSave = true; // Always enabled for security
+            AutoSaveInterval = (int)settings.AutoSaveInterval.TotalMinutes;
+            EnableEncryption = true; // Always enabled for security
+            
+            // Load application info
+            ApplicationVersion = "1.2.0";
+            CacheSize = 1024 * 1024 * 15; // 15 MB
+            DefaultMediaFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            
+            System.Diagnostics.Debug.WriteLine("Settings loaded successfully");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to load settings: {ex.Message}");
+        }
     }
 
     private async Task LoadStatisticsAsync()

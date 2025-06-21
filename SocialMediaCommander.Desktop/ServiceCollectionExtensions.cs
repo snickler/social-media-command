@@ -39,6 +39,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMediaService, MockMediaService>();
         services.AddScoped<IFeedService, InMemoryFeedService>();
         
+        // Enhanced Security Services
+        services.AddScoped<IBackupService, BackupService>();
+        services.AddScoped<IDataIntegrityService, DataIntegrityService>();
+        services.AddSingleton<ISettingsService, SettingsService>();
+        
         // Enhanced Services
         services.AddScoped<IAIService, FoundryLocalAIService>();
         

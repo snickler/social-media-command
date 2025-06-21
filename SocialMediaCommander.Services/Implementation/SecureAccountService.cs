@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
+
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -276,7 +276,7 @@ public class SecureAccountService : IAccountService
         try
         {
             var encryptedData = await File.ReadAllBytesAsync(filePath);
-            var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
+            var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Accounts");
             var json = Encoding.UTF8.GetString(decryptedData);
             
             var accounts = JsonSerializer.Deserialize<List<Account>>(json) ?? new List<Account>();
@@ -317,7 +317,7 @@ public class SecureAccountService : IAccountService
             });
             
             var data = Encoding.UTF8.GetBytes(json);
-            var encryptedData = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+            var encryptedData = CrossPlatformEncryption.Protect(data, "SocialMediaCommander_Accounts");
             
             await File.WriteAllBytesAsync(filePath, encryptedData);
             _logger.Debug("Saved {AccountCount} accounts to encrypted storage", accountsList.Count);
