@@ -39,6 +39,12 @@ public class Account
     public OAuthTokens? Tokens { get; set; }
     
     /// <summary>
+    /// OAuth configuration for this account (client credentials, endpoints, etc.)
+    /// This will be encrypted when stored
+    /// </summary>
+    public OAuthConfig? OAuthConfiguration { get; set; }
+    
+    /// <summary>
     /// Additional metadata for the account
     /// </summary>
     public Dictionary<string, string> Metadata { get; set; } = new();

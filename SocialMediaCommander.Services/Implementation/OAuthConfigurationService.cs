@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
@@ -17,7 +19,7 @@ namespace SocialMediaCommander.Services.Implementation;
 public class OAuthConfigurationService : IOAuthConfigurationService
 {
     private readonly string _configDirectory;
-    private readonly string _configFileName = "oauth-configs.json";
+    private readonly string _configFileName = "oauth-configs.encrypted";
     private readonly Dictionary<SocialPlatform, OAuthConfig> _configurations;
     private readonly object _lock = new object();
     private readonly ILogger _logger;
@@ -300,7 +302,12 @@ public class OAuthConfigurationService : IOAuthConfigurationService
 
         try
         {
-            var json = await File.ReadAllTextAsync(configPath);
+            // Read encrypted data
+            var encryptedData = await File.ReadAllBytesAsync(configPath);
+            
+            // Decrypt using Windows DPAPI (user-specific encryption)
+            var decryptedData = ProtectedData.Unprotect(encryptedData, null, DataProtectionScope.CurrentUser);
+            var json = Encoding.UTF8.GetString(decryptedData);
             
             // Check if file is empty or just contains empty JSON
             if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
@@ -325,13 +332,18 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                         }
                     }
                 }
-                _logger.Information("Loaded {Count} OAuth configurations", configs.Count);
+                _logger.Information("Loaded {Count} encrypted OAuth configurations", configs.Count);
             }
             else
             {
                 _logger.Warning("OAuth configuration file contains no valid configurations, initializing defaults");
                 await InitializeDefaultConfigurationsAsync();
             }
+        }
+        catch (CryptographicException ex)
+        {
+            _logger.Error(ex, "Failed to decrypt OAuth configurations - may have been encrypted by different user");
+            await InitializeDefaultConfigurationsAsync();
         }
         catch (Exception ex)
         {
@@ -345,21 +357,34 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     {
         var configPath = Path.Combine(_configDirectory, _configFileName);
         
-        Dictionary<string, OAuthConfig> saveConfigs;
-        lock (_lock)
+        try
         {
-            saveConfigs = _configurations.ToDictionary(
-                kvp => kvp.Key.ToString(),
-                kvp => kvp.Value
-            );
+            Dictionary<string, OAuthConfig> saveConfigs;
+            lock (_lock)
+            {
+                saveConfigs = _configurations.ToDictionary(
+                    kvp => kvp.Key.ToString(),
+                    kvp => kvp.Value
+                );
+            }
+
+            var json = JsonSerializer.Serialize(saveConfigs, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            // Encrypt the JSON data using Windows DPAPI (user-specific encryption)
+            var data = Encoding.UTF8.GetBytes(json);
+            var encryptedData = ProtectedData.Protect(data, null, DataProtectionScope.CurrentUser);
+
+            await File.WriteAllBytesAsync(configPath, encryptedData);
+            _logger.Debug("Saved {Count} OAuth configurations to encrypted storage", saveConfigs.Count);
         }
-
-        var json = JsonSerializer.Serialize(saveConfigs, new JsonSerializerOptions
+        catch (Exception ex)
         {
-            WriteIndented = true
-        });
-
-        await File.WriteAllTextAsync(configPath, json);
+            _logger.Error(ex, "Failed to save OAuth configurations to encrypted storage");
+            throw;
+        }
     }
 
     private async Task InitializeDefaultConfigurationsAsync()

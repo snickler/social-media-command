@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
         
         // Application Services
         services.AddScoped<IPostService, MockPostService>();
-        services.AddScoped<IAccountService, InMemoryAccountService>();
+        services.AddScoped<IAccountService, SecureAccountService>();
         services.AddScoped<IMediaService, MockMediaService>();
         services.AddScoped<IFeedService, InMemoryFeedService>();
         
