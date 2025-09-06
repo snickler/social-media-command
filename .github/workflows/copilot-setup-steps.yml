@@ -1,0 +1,30 @@
+name: Copilot Setup Steps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  setup:
+    runs-on: windows-11-arm
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+          
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+        
+      - name: Build solution
+        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Debug
+        
+      - name: Run tests
+        run: dotnet test SocialMediaCommander.sln --no-build --configuration Debug --verbosity normal
