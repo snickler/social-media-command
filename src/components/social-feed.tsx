@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SocialPlatformConfig, PLATFORMS } from '@/lib/platform-utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { ArrowClockwise, Heart, ChatCircle, Repeat } from '@phosphor-icons/react';
 
 interface FeedItem {

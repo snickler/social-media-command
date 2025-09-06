@@ -53,4 +53,12 @@
     </None>
   </ItemGroup>
 
+  <!-- Copy documentation files -->
+  <ItemGroup>
+    <None Include="..\..\docs\**\*.md">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Link>docs\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>

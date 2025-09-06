@@ -1,0 +1,211 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             x:Class="SocialMediaCommander.Desktop.Views.DocumentationView"
+             x:DataType="vm:DocumentationViewModel">
+
+    <UserControl.Styles>
+        <!-- List Item Styles -->
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+        </Style>
+        <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+        </Style>
+        <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Border}"/>
+        </Style>
+        
+        <!-- Button Styles -->
+        <Style Selector="Button.CategoryButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Margin" Value="0,2"/>
+        </Style>
+        <Style Selector="Button.CategoryButton:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Border}"/>
+        </Style>
+        
+        <!-- Selected Category Style -->
+        <Style Selector="Button.CategoryButton.Selected">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="4"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Left Navigation Panel -->
+        <Border Grid.Column="0" 
+                Background="{DynamicResource SMC-Card-Background}"
+                BorderBrush="{DynamicResource SMC-Card-Border}"
+                BorderThickness="0,0,1,0"
+                Padding="16">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Header -->
+                <StackPanel Grid.Row="0" Spacing="8" Margin="0,0,0,16">
+                    <TextBlock Text="📖 Documentation" 
+                               FontSize="18" 
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Browse and search documentation" 
+                               FontSize="12" 
+                               Opacity="0.7"/>
+                </StackPanel>
+
+                <!-- Navigation -->
+                <ScrollViewer Grid.Row="1">
+                    <StackPanel Spacing="16">
+                        <!-- Categories -->
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="Categories" 
+                                       FontSize="14" 
+                                       FontWeight="Medium" 
+                                       Margin="0,0,0,8"/>
+                            <ItemsControl ItemsSource="{Binding Categories}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Content="{Binding DisplayName}"
+                                                ToolTip.Tip="{Binding Description}"
+                                                Classes.Selected="{Binding $parent[UserControl].DataContext.SelectedCategory, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"
+                                                Classes="CategoryButton"
+                                                Command="{Binding $parent[UserControl].DataContext.SelectCategoryCommand}"
+                                                CommandParameter="{Binding}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <!-- Files in Selected Category -->
+                        <StackPanel Spacing="4" IsVisible="{Binding FilesInCategory.Count}">
+                            <TextBlock Text="{Binding SelectedCategory.DisplayName, StringFormat='📄 {0}'}" 
+                                       FontSize="14" 
+                                       FontWeight="Medium" 
+                                       Margin="0,0,0,8"/>
+                            <ListBox ItemsSource="{Binding FilesInCategory}"
+                                     SelectedItem="{Binding SelectedFile}"
+                                     Background="Transparent"
+                                     BorderThickness="0">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Title}" 
+                                                   TextWrapping="Wrap"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <!-- Refresh Button -->
+                <Button Grid.Row="2" 
+                        Content="🔄 Refresh"
+                        Command="{Binding RefreshDocumentationCommand}"
+                        HorizontalAlignment="Stretch"
+                        Margin="0,16,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Splitter -->
+        <GridSplitter Grid.Column="1" 
+                      Background="{DynamicResource SMC-Card-Border}"
+                      Width="4"/>
+
+        <!-- Content Panel -->
+        <Grid Grid.Column="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Content Header -->
+            <Border Grid.Row="0" 
+                    Background="{DynamicResource SMC-Card-Background}"
+                    BorderBrush="{DynamicResource SMC-Card-Border}"
+                    BorderThickness="0,0,0,1"
+                    Padding="24,16">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Spacing="4">
+                        <TextBlock Text="{Binding SelectedFile.Title, FallbackValue='Select a document'}" 
+                                   FontSize="18" 
+                                   FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding SelectedCategory.DisplayName, StringFormat='Category: {0}'}" 
+                                   FontSize="12" 
+                                   Opacity="0.7"
+                                   IsVisible="{Binding SelectedFile, Converter={x:Static ObjectConverters.IsNotNull}}"/>
+                    </StackPanel>
+
+                    <!-- Loading Indicator -->
+                    <StackPanel Grid.Column="1" 
+                                Orientation="Horizontal" 
+                                Spacing="8"
+                                IsVisible="{Binding IsLoading}">
+                        <ProgressBar IsIndeterminate="True" 
+                                     Width="100" 
+                                     Height="4"/>
+                        <TextBlock Text="{Binding LoadingMessage}" 
+                                   VerticalAlignment="Center"
+                                   FontSize="12"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Content Panel -->
+            <Border Grid.Row="1" 
+                    Background="{DynamicResource SMC-Background}"
+                    Padding="0">
+                <Grid>
+                    <!-- Placeholder when no content -->
+                    <StackPanel IsVisible="{Binding DocumentContent, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Spacing="16">
+                        <TextBlock Text="📖" FontSize="48" HorizontalAlignment="Center" Opacity="0.3"/>
+                        <TextBlock Text="Select a document to view" 
+                                   FontSize="16" 
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.7"/>
+                        <TextBlock Text="Choose a category and document from the navigation panel" 
+                                   FontSize="12" 
+                                   HorizontalAlignment="Center"
+                                   Opacity="0.5"/>
+                    </StackPanel>
+
+                    <!-- Rendered content -->
+                    <ScrollViewer IsVisible="{Binding DocumentContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                  Padding="24">
+                        <TextBlock x:Name="DocumentContentBlock"
+                                   Text="Document content will be displayed here"
+                                   TextWrapping="Wrap"
+                                   FontFamily="Consolas,Monaco,monospace"
+                                   FontSize="12"
+                                   LineHeight="20"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>
