@@ -133,6 +133,10 @@ public partial class App : Application
                 _logger?.Information("Creating AIAssistantViewModel...");
                 var aiAssistantViewModel = _serviceProvider.GetRequiredService<AIAssistantViewModel>();
                 _logger?.Information("AIAssistantViewModel created successfully");
+                
+                _logger?.Information("Creating DocumentationViewModel...");
+                var documentationViewModel = _serviceProvider.GetRequiredService<DocumentationViewModel>();
+                _logger?.Information("DocumentationViewModel created successfully");
 
                 _logger?.Information("Getting IDataIntegrityService...");
                 var dataIntegrityService = _serviceProvider.GetRequiredService<IDataIntegrityService>();
@@ -151,6 +155,7 @@ public partial class App : Application
                     settingsViewModel,
                     schedulerViewModel,
                     aiAssistantViewModel,
+                    documentationViewModel,
                     dataIntegrityService,
                     settingsService);
                 _logger?.Information("MainWindowViewModel created successfully");

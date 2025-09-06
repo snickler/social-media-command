@@ -497,3 +497,7 @@ CHANGELOG.md
 dist/
 .vite/
 .npm/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local

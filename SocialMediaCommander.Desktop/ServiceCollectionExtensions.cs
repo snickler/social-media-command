@@ -43,6 +43,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IDataIntegrityService, DataIntegrityService>();
         services.AddSingleton<ISettingsService, SettingsService>();
+        
+        // Documentation Service
+        services.AddSingleton<IDocumentationService, DocumentationService>();
 
         // Enhanced Services
         services.AddScoped<IAIService, FoundryLocalAIService>();
@@ -62,7 +65,8 @@ public static class ServiceCollectionExtensions
         services.AddTransient<SchedulerViewModel>();
         services.AddTransient<AIAssistantViewModel>();
         services.AddTransient<OAuthConfigurationViewModel>();
-
+        services.AddTransient<DocumentationViewModel>();
+        
         // Logging
         services.AddLogging(builder =>
         {
