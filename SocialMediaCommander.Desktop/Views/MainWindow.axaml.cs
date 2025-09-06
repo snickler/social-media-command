@@ -10,13 +10,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         Console.WriteLine("MainWindow constructor called");
-        
+
         // Debug: Add event handlers to detect button clicks
         this.Loaded += (s, e) =>
         {
             Console.WriteLine("MainWindow loaded event fired");
             Console.WriteLine($"DataContext type: {DataContext?.GetType().Name}");
-            
+
             if (DataContext is MainWindowViewModel vm)
             {
                 Console.WriteLine("DataContext successfully cast to MainWindowViewModel");
@@ -28,7 +28,7 @@ public partial class MainWindow : Window
             }
         };
     }
-    
+
     private void StandardViewButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("StandardView button clicked!");
@@ -37,7 +37,7 @@ public partial class MainWindow : Window
             vm.SetStandardViewCommand?.Execute(null);
         }
     }
-    
+
     private void CompactViewButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("CompactView button clicked!");
@@ -46,7 +46,7 @@ public partial class MainWindow : Window
             vm.SetCompactViewCommand?.Execute(null);
         }
     }
-    
+
     private void ManageAccountsButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("ManageAccounts button clicked!");
@@ -55,7 +55,7 @@ public partial class MainWindow : Window
             vm.ManageAccountsCommand?.Execute(null);
         }
     }
-    
+
     private void SingleThreadModeButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("SingleThreadMode button clicked!");
@@ -64,7 +64,7 @@ public partial class MainWindow : Window
             vm.SetSingleThreadModeCommand?.Execute(null);
         }
     }
-    
+
     private void ThreadsOnlyModeButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("ThreadsOnlyMode button clicked!");
@@ -73,7 +73,7 @@ public partial class MainWindow : Window
             vm.SetThreadsOnlyModeCommand?.Execute(null);
         }
     }
-    
+
     private void SplitViewButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("SplitView button clicked!");
@@ -82,7 +82,7 @@ public partial class MainWindow : Window
             vm.SetSplitViewCommand?.Execute(null);
         }
     }
-    
+
     private void ComposeOnlyButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Console.WriteLine("ComposeOnly button clicked!");

@@ -18,7 +18,7 @@ public class LoggingServiceTests : IDisposable
     {
         // Create a unique test log directory to avoid conflicts
         _testLogDirectory = Path.Combine(Path.GetTempPath(), "SocialMediaCommanderTests", Guid.NewGuid().ToString());
-        
+
         // Close any existing logger to ensure clean state
         Log.CloseAndFlush();
     }
@@ -27,7 +27,7 @@ public class LoggingServiceTests : IDisposable
     {
         // Clean up logs after each test
         Log.CloseAndFlush();
-        
+
         if (Directory.Exists(_testLogDirectory))
         {
             try
@@ -92,7 +92,7 @@ public class LoggingServiceTests : IDisposable
     {
         // Act & Assert
         var action = () => LoggingService.ForContext((string)null!);
-        
+
         action.Should().NotThrow();
     }
 
@@ -101,7 +101,7 @@ public class LoggingServiceTests : IDisposable
     {
         // Act & Assert
         var action = () => LoggingService.ForContext(string.Empty);
-        
+
         action.Should().NotThrow();
     }
 
@@ -128,7 +128,7 @@ public class LoggingServiceTests : IDisposable
         );
 
         Directory.Exists(logDirectory).Should().BeTrue();
-        
+
         // Should have log files (may vary by date, so check for any .log files)
         var logFiles = Directory.GetFiles(logDirectory, "*.log", SearchOption.TopDirectoryOnly);
         logFiles.Should().NotBeEmpty();
@@ -152,7 +152,7 @@ public class LoggingServiceTests : IDisposable
         // Arrange - Force an environment where file logging might fail
         // We can't easily simulate this without mocking the file system,
         // but we can test that initialization doesn't throw
-        
+
         // Act & Assert
         var action = () => LoggingService.Initialize();
         action.Should().NotThrow();

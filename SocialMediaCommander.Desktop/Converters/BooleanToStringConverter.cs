@@ -26,4 +26,4 @@ public class BooleanToStringConverter : IValueConverter
     {
         throw new NotImplementedException();
     }
-} 
+}

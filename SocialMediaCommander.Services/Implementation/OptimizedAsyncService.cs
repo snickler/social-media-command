@@ -33,7 +33,7 @@ public class OptimizedAsyncService : IDisposable
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
-        
+
         // Limit concurrent operations based on system capabilities
         _concurrencyLimiter = new SemaphoreSlim(Environment.ProcessorCount * 2, Environment.ProcessorCount * 2);
     }
@@ -70,7 +70,7 @@ public class OptimizedAsyncService : IDisposable
         {
             // Use ConfigureAwait(false) for library code to avoid deadlocks
             var account = await _accountService.GetAccountByIdAsync(accountId).ConfigureAwait(false);
-            
+
             if (account != null)
             {
                 // Cache the result
@@ -111,15 +111,15 @@ public class OptimizedAsyncService : IDisposable
             var batchTasks = batch.Select(async id =>
             {
                 await _concurrencyLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
-                    try
-                    {
-                        var account = await GetAccountFastAsync(id, cancellationToken).ConfigureAwait(false);
-                        return new { Success = true, Account = account, Error = (string?)null };
-                    }
-                    catch (Exception ex)
-                    {
-                        return new { Success = false, Account = (Account?)null, Error = (string?)ex.Message };
-                    }
+                try
+                {
+                    var account = await GetAccountFastAsync(id, cancellationToken).ConfigureAwait(false);
+                    return new { Success = true, Account = account, Error = (string?)null };
+                }
+                catch (Exception ex)
+                {
+                    return new { Success = false, Account = (Account?)null, Error = (string?)ex.Message };
+                }
                 finally
                 {
                     _concurrencyLimiter.Release();
@@ -233,7 +233,7 @@ public class OptimizedAsyncService : IDisposable
         {
             // Simulate external service validation
             await Task.Delay(100, cancellationToken).ConfigureAwait(false);
-            
+
             // In a real implementation, this would call an external service
             return !string.IsNullOrEmpty(account.Username) && account.Username.Length >= 3;
         }
@@ -266,7 +266,7 @@ public class OptimizedAsyncService : IDisposable
             {
                 // Simulate account update
                 await Task.Delay(25, cancellationToken).ConfigureAwait(false);
-                
+
                 Interlocked.Increment(ref successCount);
                 return new { Success = true, Error = (string?)null };
             }
@@ -311,7 +311,7 @@ public class OptimizedAsyncService : IDisposable
         {
             await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
             await JsonSerializer.SerializeAsync(fileStream, accounts, cancellationToken: cancellationToken).ConfigureAwait(false);
-            
+
             _logger.LogInformation("Successfully saved accounts to {FilePath}", filePath);
             return true;
         }
@@ -355,7 +355,7 @@ public class OptimizedAsyncService : IDisposable
         try
         {
             _concurrencyLimiter?.Dispose();
-            
+
             // Clear cache
             lock (_cacheLock)
             {
@@ -398,4 +398,4 @@ public class BulkOperationResult
     public int SuccessCount { get; set; }
     public int ErrorCount { get; set; }
     public List<string> Errors { get; set; } = new();
-} 
+}

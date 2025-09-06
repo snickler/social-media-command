@@ -1,0 +1,252 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main, develop]
+  release:
+    types: [published]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: '22.x'
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+
+      - name: Build
+        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release
+
+      - name: Test
+        run: dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+
+      - name: Code Coverage Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage/**/coverage.cobertura.xml
+          badge: true
+          fail_below_min: false
+          format: markdown
+          hide_branch_rate: false
+          hide_complexity: true
+          indicators: true
+          output: both
+          thresholds: '60 80'
+
+      - name: Add Coverage PR Comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        if: github.event_name == 'pull_request'
+        with:
+          recreate: true
+          path: code-coverage-results.md
+
+  build:
+    name: Build ${{ matrix.os }}-${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    needs: test
+    strategy:
+      matrix:
+        include:
+          - os: windows
+            arch: x64
+            runner: windows-latest
+            rid: win-x64
+          - os: windows
+            arch: arm64
+            runner: windows-latest
+            rid: win-arm64
+          - os: linux
+            arch: x64
+            runner: ubuntu-latest
+            rid: linux-x64
+          - os: linux
+            arch: arm64
+            runner: ubuntu-latest
+            rid: linux-arm64
+          - os: macos
+            arch: x64
+            runner: macos-latest
+            rid: osx-x64
+          - os: macos
+            arch: arm64
+            runner: macos-latest
+            rid: osx-arm64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Get version
+        id: version
+        shell: bash
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            VERSION="${{ github.ref_name }}"
+            VERSION=${VERSION#v}
+          else
+            VERSION="1.0.0-preview.${{ github.run_number }}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+
+      - name: Publish Desktop App
+        run: |
+          dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj \
+            --configuration Release \
+            --runtime ${{ matrix.rid }} \
+            --self-contained true \
+            --output ./publish/${{ matrix.os }}-${{ matrix.arch }} \
+            /p:Version=${{ steps.version.outputs.version }} \
+            /p:PublishSingleFile=true \
+            /p:PublishTrimmed=false \
+            /p:IncludeNativeLibrariesForSelfExtract=true
+
+      - name: Create Windows Installer
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          # Create a simple batch file for Windows
+          $batchContent = @"
+          @echo off
+          echo Starting Social Media Commander...
+          "%~dp0SocialMediaCommander.Desktop.exe"
+          "@
+          $batchContent | Out-File -FilePath "./publish/${{ matrix.os }}-${{ matrix.arch }}/start.bat" -Encoding ASCII
+
+      - name: Create macOS App Bundle
+        if: matrix.os == 'macos'
+        run: |
+          APP_NAME="Social Media Commander"
+          APP_DIR="./publish/${{ matrix.os }}-${{ matrix.arch }}/$APP_NAME.app"
+          mkdir -p "$APP_DIR/Contents/MacOS"
+          mkdir -p "$APP_DIR/Contents/Resources"
+          
+          # Move executable
+          mv "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander.Desktop" "$APP_DIR/Contents/MacOS/"
+          
+          # Create Info.plist
+          cat > "$APP_DIR/Contents/Info.plist" << EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleExecutable</key>
+              <string>SocialMediaCommander.Desktop</string>
+              <key>CFBundleIdentifier</key>
+              <string>com.socialmediacommander.desktop</string>
+              <key>CFBundleName</key>
+              <string>$APP_NAME</string>
+              <key>CFBundleVersion</key>
+              <string>${{ steps.version.outputs.version }}</string>
+              <key>CFBundleShortVersionString</key>
+              <string>${{ steps.version.outputs.version }}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Create Linux AppImage
+        if: matrix.os == 'linux'
+        run: |
+          # Install AppImage tools
+          wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          
+          # Create AppDir structure
+          mkdir -p SocialMediaCommander.AppDir/usr/bin
+          mkdir -p SocialMediaCommander.AppDir/usr/share/applications
+          mkdir -p SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps
+          
+          # Copy executable
+          cp ./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander.Desktop SocialMediaCommander.AppDir/usr/bin/
+          
+          # Create desktop file
+          cat > SocialMediaCommander.AppDir/usr/share/applications/socialmediacommander.desktop << EOF
+          [Desktop Entry]
+          Type=Application
+          Name=Social Media Commander
+          Exec=SocialMediaCommander.Desktop
+          Icon=socialmediacommander
+          Categories=Network;Office;
+          EOF
+          
+          # Create a simple icon (placeholder)
+          echo "Creating placeholder icon..."
+          touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
+          
+          # Create AppImage (skip for arm64 as tools may not be available)
+          if [[ "${{ matrix.arch }}" == "x64" ]]; then
+            ./linuxdeploy-x86_64.AppImage --appdir SocialMediaCommander.AppDir --output appimage
+            mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
+          fi
+
+      - name: Archive artifacts
+        run: |
+          cd ./publish/${{ matrix.os }}-${{ matrix.arch }}
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            7z a "../SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.zip" .
+          else
+            tar -czf "../SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.tar.gz" .
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            ./publish/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}.*
+          retention-days: 90
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    if: github.event_name == 'release' && github.event.action == 'published'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -la ./artifacts/
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

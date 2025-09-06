@@ -90,8 +90,8 @@ public class MockPostService : IPostService
 
         foreach (var platform in platformList)
         {
-            var validationResult = validationResults.ContainsKey(platform) 
-                ? validationResults[platform] 
+            var validationResult = validationResults.ContainsKey(platform)
+                ? validationResults[platform]
                 : post.ValidateForPlatform(platform);
 
             if (!validationResult.IsValid)
@@ -220,4 +220,4 @@ public class MockPostService : IPostService
 
         return errors[_random.Next(errors.Length)];
     }
-} 
+}

@@ -32,7 +32,7 @@ public class SecureAccountService : IAccountService
             "SocialMediaCommander",
             "Data"
         );
-        
+
         Directory.CreateDirectory(_dataDirectory);
         _logger.Information("SecureAccountService initialized with data directory: {DataDirectory}", _dataDirectory);
     }
@@ -67,7 +67,7 @@ public class SecureAccountService : IAccountService
     public async Task<Account> CreateAccountAsync(Account account)
     {
         await EnsureLoadedAsync();
-        
+
         if (string.IsNullOrEmpty(account.Id))
             account.Id = Guid.NewGuid().ToString();
 
@@ -105,7 +105,7 @@ public class SecureAccountService : IAccountService
     public async Task<Account> UpdateAccountAsync(Account account)
     {
         await EnsureLoadedAsync();
-        
+
         lock (_lock)
         {
             if (!_accounts.ContainsKey(account.Id))
@@ -138,7 +138,7 @@ public class SecureAccountService : IAccountService
     public async Task<bool> DeleteAccountAsync(string id)
     {
         await EnsureLoadedAsync();
-        
+
         lock (_lock)
         {
             if (!_accounts.TryGetValue(id, out var account))
@@ -176,7 +176,7 @@ public class SecureAccountService : IAccountService
     public async Task<bool> SetDefaultAccountAsync(string accountId)
     {
         await EnsureLoadedAsync();
-        
+
         lock (_lock)
         {
             if (!_accounts.TryGetValue(accountId, out var account))
@@ -222,7 +222,7 @@ public class SecureAccountService : IAccountService
     public async Task UpdateLastUsedAsync(string accountId)
     {
         await EnsureLoadedAsync();
-        
+
         lock (_lock)
         {
             if (_accounts.TryGetValue(accountId, out var account))
@@ -237,7 +237,7 @@ public class SecureAccountService : IAccountService
     public async Task InitializeDefaultAccountsAsync()
     {
         await EnsureLoadedAsync();
-        
+
         lock (_lock)
         {
             // Only initialize if no accounts exist
@@ -266,7 +266,7 @@ public class SecureAccountService : IAccountService
     private async Task LoadAccountsAsync()
     {
         var filePath = Path.Combine(_dataDirectory, _accountsFileName);
-        
+
         if (!File.Exists(filePath))
         {
             _logger.Information("No existing accounts file found, starting with empty accounts");
@@ -278,14 +278,14 @@ public class SecureAccountService : IAccountService
             var encryptedData = await File.ReadAllBytesAsync(filePath);
             var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Accounts");
             var json = Encoding.UTF8.GetString(decryptedData);
-            
+
             var accounts = JsonSerializer.Deserialize<List<Account>>(json) ?? new List<Account>();
-            
+
             lock (_lock)
             {
                 _accounts = accounts.ToDictionary(a => a.Id, a => a);
             }
-            
+
             _logger.Information("Loaded {AccountCount} accounts from encrypted storage", accounts.Count);
         }
         catch (Exception ex)
@@ -302,7 +302,7 @@ public class SecureAccountService : IAccountService
     private async Task SaveAccountsAsync()
     {
         var filePath = Path.Combine(_dataDirectory, _accountsFileName);
-        
+
         try
         {
             List<Account> accountsList;
@@ -310,15 +310,15 @@ public class SecureAccountService : IAccountService
             {
                 accountsList = _accounts.Values.ToList();
             }
-            
+
             var json = JsonSerializer.Serialize(accountsList, new JsonSerializerOptions
             {
                 WriteIndented = true
             });
-            
+
             var data = Encoding.UTF8.GetBytes(json);
             var encryptedData = CrossPlatformEncryption.Protect(data, "SocialMediaCommander_Accounts");
-            
+
             await File.WriteAllBytesAsync(filePath, encryptedData);
             _logger.Debug("Saved {AccountCount} accounts to encrypted storage", accountsList.Count);
         }
@@ -328,4 +328,4 @@ public class SecureAccountService : IAccountService
             throw;
         }
     }
-} 
+}

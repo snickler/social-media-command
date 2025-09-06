@@ -138,7 +138,7 @@ public partial class SchedulerViewModel : ObservableObject
     {
         _postService = postService;
         _accountService = accountService;
-        
+
         _ = LoadInitialDataAsync(); // Fire-and-forget with discard to suppress CS4014
         StartAutomationEngine();
     }
@@ -155,7 +155,7 @@ public partial class SchedulerViewModel : ObservableObject
             await LoadAutomationRulesAsync();
             await LoadScheduleTemplatesAsync();
             UpdateStatistics();
-            
+
             StatusMessage = "Data refreshed successfully!";
             await Task.Delay(2000);
             StatusMessage = "";
@@ -192,14 +192,14 @@ public partial class SchedulerViewModel : ObservableObject
         try
         {
             var scheduledDateTime = NewPostScheduleDate.Date + NewPostScheduleTime;
-            
+
             var newPost = new ScheduledPostViewModel
             {
                 Id = Guid.NewGuid().ToString(),
                 Content = NewPostContent,
                 ScheduledTime = scheduledDateTime,
                 Platforms = NewPostSelectedPlatforms.ToList(),
-                                 Status = PostStatus.Publishing,
+                Status = PostStatus.Publishing,
                 IsRecurring = NewPostRecurring,
                 RecurrencePattern = NewPostRecurrencePattern,
                 CreatedAt = DateTime.Now,
@@ -207,14 +207,14 @@ public partial class SchedulerViewModel : ObservableObject
             };
 
             ScheduledPosts.Add(newPost);
-            
+
             // Clear form
             NewPostContent = "";
             NewPostScheduleDate = DateTime.Today.AddDays(1);
             NewPostScheduleTime = TimeSpan.FromHours(9);
             NewPostSelectedPlatforms.Clear();
             NewPostRecurring = false;
-            
+
             UpdateStatistics();
             StatusMessage = "Post scheduled successfully!";
             await Task.Delay(2000);
@@ -243,7 +243,7 @@ public partial class SchedulerViewModel : ObservableObject
         {
             ScheduledPosts.Remove(post);
             UpdateStatistics();
-            
+
             StatusMessage = "Post deleted successfully!";
             await Task.Delay(1500);
             StatusMessage = "";
@@ -281,7 +281,7 @@ public partial class SchedulerViewModel : ObservableObject
         {
             post.Status = PostStatus.Published;
             post.PublishedAt = DateTime.Now;
-            
+
             StatusMessage = "Post published successfully!";
             await Task.Delay(2000);
             StatusMessage = "";
@@ -344,7 +344,7 @@ public partial class SchedulerViewModel : ObservableObject
 
             AutomationRules.Add(newRule);
             UpdateStatistics();
-            
+
             StatusMessage = "Automation rule created!";
             await Task.Delay(2000);
             StatusMessage = "";
@@ -366,7 +366,7 @@ public partial class SchedulerViewModel : ObservableObject
 
         rule.IsActive = !rule.IsActive;
         UpdateStatistics();
-        
+
         StatusMessage = $"Automation rule {(rule.IsActive ? "enabled" : "disabled")}";
         await Task.Delay(1500);
         StatusMessage = "";
@@ -381,7 +381,7 @@ public partial class SchedulerViewModel : ObservableObject
         try
         {
             await Task.Delay(2000); // Simulate AI processing
-            
+
             // In a real implementation, this would use ML algorithms to optimize posting times
             foreach (var post in ScheduledPosts.Where(p => p.Status == PostStatus.Publishing))
             {
@@ -390,7 +390,7 @@ public partial class SchedulerViewModel : ObservableObject
                 var adjustment = random.Next(-30, 30); // ±30 minutes
                 post.ScheduledTime = post.ScheduledTime.AddMinutes(adjustment);
             }
-            
+
             StatusMessage = "Schedule optimized for maximum engagement!";
             await Task.Delay(3000);
             StatusMessage = "";
@@ -450,7 +450,7 @@ public partial class SchedulerViewModel : ObservableObject
         FilterStatus = null;
         ShowOnlyToday = false;
         ShowOnlyThisWeek = false;
-        
+
         StatusMessage = "Filters cleared";
         Task.Run(async () =>
         {
@@ -480,7 +480,7 @@ public partial class SchedulerViewModel : ObservableObject
         {
             // Simulate loading scheduled posts
             ScheduledPosts.Clear();
-            
+
             var samplePosts = new[]
             {
                 new ScheduledPostViewModel
@@ -533,7 +533,7 @@ public partial class SchedulerViewModel : ObservableObject
         try
         {
             AutomationRules.Clear();
-            
+
             var sampleRules = new[]
             {
                 new AutomationRuleViewModel
@@ -578,7 +578,7 @@ public partial class SchedulerViewModel : ObservableObject
             {
                 AutomationRules.Add(rule);
             }
-            
+
             return Task.CompletedTask;
         }
         catch (Exception ex)
@@ -593,7 +593,7 @@ public partial class SchedulerViewModel : ObservableObject
         try
         {
             ScheduleTemplates.Clear();
-            
+
             var sampleTemplates = new[]
             {
                 new ScheduleTemplateViewModel
@@ -620,7 +620,7 @@ public partial class SchedulerViewModel : ObservableObject
             {
                 ScheduleTemplates.Add(template);
             }
-            
+
             return Task.CompletedTask;
         }
         catch (Exception ex)
@@ -634,7 +634,7 @@ public partial class SchedulerViewModel : ObservableObject
     {
         TotalScheduledPosts = ScheduledPosts.Count;
         PostsToday = ScheduledPosts.Count(p => p.ScheduledTime.Date == DateTime.Today);
-        PostsThisWeek = ScheduledPosts.Count(p => p.ScheduledTime.Date >= DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek) && 
+        PostsThisWeek = ScheduledPosts.Count(p => p.ScheduledTime.Date >= DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek) &&
                                                  p.ScheduledTime.Date <= DateTime.Today.AddDays(6 - (int)DateTime.Today.DayOfWeek));
         ActiveAutomationRules = AutomationRules.Count(r => r.IsActive);
         AutomationSuccessRate = AutomationRules.Any() ? AutomationRules.Average(r => r.SuccessRate) : 0.0;
@@ -753,4 +753,4 @@ public partial class ScheduleTemplateViewModel : ObservableObject
     private bool _isActive = true;
 
     public string TimeSlotsText => string.Join(", ", TimeSlots.Select(t => t.ToString(@"hh\:mm")));
-} 
+}

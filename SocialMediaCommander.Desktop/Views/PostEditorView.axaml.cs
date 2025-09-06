@@ -9,9 +9,9 @@ public partial class PostEditorView : UserControl
     {
         InitializeComponent();
     }
-    
+
     public PostEditorView(PostEditorViewModel viewModel) : this()
     {
         DataContext = viewModel;
     }
-} 
+}

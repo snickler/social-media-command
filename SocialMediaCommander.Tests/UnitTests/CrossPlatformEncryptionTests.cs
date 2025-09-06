@@ -64,7 +64,7 @@ public class CrossPlatformEncryptionTests
         var originalData = Encoding.UTF8.GetBytes("Test sensitive data");
         var correctEntropy = "CorrectEntropy123!";
         var wrongEntropy = "WrongEntropy456!";
-        
+
         var encryptedData = CrossPlatformEncryption.Protect(originalData, correctEntropy);
 
         // Act & Assert
@@ -133,11 +133,11 @@ public class CrossPlatformEncryptionTests
             // On non-Windows platforms using AES, different IVs should produce different results
             encrypted1.Should().NotEqual(encrypted2);
         }
-        
+
         // Both should decrypt to the same original data
         var decrypted1 = CrossPlatformEncryption.Unprotect(encrypted1);
         var decrypted2 = CrossPlatformEncryption.Unprotect(encrypted2);
-        
+
         decrypted1.Should().Equal(originalData);
         decrypted2.Should().Equal(originalData);
     }
@@ -150,7 +150,7 @@ public class CrossPlatformEncryptionTests
 
         // Assert
         method.Should().NotBeNullOrEmpty();
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             method.Should().Contain("DPAPI");
@@ -206,14 +206,14 @@ public class CrossPlatformEncryptionTests
         // Arrange
         var originalData = Encoding.UTF8.GetBytes("Test data");
         var encryptedData = CrossPlatformEncryption.Protect(originalData);
-        
+
         // Corrupt the encrypted data
         encryptedData[0] = (byte)(encryptedData[0] ^ 0xFF);
 
         // Act & Assert
         // The behavior may vary by platform - either throw or return corrupted data
         var action = () => CrossPlatformEncryption.Unprotect(encryptedData);
-        
+
         try
         {
             var result = action();
@@ -239,7 +239,7 @@ public class CrossPlatformEncryptionTests
         {
             var encrypted = CrossPlatformEncryption.Protect(testData);
             var decrypted = CrossPlatformEncryption.Unprotect(encrypted);
-            
+
             decrypted.Should().Equal(testData, $"iteration {i} should produce consistent results");
         }
     }

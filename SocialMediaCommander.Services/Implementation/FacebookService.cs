@@ -122,7 +122,7 @@ public class FacebookService : IFacebookService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/{userProfile.Id}/posts?fields=id,message,created_time,permalink_url&limit={limit}&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -143,7 +143,7 @@ public class FacebookService : IFacebookService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/me/feed?fields=id,message,created_time,from&limit={limit}&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -164,7 +164,7 @@ public class FacebookService : IFacebookService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/search?q={Uri.EscapeDataString(query)}&type=post&fields=id,message,created_time,from&limit={limit}&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -242,7 +242,7 @@ public class FacebookService : IFacebookService
         {
             if (!account.IsAuthenticated) return null;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/me?fields=id,name,email,picture&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -284,7 +284,7 @@ public class FacebookService : IFacebookService
         {
             if (!account.IsAuthenticated) return false;
 
-            var request = new HttpRequestMessage(HttpMethod.Post, 
+            var request = new HttpRequestMessage(HttpMethod.Post,
                 $"{BaseUrl}/{postId}/likes?access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -391,7 +391,7 @@ public class FacebookService : IFacebookService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/{pageId}/posts?fields=id,message,created_time,from&limit={limit}&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -489,7 +489,7 @@ public class FacebookService : IFacebookService
             var root = document.RootElement;
 
             var pictureUrl = "";
-            if (root.TryGetProperty("picture", out var picture) && 
+            if (root.TryGetProperty("picture", out var picture) &&
                 picture.TryGetProperty("data", out var pictureData) &&
                 pictureData.TryGetProperty("url", out var url))
             {
@@ -511,4 +511,4 @@ public class FacebookService : IFacebookService
             return null;
         }
     }
-} 
+}

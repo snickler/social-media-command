@@ -233,4 +233,4 @@ public class InMemoryFeedService : IFeedService
             _lastRefreshTimes.TryAdd(platform, DateTime.UtcNow.AddMinutes(-30)); // Simulate last refresh 30 minutes ago
         }
     }
-} 
+}

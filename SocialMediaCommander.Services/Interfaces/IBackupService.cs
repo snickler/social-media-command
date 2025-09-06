@@ -40,4 +40,4 @@ public interface IBackupService
     /// <param name="backupPath">Path to the backup file</param>
     /// <returns>Backup metadata</returns>
     Task<BackupData> GetBackupMetadataAsync(string backupPath);
-} 
+}

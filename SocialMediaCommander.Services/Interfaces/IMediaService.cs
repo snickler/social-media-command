@@ -11,67 +11,67 @@ public interface IMediaService
     /// Uploads a media file from stream
     /// </summary>
     Task<Media> UploadMediaAsync(Stream fileStream, string fileName, string mimeType);
-    
+
     /// <summary>
     /// Uploads a media file from file path
     /// </summary>
     Task<Media> UploadMediaAsync(string filePath);
-    
+
     /// <summary>
     /// Gets media by ID
     /// </summary>
     Task<Media?> GetMediaByIdAsync(string id);
-    
+
     /// <summary>
     /// Gets multiple media files by IDs
     /// </summary>
     Task<IEnumerable<Media>> GetMediaByIdsAsync(IEnumerable<string> ids);
-    
+
     /// <summary>
     /// Deletes a media file
     /// </summary>
     Task<bool> DeleteMediaAsync(string id);
-    
+
     /// <summary>
     /// Generates a preview/thumbnail for media
     /// </summary>
     Task<string?> GeneratePreviewAsync(string mediaId);
-    
+
     /// <summary>
     /// Gets media file stream
     /// </summary>
     Task<Stream?> GetMediaStreamAsync(string id);
-    
+
     /// <summary>
     /// Validates media file for platform requirements
     /// </summary>
     Task<ValidationResult> ValidateMediaForPlatformAsync(string mediaId, SocialPlatform platform);
-    
+
     /// <summary>
     /// Optimizes media file for platform requirements
     /// </summary>
     Task<Media> OptimizeMediaForPlatformAsync(string mediaId, SocialPlatform platform);
-    
+
     /// <summary>
     /// Gets supported media formats for a platform
     /// </summary>
     Task<MediaFormats> GetSupportedFormatsAsync(SocialPlatform platform);
-    
+
     /// <summary>
     /// Cleans up unused media files
     /// </summary>
     Task<int> CleanupUnusedMediaAsync(TimeSpan olderThan);
-    
+
     /// <summary>
     /// Gets media storage statistics
     /// </summary>
     Task<MediaStorageStats> GetStorageStatisticsAsync();
-    
+
     /// <summary>
     /// Processes media file (resize, convert, etc.)
     /// </summary>
     Task<Media> ProcessMediaAsync(string mediaId, MediaProcessingOptions options);
-    
+
     /// <summary>
     /// Validates file before upload
     /// </summary>
@@ -116,4 +116,4 @@ public class MediaProcessingOptions
     public bool GenerateThumbnail { get; set; } = true;
     public TimeSpan? MaxDuration { get; set; }
     public bool OptimizeForWeb { get; set; } = true;
-} 
+}

@@ -22,7 +22,7 @@ public class TestAuthenticationService : IAuthenticationService
         {
             var config = _configService.GetDefaultConfiguration(platform);
             var state = Guid.NewGuid().ToString("N")[..16]; // Generate deterministic test state
-            
+
             var authUrl = $"{config.AuthorizationEndpoint}?" +
                          $"client_id={config.ClientId}&" +
                          $"redirect_uri={Uri.EscapeDataString(redirectUri ?? config.RedirectUri)}&" +

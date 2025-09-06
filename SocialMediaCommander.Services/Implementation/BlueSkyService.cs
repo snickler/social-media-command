@@ -209,7 +209,7 @@ public class BlueSkyService : IBlueSkyService
             var session = await CreateSessionAsync(account);
             if (!session) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/com.atproto.repo.listRecords?repo={account.Username}&collection=app.bsky.feed.post&limit={limit}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -234,7 +234,7 @@ public class BlueSkyService : IBlueSkyService
             var session = await CreateSessionAsync(account);
             if (!session) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/app.bsky.feed.getTimeline?limit={limit}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -259,7 +259,7 @@ public class BlueSkyService : IBlueSkyService
             var session = await CreateSessionAsync(account);
             if (!session) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/app.bsky.feed.searchPosts?q={Uri.EscapeDataString(query)}&limit={limit}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -374,7 +374,7 @@ public class BlueSkyService : IBlueSkyService
             var session = await CreateSessionAsync(account);
             if (!session) return null;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/app.bsky.actor.getProfile?actor={account.Username}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -465,7 +465,7 @@ public class BlueSkyService : IBlueSkyService
         // Extract mentions, hashtags, and links from content
         // This is a simplified implementation
         var facets = new List<object>();
-        
+
         // Find hashtags
         var hashtagMatches = System.Text.RegularExpressions.Regex.Matches(content, @"#\w+");
         foreach (System.Text.RegularExpressions.Match match in hashtagMatches)
@@ -581,4 +581,4 @@ public class BlueSkyService : IBlueSkyService
             return Enumerable.Empty<SocialFeedItem>();
         }
     }
-} 
+}

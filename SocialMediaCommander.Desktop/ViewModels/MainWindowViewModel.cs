@@ -20,9 +20,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private static readonly ArrayPool<char> s_charPool = ArrayPool<char>.Shared;
     private volatile bool _disposed = false;
-    
+
     public string Greeting { get; } = "Social Media Commander";
-    
+
     public PostEditorViewModel PostEditor { get; }
     public SocialFeedViewModel SocialFeed { get; }
     public AccountManagerViewModel AccountManager { get; }
@@ -30,28 +30,28 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public SettingsViewModel Settings { get; }
     public SchedulerViewModel Scheduler { get; }
     public AIAssistantViewModel AIAssistant { get; }
-    
+
     [ObservableProperty]
     private ViewMode currentViewMode = ViewMode.Standard;
-    
+
     [ObservableProperty]
     private WorkspaceMode currentWorkspaceMode = WorkspaceMode.SingleThread;
-    
+
     [ObservableProperty]
     private LayoutMode currentLayoutMode = LayoutMode.SplitView;
-    
+
     [ObservableProperty]
     private bool isAccountManagerVisible = false;
-    
+
     [ObservableProperty]
     private bool isAIAssistantVisible = false;
-    
+
     [ObservableProperty]
     private string encryptionStatus = "Initializing...";
-    
+
     [ObservableProperty]
     private string dataIntegrityStatus = "Unknown";
-    
+
     [ObservableProperty]
     private bool isDataSecure = false;
 
@@ -70,7 +70,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         ISettingsService settingsService)
     {
         Console.WriteLine("MainWindowViewModel constructor called with DI");
-        
+
         PostEditor = postEditor;
         SocialFeed = socialFeed;
         AccountManager = accountManager;
@@ -80,20 +80,20 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         AIAssistant = aiAssistant;
         _dataIntegrityService = dataIntegrityService;
         _settingsService = settingsService;
-        
+
         // Subscribe to error events for user notifications with weak references to prevent memory leaks
         PostEditor.OnError += HandlePostEditorError;
         PostEditor.OnPostPublished += HandlePostPublished;
         PostEditor.OnDraftSaved += HandleDraftSaved;
-        
+
         // Initialize status information
         _ = InitializeStatusAsync();
-        
+
         Console.WriteLine("MainWindowViewModel initialization complete with DI");
     }
-    
+
     #region View Mode Commands - Optimized with ValueTask pattern
-    
+
     [RelayCommand]
     private void SetStandardView()
     {
@@ -102,7 +102,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentViewMode = ViewMode.Standard;
         UpdateViewLayoutEfficient();
     }
-    
+
     [RelayCommand]
     private void SetCompactView()
     {
@@ -111,19 +111,19 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentViewMode = ViewMode.Compact;
         UpdateViewLayoutEfficient();
     }
-    
+
     #endregion
-    
+
     #region Account Management Commands - Async optimized
-    
+
     [RelayCommand]
     private void ManageAccounts()
     {
         Console.WriteLine("ManageAccounts command executed!");
         System.Diagnostics.Debug.WriteLine("Opening Account Management");
-        
+
         IsAccountManagerVisible = !IsAccountManagerVisible;
-        
+
         if (IsAccountManagerVisible)
         {
             // Refresh account data when opening - fire and forget with proper error handling
@@ -140,38 +140,38 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             });
         }
     }
-    
+
     [RelayCommand]
     private void CloseAccountManager()
     {
         Console.WriteLine("CloseAccountManager command executed!");
         IsAccountManagerVisible = false;
     }
-    
+
     #endregion
-    
+
     #region AI Assistant Commands - Memory efficient
-    
+
     [RelayCommand]
     private void ToggleAIAssistant()
     {
         Console.WriteLine("ToggleAIAssistant command executed!");
         System.Diagnostics.Debug.WriteLine("Toggling AI Assistant");
-        
+
         IsAIAssistantVisible = !IsAIAssistantVisible;
     }
-    
+
     [RelayCommand]
     private void CloseAIAssistant()
     {
         Console.WriteLine("CloseAIAssistant command executed!");
         IsAIAssistantVisible = false;
     }
-    
+
     #endregion
-    
+
     #region Workspace Mode Commands - Optimized state management
-    
+
     [RelayCommand]
     private void SetSingleThreadMode()
     {
@@ -180,7 +180,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentWorkspaceMode = WorkspaceMode.SingleThread;
         PostEditor.ThreadsOnlyMode = false;
     }
-    
+
     [RelayCommand]
     private void SetThreadsOnlyMode()
     {
@@ -189,11 +189,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentWorkspaceMode = WorkspaceMode.ThreadsOnly;
         PostEditor.ThreadsOnlyMode = true;
     }
-    
+
     #endregion
-    
+
     #region Layout Commands - Efficient property updates
-    
+
     [RelayCommand]
     private void SetSplitView()
     {
@@ -202,7 +202,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentLayoutMode = LayoutMode.SplitView;
         UpdateViewLayoutEfficient();
     }
-    
+
     [RelayCommand]
     private void SetComposeOnly()
     {
@@ -211,11 +211,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         CurrentLayoutMode = LayoutMode.ComposeOnly;
         UpdateViewLayoutEfficient();
     }
-    
+
     #endregion
-    
+
     #region Status and Initialization
-    
+
     /// <summary>
     /// Initializes encryption and data integrity status
     /// </summary>
@@ -225,7 +225,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         {
             // Update encryption status
             EncryptionStatus = CrossPlatformEncryption.GetEncryptionMethod();
-            
+
             // Check data integrity
             var integrityReport = await _dataIntegrityService.ValidateDataIntegrityAsync();
             DataIntegrityStatus = integrityReport.OverallStatus switch
@@ -235,9 +235,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 IntegrityStatus.Error => $"Error ({integrityReport.TotalIssues} issues)",
                 _ => "Unknown"
             };
-            
+
             IsDataSecure = integrityReport.OverallStatus != IntegrityStatus.Error;
-            
+
             Console.WriteLine($"Status initialized - Encryption: {EncryptionStatus}, Integrity: {DataIntegrityStatus}");
         }
         catch (Exception ex)
@@ -248,7 +248,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             IsDataSecure = false;
         }
     }
-    
+
     [RelayCommand]
     private async Task RefreshDataIntegrityAsync()
     {
@@ -262,15 +262,15 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
                 IntegrityStatus.Error => $"Error ({integrityReport.TotalIssues} issues)",
                 _ => "Unknown"
             };
-            
+
             IsDataSecure = integrityReport.OverallStatus != IntegrityStatus.Error;
-            
+
             // Auto-repair if there are repairable issues
             if (integrityReport.RepairableIssues > 0)
             {
                 await _dataIntegrityService.RepairDataAsync(integrityReport);
                 Console.WriteLine($"Auto-repaired {integrityReport.RepairableIssues} data integrity issues");
-                
+
                 // Re-check after repair
                 await RefreshDataIntegrityAsync();
             }
@@ -282,11 +282,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             IsDataSecure = false;
         }
     }
-    
+
     #endregion
-    
+
     #region Helper Methods - Performance optimized
-    
+
     /// <summary>
     /// Efficient view layout update using batch property notifications
     /// </summary>
@@ -299,11 +299,11 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(PostEditorColumnWidth));
         OnPropertyChanged(nameof(FeedColumnWidth));
     }
-    
+
     #endregion
-    
+
     #region Computed Properties - Cached for performance
-    
+
     public bool IsCompactViewActive => CurrentViewMode == ViewMode.Compact;
     public bool IsSplitViewActive => CurrentLayoutMode == LayoutMode.SplitView;
     public bool IsComposeOnlyActive => CurrentLayoutMode == LayoutMode.ComposeOnly;
@@ -321,16 +321,16 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         LayoutMode.ComposeOnly => "0",
         _ => "1*"
     };
-    
+
     #endregion
-    
+
     #region Event Handlers - Memory efficient error handling
-    
+
     private void HandlePostEditorError(string message)
     {
         HandleError("Post Editor", message);
     }
-    
+
     private void HandleError(string source, string message)
     {
         // Use efficient string operations for error messages
@@ -339,22 +339,22 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         {
             var span = buffer.AsSpan();
             var written = 0;
-            
+
             // Efficient string formatting using Span<T>
             var sourceSpan = source.AsSpan();
             sourceSpan.CopyTo(span.Slice(written));
             written += sourceSpan.Length;
-            
+
             " Error: ".AsSpan().CopyTo(span.Slice(written));
             written += 8;
-            
+
             var messageSpan = message.AsSpan();
             var remainingSpace = Math.Min(messageSpan.Length, span.Length - written);
             messageSpan.Slice(0, remainingSpace).CopyTo(span.Slice(written));
             written += remainingSpace;
-            
+
             var errorMessage = new string(span.Slice(0, written));
-            
+
             // Log error efficiently
             Console.WriteLine(errorMessage);
             System.Diagnostics.Debug.WriteLine(errorMessage);
@@ -369,7 +369,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         Console.WriteLine("Post published successfully!");
         System.Diagnostics.Debug.WriteLine("Post published successfully!");
-        
+
         // Refresh feed efficiently after post
         _ = Task.Run(async () =>
         {
@@ -391,22 +391,22 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Console.WriteLine("Draft saved successfully!");
         System.Diagnostics.Debug.WriteLine("Draft saved successfully!");
     }
-    
+
     #endregion
-    
+
     #region IDisposable Implementation
-    
+
     public void Dispose()
     {
         if (_disposed) return;
-        
+
         try
         {
             // Unsubscribe from events to prevent memory leaks
             PostEditor.OnError -= HandlePostEditorError;
             PostEditor.OnPostPublished -= HandlePostPublished;
             PostEditor.OnDraftSaved -= HandleDraftSaved;
-            
+
             // Dispose child view models if they implement IDisposable
             (PostEditor as IDisposable)?.Dispose();
             (SocialFeed as IDisposable)?.Dispose();
@@ -421,12 +421,12 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
             _disposed = true;
         }
     }
-    
+
     ~MainWindowViewModel()
     {
         Dispose();
     }
-    
+
     #endregion
 }
 

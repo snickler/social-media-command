@@ -19,7 +19,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
 {
     private readonly IAIService _aiService;
     private readonly ILogger<AIAssistantViewModel> _logger;
-    
+
     private string _prompt = string.Empty;
     private string _generatedContent = string.Empty;
     private bool _isGenerating = false;
@@ -35,13 +35,13 @@ public class AIAssistantViewModel : INotifyPropertyChanged
     {
         _aiService = aiService;
         _logger = logger;
-        
+
         GenerateContentCommand = new AsyncRelayCommand(GenerateContentAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(Prompt));
         OptimizeContentCommand = new AsyncRelayCommand(OptimizeContentAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
         GenerateVariationsCommand = new AsyncRelayCommand(GenerateVariationsAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
         GenerateHashtagsCommand = new AsyncRelayCommand(GenerateHashtagsAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
         GenerateThreadCommand = new AsyncRelayCommand(GenerateThreadAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
-        
+
         TargetPlatforms = new ObservableCollection<PlatformSelectionItem>
         {
             new() { Platform = SocialPlatform.X, IsSelected = true },
@@ -50,7 +50,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
             new() { Platform = SocialPlatform.BlueSky, IsSelected = false },
             new() { Platform = SocialPlatform.Threads, IsSelected = false }
         };
-        
+
         ContentVariations = new ObservableCollection<AIGeneratedContent>();
         GeneratedHashtags = new ObservableCollection<string>();
         ThreadPosts = new ObservableCollection<string>();
@@ -187,7 +187,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
-            
+
             var request = new AIContentRequest
             {
                 Prompt = Prompt,
@@ -205,7 +205,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
             if (_lastResponse.Success && _lastResponse.GeneratedContent.Any())
             {
                 GeneratedContent = _lastResponse.GeneratedContent.First().Content;
-                
+
                 // Update collections
                 ContentVariations.Clear();
                 foreach (var content in _lastResponse.GeneratedContent)
@@ -234,9 +234,9 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
-            
+
             var selectedPlatform = TargetPlatforms.FirstOrDefault(p => p.IsSelected)?.Platform ?? SocialPlatform.X;
-            
+
             var request = new AIOptimizationRequest
             {
                 Content = GeneratedContent,
@@ -246,7 +246,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
 
             var response = await _aiService.OptimizeContentAsync(request);
             GeneratedContent = response.OptimizedContent;
-            
+
             OptimizationSuggestions.Clear();
             foreach (var suggestion in response.Suggestions)
             {
@@ -268,9 +268,9 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
-            
+
             var variations = await _aiService.GenerateVariationsAsync(GeneratedContent, 3);
-            
+
             ContentVariations.Clear();
             foreach (var variation in variations)
             {
@@ -292,9 +292,9 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
-            
+
             var hashtags = await _aiService.GenerateHashtagsAsync(GeneratedContent, 10);
-            
+
             GeneratedHashtags.Clear();
             foreach (var hashtag in hashtags)
             {
@@ -316,9 +316,9 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
-            
+
             var threadPosts = await _aiService.GenerateThreadAsync(GeneratedContent, 5);
-            
+
             ThreadPosts.Clear();
             foreach (var post in threadPosts)
             {
@@ -357,7 +357,7 @@ public class PlatformSelectionItem : INotifyPropertyChanged
     private bool _isSelected;
 
     public SocialPlatform Platform { get; set; }
-    
+
     public bool IsSelected
     {
         get => _isSelected;
@@ -376,4 +376,4 @@ public class PlatformSelectionItem : INotifyPropertyChanged
     {
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
-} 
+}

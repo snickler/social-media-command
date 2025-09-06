@@ -96,7 +96,7 @@ public class ErrorHandlingTests
             account.DisplayName.Should().NotBeNullOrEmpty();
             account.IsDefault.Should().BeTrue();
             account.Avatar.Should().NotBeNullOrEmpty();
-            
+
             // Verify the avatar URL is valid format
             account.Avatar.Should().StartWith("https://");
         }
@@ -274,7 +274,7 @@ public class ErrorHandlingTests
             var isAuthenticated = account.IsAuthenticated;
 
             // Assert
-            isAuthenticated.Should().Be(testCase.ExpectedAuth, 
+            isAuthenticated.Should().Be(testCase.ExpectedAuth,
                 $"Account with status {testCase.Status}, hasTokens: {testCase.HasTokens}, tokenExpired: {testCase.TokenExpired} should be authenticated: {testCase.ExpectedAuth}");
         }
     }

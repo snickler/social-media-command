@@ -141,7 +141,7 @@ public class LinkedInService : ILinkedInService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/ugcPosts?q=authors&authors=List(urn:li:person:{userProfile.Id})&count={limit}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -331,7 +331,7 @@ public class LinkedInService : ILinkedInService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/ugcPosts?q=authors&authors=List(urn:li:organization:{companyId})&count={limit}");
             request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
 
@@ -457,7 +457,7 @@ public class LinkedInService : ILinkedInService
             {
                 var specificContent = post.GetProperty("specificContent")
                     .GetProperty("com.linkedin.ugc.ShareContent");
-                
+
                 var commentary = specificContent.TryGetProperty("shareCommentary", out var commentaryElement)
                     ? commentaryElement.GetProperty("text").GetString() ?? ""
                     : "";
@@ -491,11 +491,11 @@ public class LinkedInService : ILinkedInService
             return new UserProfile
             {
                 Id = root.GetProperty("id").GetString() ?? "",
-                Username = root.TryGetProperty("localizedFirstName", out var firstName) && 
+                Username = root.TryGetProperty("localizedFirstName", out var firstName) &&
                           root.TryGetProperty("localizedLastName", out var lastName)
                     ? $"{firstName.GetString()} {lastName.GetString()}"
                     : "",
-                DisplayName = root.TryGetProperty("localizedFirstName", out var fName) && 
+                DisplayName = root.TryGetProperty("localizedFirstName", out var fName) &&
                              root.TryGetProperty("localizedLastName", out var lName)
                     ? $"{fName.GetString()} {lName.GetString()}"
                     : "",
@@ -523,11 +523,11 @@ public class LinkedInService : ILinkedInService
                 profiles.Add(new UserProfile
                 {
                     Id = connection.GetProperty("id").GetString() ?? "",
-                    Username = connection.TryGetProperty("firstName", out var firstName) && 
+                    Username = connection.TryGetProperty("firstName", out var firstName) &&
                               connection.TryGetProperty("lastName", out var lastName)
                         ? $"{firstName.GetString()} {lastName.GetString()}"
                         : "",
-                    DisplayName = connection.TryGetProperty("firstName", out var fName) && 
+                    DisplayName = connection.TryGetProperty("firstName", out var fName) &&
                                  connection.TryGetProperty("lastName", out var lName)
                         ? $"{fName.GetString()} {lName.GetString()}"
                         : "",
@@ -542,4 +542,4 @@ public class LinkedInService : ILinkedInService
             return Enumerable.Empty<UserProfile>();
         }
     }
-} 
+}

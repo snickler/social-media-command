@@ -130,10 +130,10 @@ public partial class AdvancedLoggingService : IDisposable
     public AdvancedLoggingService(ILogger<AdvancedLoggingService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         // Initialize log flush timer (every 5 seconds)
-    _logFlushTimer = new Timer(_ => _ = FlushLogsCallbackAsync(), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
-        
+        _logFlushTimer = new Timer(_ => _ = FlushLogsCallbackAsync(), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+
         _logger.LogInformation("Advanced logging service initialized with high-performance patterns");
     }
 
@@ -152,7 +152,7 @@ public partial class AdvancedLoggingService : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Account operation failed: {Operation} for account {AccountId} on platform {Platform}", 
+            _logger.LogError(ex, "Account operation failed: {Operation} for account {AccountId} on platform {Platform}",
                 operation, account.Id, account.PlatformId.ToString());
             throw;
         }
@@ -173,7 +173,7 @@ public partial class AdvancedLoggingService : IDisposable
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Async account operation failed: {Operation} for account {AccountId} on platform {Platform}", 
+            _logger.LogError(ex, "Async account operation failed: {Operation} for account {AccountId} on platform {Platform}",
                 operation, account.Id, account.PlatformId.ToString());
             throw;
         }
@@ -188,7 +188,7 @@ public partial class AdvancedLoggingService : IDisposable
 
         if (success)
         {
-            _logger.LogInformation("Authentication successful for account {AccountId} on platform {Platform}", 
+            _logger.LogInformation("Authentication successful for account {AccountId} on platform {Platform}",
                 account.Id, account.PlatformId.ToString());
         }
         else
@@ -269,7 +269,7 @@ public partial class AdvancedLoggingService : IDisposable
         if (_disposed) return;
 
         using var scope = _logger.BeginScope("SystemEvent: {EventName}", eventName);
-        
+
         if (properties != null && properties.Count > 0)
         {
             _logger.LogInformation("System event occurred: {EventName} with properties: {@Properties}", eventName, properties);
@@ -358,7 +358,7 @@ public partial class AdvancedLoggingService : IDisposable
             {
                 // Process entries in batches for analytics or external logging
                 await ProcessLogEntriesAsync(entries).ConfigureAwait(false);
-                
+
                 _logger.LogDebug("Processed {Count} log entries in batch", processedCount);
             }
         }
@@ -380,7 +380,7 @@ public partial class AdvancedLoggingService : IDisposable
         // This could send to analytics systems, external logging services, etc.
         // For now, we'll just simulate processing
         await Task.Delay(1).ConfigureAwait(false);
-        
+
         // In a real implementation, you might:
         // - Send to Application Insights
         // - Store in a database for analytics
@@ -395,7 +395,7 @@ public partial class AdvancedLoggingService : IDisposable
         try
         {
             _logFlushTimer?.Dispose();
-            
+
             // Flush any remaining logs synchronously
             try
             {
@@ -405,7 +405,7 @@ public partial class AdvancedLoggingService : IDisposable
             {
                 _logger.LogError(ex, "Error flushing logs during Dispose");
             }
-            
+
             _flushSemaphore?.Dispose();
         }
         finally
@@ -429,4 +429,4 @@ public class LogEntry
     public string? Details { get; set; }
     public string? PostId { get; set; }
     public Dictionary<string, object> Properties { get; set; } = new();
-} 
+}

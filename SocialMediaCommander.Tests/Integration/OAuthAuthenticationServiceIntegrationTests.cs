@@ -23,7 +23,7 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
         services.AddHttpClient();
         services.AddSingleton<IOAuthConfigurationService, TestOAuthConfigurationService>();
         services.AddSingleton<IAuthenticationService, TestAuthenticationService>();
-        
+
         _serviceProvider = services.BuildServiceProvider();
         _httpClient = _serviceProvider.GetRequiredService<HttpClient>();
         _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
@@ -51,7 +51,7 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
         var uri = new Uri(result.AuthorizationUrl!);
         uri.Should().NotBeNull();
         uri.Scheme.Should().Be("https");
-        
+
         // Verify query parameters
         var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
         query["client_id"].Should().NotBeNullOrEmpty();
@@ -279,4 +279,4 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
         (_authService as IDisposable)?.Dispose();
         _serviceProvider?.Dispose();
     }
-} 
+}

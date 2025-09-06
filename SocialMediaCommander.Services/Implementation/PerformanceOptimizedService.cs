@@ -51,10 +51,10 @@ public class PerformanceOptimizedService : IDisposable
     public PerformanceOptimizedService(ILogger<PerformanceOptimizedService> logger)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         // Initialize metrics collection timer (every 30 seconds)
         _metricsTimer = new Timer(ProcessMetricsCallback, null, TimeSpan.FromSeconds(30), TimeSpan.FromSeconds(30));
-        
+
         LogOperationStarted(_logger, "PerformanceOptimizedService", null);
     }
 
@@ -69,18 +69,18 @@ public class PerformanceOptimizedService : IDisposable
         if (_disposed) throw new ObjectDisposedException(nameof(PerformanceOptimizedService));
 
         var activity = StartActivity(nameof(ProcessDataAsync));
-        
+
         // Use semaphore to limit concurrent operations
         await _semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
-        
+
         try
         {
             // Process data using high-performance patterns
             var result = await ProcessDataInternalAsync(data, cancellationToken).ConfigureAwait(false);
-            
+
             // Record performance metrics
             RecordMetric("ProcessDataAsync", activity.Elapsed.TotalMilliseconds);
-            
+
             return result;
         }
         finally
@@ -160,17 +160,17 @@ public class PerformanceOptimizedService : IDisposable
         if (_disposed) throw new ObjectDisposedException(nameof(PerformanceOptimizedService));
 
         var activity = StartActivity(nameof(SerializeToJsonAsync));
-        
+
         // Rent buffer from pool to avoid allocations
         var buffer = _bytePool.Rent(8192);
         try
         {
             using var stream = new MemoryStream(buffer);
             await JsonSerializer.SerializeAsync(stream, data, cancellationToken: cancellationToken).ConfigureAwait(false);
-            
+
             var jsonBytes = stream.ToArray();
             var result = Encoding.UTF8.GetString(jsonBytes);
-            
+
             RecordMetric("SerializeToJsonAsync", activity.Elapsed.TotalMilliseconds);
             return result;
         }
@@ -188,7 +188,7 @@ public class PerformanceOptimizedService : IDisposable
         if (_disposed) throw new ObjectDisposedException(nameof(PerformanceOptimizedService));
 
         var activity = StartActivity(nameof(ProcessTextAsync));
-        
+
         // Rent char buffer from pool
         var buffer = _charPool.Rent(input.Length * 2);
         try
@@ -211,7 +211,7 @@ public class PerformanceOptimizedService : IDisposable
 
             var result = new string(span.Slice(0, written));
             RecordMetric("ProcessTextAsync", activity.Elapsed.TotalMilliseconds);
-            
+
             return ValueTask.FromResult(result);
         }
         finally
@@ -229,7 +229,7 @@ public class PerformanceOptimizedService : IDisposable
     {
         // Simulate processing with proper async patterns
         await Task.Delay(10, cancellationToken).ConfigureAwait(false);
-        
+
         return new ProcessingResult
         {
             Success = true,
@@ -245,7 +245,7 @@ public class PerformanceOptimizedService : IDisposable
     {
         // Use ConfigureAwait(false) for library code to avoid deadlocks
         await Task.Delay(5, cancellationToken).ConfigureAwait(false);
-        
+
         return new ProcessedAccount
         {
             AccountId = account.Id,
@@ -316,7 +316,7 @@ public class PerformanceOptimizedService : IDisposable
         {
             _metricsTimer?.Dispose();
             _semaphore?.Dispose();
-            
+
             // Process any remaining metrics
             ProcessMetricsCallback(null);
         }
@@ -357,4 +357,4 @@ public class PerformanceMetric
     public string Name { get; set; } = string.Empty;
     public double Value { get; set; }
     public DateTime Timestamp { get; set; }
-} 
+}

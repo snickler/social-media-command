@@ -23,11 +23,11 @@ public class FoundryLocalAIService : IAIService, IDisposable
     private readonly ArrayPool<byte> _bytePool;
     private readonly SemaphoreSlim _initializationSemaphore;
     private readonly JsonSerializerOptions _jsonOptions;
-    
+
     private string? _serviceEndpoint;
     private volatile bool _serviceInitialized = false;
     private volatile bool _disposed = false;
-    
+
     public FoundryLocalAIService(
         ILogger<FoundryLocalAIService> logger,
         IOptions<AIModelConfig> config,
@@ -39,7 +39,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
         _charPool = ArrayPool<char>.Shared;
         _bytePool = ArrayPool<byte>.Shared;
         _initializationSemaphore = new SemaphoreSlim(1, 1);
-        
+
         // Pre-configure JSON options for better performance
         _jsonOptions = new JsonSerializerOptions
         {
@@ -47,7 +47,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             WriteIndented = false,
             DefaultBufferSize = 4096 // Optimize buffer size
         };
-        
+
         _httpClient.Timeout = TimeSpan.FromMinutes(5); // AI generation can take time
     }
 
@@ -130,13 +130,13 @@ public class FoundryLocalAIService : IAIService, IDisposable
             if (process != null)
             {
                 await process.WaitForExitAsync().ConfigureAwait(false);
-                
+
                 // Use ArrayPool for efficient string processing
                 var buffer = _charPool.Rent(4096);
                 try
                 {
                     var output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                    
+
                     // Process lines efficiently using string operations instead of Span in async method
                     var lines = output.Split('\n');
                     foreach (var line in lines)
@@ -148,7 +148,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                             if (colonIndex >= 0 && colonIndex < line.Length - 1)
                             {
                                 var endpoint = line.Substring(colonIndex + 1).Trim();
-                                
+
                                 if (Uri.TryCreate(endpoint, UriKind.Absolute, out _))
                                 {
                                     return endpoint.EndsWith("/v1") ? endpoint : $"{endpoint}/v1";
@@ -207,19 +207,19 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Generating AI content for request: {RequestId}", request.Id);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var startTime = DateTime.UtcNow;
-            
+
             // Build platform-specific prompt using efficient string operations
             var platformInfo = GetPlatformInfo(request.TargetPlatforms);
             var prompt = BuildContentGenerationPrompt(request, platformInfo);
-            
+
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             var processingTime = (DateTime.UtcNow - startTime).TotalMilliseconds;
 
             if (string.IsNullOrWhiteSpace(response))
@@ -235,7 +235,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
 
             // Parse and structure the response
             var generatedContent = ParseGeneratedContent(response, request);
-            
+
             return new AIContentResponse
             {
                 Id = request.Id,
@@ -270,16 +270,16 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Optimizing content for platform: {Platform}", request.Platform);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var platformLimits = GetPlatformLimits(request.Platform);
             var prompt = BuildOptimizationPrompt(request, platformLimits);
-            
+
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             if (string.IsNullOrWhiteSpace(response))
             {
                 return new AIOptimizationResponse
@@ -326,14 +326,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Analyzing content for platform: {Platform}", platform);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildAnalysisPrompt(content, platform);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseAnalysisResponse(response, content, platform);
         }
         catch (Exception ex)
@@ -354,14 +354,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Generating hashtags for content, max count: {MaxCount}", maxCount);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildHashtagPrompt(content, maxCount);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseHashtags(response, maxCount);
         }
         catch (Exception ex)
@@ -375,14 +375,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Getting AI insights for user: {UserId}", userId);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildInsightsPrompt(userId);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseInsightsResponse(response);
         }
         catch (Exception ex)
@@ -402,9 +402,9 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 },
                 ContentRecommendations = new List<AIContentRecommendation>
                 {
-                    new AIContentRecommendation 
-                    { 
-                        ContentType = "Video", 
+                    new AIContentRecommendation
+                    {
+                        ContentType = "Video",
                         Topic = "AI trends content",
                         PotentialReach = 1000
                     }
@@ -418,14 +418,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Predicting performance for post: {PostId}", post.Id);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildPerformancePredictionPrompt(post);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParsePerformancePrediction(response, post);
         }
         catch (Exception ex)
@@ -450,14 +450,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Generating {Count} variations of content", count);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildVariationsPrompt(content, count);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseVariations(response, content, count);
         }
         catch (Exception ex)
@@ -465,9 +465,9 @@ public class FoundryLocalAIService : IAIService, IDisposable
             _logger.LogError(ex, "Error generating variations");
             return new List<AIGeneratedContent>
             {
-                new AIGeneratedContent 
-                { 
-                    Content = content, 
+                new AIGeneratedContent
+                {
+                    Content = content,
                     ConfidenceScore = 0.5,
                     Hashtags = new List<string> { "content" },
                     Platform = SocialPlatform.X
@@ -480,14 +480,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Suggesting optimal posting times for user: {UserId}", userId);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildOptimalTimesPrompt(userId);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseOptimalTimes(response);
         }
         catch (Exception ex)
@@ -509,14 +509,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Generating thread with max {MaxPosts} posts", maxPosts);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var prompt = BuildThreadPrompt(content, maxPosts);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
-            
+
             return ParseThread(response, maxPosts);
         }
         catch (Exception ex)
@@ -530,13 +530,13 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
         _logger.LogInformation("Translating content to {Count} languages", targetLanguages.Count);
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             var translations = new Dictionary<string, string>();
-            
+
             // Process translations in parallel for better performance
             var tasks = targetLanguages.Select(async language =>
             {
@@ -544,14 +544,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
                 return new KeyValuePair<string, string>(language, response);
             });
-            
+
             var results = await Task.WhenAll(tasks).ConfigureAwait(false);
-            
+
             foreach (var result in results)
             {
                 translations[result.Key] = result.Value;
             }
-            
+
             return translations;
         }
         catch (Exception ex)
@@ -566,15 +566,15 @@ public class FoundryLocalAIService : IAIService, IDisposable
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             if (string.IsNullOrEmpty(_serviceEndpoint))
                 return false;
-                
+
             // Quick health check with timeout
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
             using var response = await _httpClient.GetAsync("/health", HttpCompletionOption.ResponseHeadersRead, cts.Token)
                 .ConfigureAwait(false);
-            
+
             return response.IsSuccessStatusCode;
         }
         catch
@@ -586,11 +586,11 @@ public class FoundryLocalAIService : IAIService, IDisposable
     public async Task<AIModelConfig> GetModelInfoAsync()
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
-        
+
         try
         {
             await InitializeServiceAsync().ConfigureAwait(false);
-            
+
             return new AIModelConfig
             {
                 ModelName = _config.ModelName,
@@ -631,16 +631,16 @@ public class FoundryLocalAIService : IAIService, IDisposable
         {
             using var stream = new MemoryStream(buffer);
             await JsonSerializer.SerializeAsync(stream, requestBody, _jsonOptions).ConfigureAwait(false);
-            
+
             using var content = new ByteArrayContent(buffer, 0, (int)stream.Length);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-            
+
             using var response = await _httpClient.PostAsync("/chat/completions", content).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
-            
+
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var chatResponse = JsonSerializer.Deserialize<OpenAIChatResponse>(responseContent, _jsonOptions);
-            
+
             return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
         }
         finally
@@ -656,53 +656,53 @@ public class FoundryLocalAIService : IAIService, IDisposable
     private string BuildContentGenerationPrompt(AIContentRequest request, string platformInfo)
     {
         var sb = new StringBuilder(1024); // Pre-allocate reasonable capacity
-        
+
         sb.AppendLine("Generate engaging social media content based on the following requirements:");
         sb.AppendLine();
         sb.AppendLine($"Topic: {request.Prompt}");
         sb.AppendLine($"Content Type: {request.ContentType}");
         sb.AppendLine($"Tone: {request.Tone}");
-        
+
         if (!string.IsNullOrEmpty(request.BrandVoice))
         {
             sb.AppendLine($"Brand Voice: {request.BrandVoice}");
         }
-        
+
         if (!string.IsNullOrEmpty(request.Context))
         {
             sb.AppendLine($"Additional Context: {request.Context}");
         }
-        
+
         sb.AppendLine();
         sb.AppendLine("Platform Requirements:");
         sb.AppendLine(platformInfo);
-        
+
         if (request.Keywords?.Any() == true)
         {
             sb.AppendLine();
             sb.AppendLine($"Keywords to include: {string.Join(", ", request.Keywords)}");
         }
-        
+
         if (request.IncludeHashtags)
         {
             sb.AppendLine("Include relevant hashtags.");
         }
-        
+
         if (request.IncludeEmojis)
         {
             sb.AppendLine("Include appropriate emojis.");
         }
-        
+
         sb.AppendLine();
         sb.AppendLine("Please provide multiple variations optimized for each platform, including relevant hashtags and engagement hooks.");
-        
+
         return sb.ToString();
     }
 
     private string GetPlatformInfo(List<SocialPlatform> platforms)
     {
         var info = new List<string>();
-        
+
         foreach (var platform in platforms)
         {
             info.Add(platform switch
@@ -715,7 +715,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 _ => $"{platform}: Standard social media format"
             });
         }
-        
+
         return string.Join("; ", info);
     }
 
@@ -743,7 +743,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             Hashtags = ExtractHashtags(response),
             Suggestions = new List<string> { "Content generated successfully" }
         };
-        
+
         return new List<AIGeneratedContent> { content };
     }
 
@@ -751,7 +751,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         var hashtags = new List<string>();
         var words = content.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
+
         foreach (var word in words)
         {
             if (word.StartsWith("#") && word.Length > 1)
@@ -759,7 +759,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 hashtags.Add(word.Substring(1));
             }
         }
-        
+
         return hashtags;
     }
 
@@ -774,13 +774,13 @@ public class FoundryLocalAIService : IAIService, IDisposable
         // Simple sentiment analysis based on keywords
         var positiveWords = new[] { "great", "excellent", "amazing", "wonderful", "fantastic", "good", "best", "love", "awesome" };
         var negativeWords = new[] { "bad", "terrible", "awful", "hate", "worst", "horrible", "disappointing", "poor" };
-        
+
         var words = content.ToLower().Split(' ', StringSplitOptions.RemoveEmptyEntries);
         var positiveCount = words.Count(w => positiveWords.Contains(w));
         var negativeCount = words.Count(w => negativeWords.Contains(w));
-        
+
         if (positiveCount == 0 && negativeCount == 0) return 0.5;
-        
+
         return (double)positiveCount / (positiveCount + negativeCount);
     }
 
@@ -789,7 +789,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
         // Simple topic extraction based on common keywords
         var topics = new List<string>();
         var contentLower = content.ToLower();
-        
+
         var topicKeywords = new Dictionary<string, string[]>
         {
             ["Technology"] = new[] { "tech", "ai", "software", "digital", "computer", "internet" },
@@ -798,7 +798,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             ["Education"] = new[] { "learn", "education", "training", "course", "knowledge" },
             ["Health"] = new[] { "health", "fitness", "wellness", "medical", "care" }
         };
-        
+
         foreach (var topic in topicKeywords)
         {
             if (topic.Value.Any(keyword => contentLower.Contains(keyword)))
@@ -806,7 +806,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 topics.Add(topic.Key);
             }
         }
-        
+
         return topics.Any() ? topics : new List<string> { "General" };
     }
 
@@ -814,26 +814,26 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         // Simple engagement prediction based on content characteristics
         var score = 0.5; // Base score
-        
+
         // Length factor
         if (content.Length > 50 && content.Length < 200) score += 0.1;
-        
+
         // Hashtag factor
         var hashtagCount = ExtractHashtags(content).Count;
         if (hashtagCount > 0 && hashtagCount <= 5) score += 0.1;
-        
+
         // Question factor
         if (content.Contains("?")) score += 0.1;
-        
+
         // Call to action
         var ctaWords = new[] { "click", "visit", "check", "read", "watch", "follow", "share" };
         if (ctaWords.Any(word => content.ToLower().Contains(word))) score += 0.1;
-        
+
         return Math.Min(1.0, score);
     }
 
     // Additional parsing methods would be implemented here
-    private string BuildOptimizationPrompt(AIOptimizationRequest request, PlatformLimits limits) => 
+    private string BuildOptimizationPrompt(AIOptimizationRequest request, PlatformLimits limits) =>
         $"Optimize this content for {request.Platform}: {request.Content}\nCharacter limit: {limits.CharacterLimit}\nFocus on: {request.OptimizationType}";
 
     private AIOptimizationResponse ParseOptimizationResponse(string response, AIOptimizationRequest request) =>
@@ -916,7 +916,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         var variations = new List<AIGeneratedContent>();
         var lines = response.Split('\n', StringSplitOptions.RemoveEmptyEntries);
-        
+
         for (int i = 0; i < Math.Min(count, lines.Length); i++)
         {
             variations.Add(new AIGeneratedContent
@@ -927,7 +927,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 Platform = SocialPlatform.X
             });
         }
-        
+
         return variations;
     }
 
@@ -1001,4 +1001,4 @@ public class ChatUsage
     public int PromptTokens { get; set; }
     public int CompletionTokens { get; set; }
     public int TotalTokens { get; set; }
-} 
+}

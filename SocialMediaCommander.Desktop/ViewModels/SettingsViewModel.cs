@@ -169,7 +169,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _statusMessage = "";
 
     public SettingsViewModel(
-        IAccountService accountService, 
+        IAccountService accountService,
         ISettingsService settingsService,
         IBackupService backupService,
         IDataIntegrityService dataIntegrityService)
@@ -178,7 +178,7 @@ public partial class SettingsViewModel : ObservableObject
         _settingsService = settingsService;
         _backupService = backupService;
         _dataIntegrityService = dataIntegrityService;
-        
+
         _ = LoadSettingsAsync(); // Fire-and-forget with discard to suppress CS4014
         _ = LoadStatisticsAsync(); // Fire-and-forget with discard to suppress CS4014
     }
@@ -192,7 +192,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             var settings = await _settingsService.GetSettingsAsync();
-            
+
             // Update settings from UI properties
             settings.Theme = SelectedTheme;
             settings.Language = SelectedLanguage;
@@ -201,9 +201,9 @@ public partial class SettingsViewModel : ObservableObject
             settings.AllowCrashReporting = EnableCrashReporting;
             settings.AutoSaveInterval = TimeSpan.FromMinutes(AutoSaveInterval);
             settings.LastModified = DateTime.UtcNow;
-            
+
             await _settingsService.SaveSettingsAsync(settings);
-            
+
             StatusMessage = "Settings saved successfully!";
             System.Diagnostics.Debug.WriteLine("Settings saved successfully");
             await Task.Delay(2000);
@@ -229,7 +229,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             await Task.Delay(500);
-            
+
             // Reset to default values
             SelectedTheme = "System";
             IsDarkMode = false;
@@ -254,7 +254,7 @@ public partial class SettingsViewModel : ObservableObject
             MediaQuality = 90;
             EnableImageOptimization = true;
             EnableVideoCompression = true;
-            
+
             StatusMessage = "Settings reset to defaults!";
             await Task.Delay(2000);
             StatusMessage = "";
@@ -385,10 +385,10 @@ public partial class SettingsViewModel : ObservableObject
     {
         StatusMessage = "Testing notifications...";
         await Task.Delay(500);
-        
+
         // In a real implementation, this would trigger a test notification
         System.Diagnostics.Debug.WriteLine("Test notification sent");
-        
+
         StatusMessage = "Test notification sent!";
         await Task.Delay(2000);
         StatusMessage = "";
@@ -399,7 +399,7 @@ public partial class SettingsViewModel : ObservableObject
         try
         {
             var settings = await _settingsService.GetSettingsAsync();
-            
+
             // Apply settings to properties
             SelectedTheme = settings.Theme;
             SelectedLanguage = settings.Language;
@@ -409,12 +409,12 @@ public partial class SettingsViewModel : ObservableObject
             EnableAutoSave = true; // Always enabled for security
             AutoSaveInterval = (int)settings.AutoSaveInterval.TotalMinutes;
             EnableEncryption = true; // Always enabled for security
-            
+
             // Load application info
             ApplicationVersion = "1.2.0";
             CacheSize = 1024 * 1024 * 15; // 15 MB
             DefaultMediaFolder = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            
+
             System.Diagnostics.Debug.WriteLine("Settings loaded successfully");
         }
         catch (Exception ex)
@@ -429,7 +429,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             var accounts = await _accountService.GetAllAccountsAsync();
             TotalAccounts = accounts.Count();
-            
+
             // In a real implementation, this would get actual post count
             TotalPosts = 127;
         }
@@ -452,4 +452,4 @@ public partial class SettingsViewModel : ObservableObject
         }
         return $"{len:0.##} {sizes[order]}";
     }
-} 
+}

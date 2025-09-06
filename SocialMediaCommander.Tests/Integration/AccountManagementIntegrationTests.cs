@@ -26,19 +26,19 @@ public class AccountManagementIntegrationTests : IDisposable
         services.AddHttpClient();
         services.AddSingleton<IAccountService, InMemoryAccountService>();
         services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
-        services.AddSingleton<IAuthenticationService>(provider => 
+        services.AddSingleton<IAuthenticationService>(provider =>
             new OAuthAuthenticationService(
                 provider.GetRequiredService<HttpClient>(),
                 provider.GetRequiredService<IOAuthConfigurationService>()
             ));
         services.AddSingleton<ILogger>(Logger.None); // Add logger for tests
-        
+
         _serviceProvider = services.BuildServiceProvider();
         _accountService = _serviceProvider.GetRequiredService<IAccountService>();
         _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
         _oauthConfigService = _serviceProvider.GetRequiredService<IOAuthConfigurationService>();
         var logger = _serviceProvider.GetRequiredService<ILogger>();
-        
+
         _viewModel = new AccountManagerViewModel(_accountService, _authService, _oauthConfigService);
     }
 
@@ -443,7 +443,7 @@ public class AccountManagementIntegrationTests : IDisposable
     {
         // Arrange
         var tasks = new List<Task<Account>>();
-        
+
         // Act - Create multiple accounts concurrently
         for (int i = 0; i < 10; i++)
         {
@@ -454,7 +454,7 @@ public class AccountManagementIntegrationTests : IDisposable
                 Username = $"concurrent_user_{i}",
                 DisplayName = $"Concurrent User {i}"
             };
-            
+
             tasks.Add(_accountService.CreateAccountAsync(account));
         }
 
@@ -463,7 +463,7 @@ public class AccountManagementIntegrationTests : IDisposable
         // Assert
         createdAccounts.Should().HaveCount(10);
         createdAccounts.Should().OnlyHaveUniqueItems(a => a.Id);
-        
+
         var allAccounts = await _accountService.GetAllAccountsAsync();
         allAccounts.Where(a => a.Username.StartsWith("concurrent_user_")).Should().HaveCount(10);
     }
@@ -557,10 +557,10 @@ public class AccountManagementIntegrationTests : IDisposable
         };
 
         await _accountService.CreateAccountAsync(account);
-        
+
         // Add to ViewModel collection for UI tests
         _viewModel.Accounts.Add(account);
-        
+
         return account;
     }
 
@@ -570,4 +570,4 @@ public class AccountManagementIntegrationTests : IDisposable
     {
         _serviceProvider?.Dispose();
     }
-} 
+}

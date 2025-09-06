@@ -482,3 +482,18 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# CI/CD build artifacts and temporary files
+publish/
+test-publish/
+coverage/
+*.AppImage
+*.tar.gz
+*.zip
+.releaserc.json
+CHANGELOG.md
+
+# Node.js frontend build artifacts
+dist/
+.vite/
+.npm/
