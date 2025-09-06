@@ -136,22 +136,18 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 try
                 {
                     var output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                    var outputSpan = output.AsSpan();
                     
-                    // Process lines efficiently using Span<T>
-                    while (!outputSpan.IsEmpty)
+                    // Process lines efficiently using string operations instead of Span in async method
+                    var lines = output.Split('\n');
+                    foreach (var line in lines)
                     {
-                        var lineEnd = outputSpan.IndexOf('\n');
-                        var line = lineEnd >= 0 ? outputSpan.Slice(0, lineEnd) : outputSpan;
-                        
                         if (line.Contains("running at:", StringComparison.OrdinalIgnoreCase) ||
                             line.Contains("endpoint:", StringComparison.OrdinalIgnoreCase))
                         {
                             var colonIndex = line.IndexOf(':');
                             if (colonIndex >= 0 && colonIndex < line.Length - 1)
                             {
-                                var endpointSpan = line.Slice(colonIndex + 1).Trim();
-                                var endpoint = endpointSpan.ToString();
+                                var endpoint = line.Substring(colonIndex + 1).Trim();
                                 
                                 if (Uri.TryCreate(endpoint, UriKind.Absolute, out _))
                                 {
@@ -159,8 +155,6 @@ public class FoundryLocalAIService : IAIService, IDisposable
                                 }
                             }
                         }
-                        
-                        outputSpan = lineEnd >= 0 ? outputSpan.Slice(lineEnd + 1) : ReadOnlySpan<char>.Empty;
                     }
                 }
                 finally
