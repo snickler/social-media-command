@@ -9,6 +9,7 @@ using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Desktop.ViewModels;
 using SocialMediaCommander.Desktop.Views;
 using SocialMediaCommander.Core.Services;
@@ -134,6 +135,11 @@ public partial class App : Application
                 _logger?.Information("AIAssistantViewModel created successfully");
                 
                 _logger?.Information("Creating MainWindowViewModel with individual dependencies...");
+                // Resolve additional services required by the MainWindowViewModel constructor
+                _logger?.Information("Resolving IDataIntegrityService and ISettingsService from DI...");
+                var dataIntegrityService = _serviceProvider.GetRequiredService<IDataIntegrityService>();
+                var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+
                 var mainWindowViewModel = new MainWindowViewModel(
                     postEditorViewModel,
                     socialFeedViewModel,
@@ -141,7 +147,9 @@ public partial class App : Application
                     analyticsDashboardViewModel,
                     settingsViewModel,
                     schedulerViewModel,
-                    aiAssistantViewModel);
+                    aiAssistantViewModel,
+                    dataIntegrityService,
+                    settingsService);
                 _logger?.Information("MainWindowViewModel created successfully");
                 
                 _logger?.Information("Creating MainWindow...");
