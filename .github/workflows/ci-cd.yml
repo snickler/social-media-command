@@ -12,6 +12,7 @@ on:
 env:
   DOTNET_VERSION: '9.0.x'
   NODE_VERSION: '22.x'
+  NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
 permissions:
   contents: read
