@@ -58,6 +58,8 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          # Ensure consistent NuGet behavior across platforms
+          source-url: https://api.nuget.org/v3/index.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -78,13 +80,31 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Restore dependencies
-        run: dotnet restore SocialMediaCommander.sln
+        run: |
+          dotnet clean SocialMediaCommander.sln
+          dotnet restore SocialMediaCommander.sln --force --no-cache
+
+      - name: Verify macOS dependencies (macOS only)
+        if: matrix.os == 'macos'
+        run: |
+          echo "Checking for Avalonia native libraries..."
+          find ~/.nuget/packages -name "*.dylib" | head -10 || true
+          echo "Verifying Avalonia packages..."
+          dotnet list SocialMediaCommander.Desktop package | grep -i avalonia || true
 
       - name: Build
         run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release
+        timeout-minutes: 10
 
       - name: Test
-        run: dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+        run: |
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            # Skip code coverage on macOS to avoid platform-specific issues
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal
+          else
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+          fi
+        timeout-minutes: 10
 
       - name: Code Coverage Report
         if: matrix.os == 'linux' && matrix.arch == 'x64'
@@ -118,6 +138,7 @@ jobs:
             /p:PublishSingleFile=true \
             /p:PublishTrimmed=false \
             /p:IncludeNativeLibrariesForSelfExtract=true
+        timeout-minutes: 15
 
       - name: Create Windows Installer
         if: matrix.os == 'windows'
