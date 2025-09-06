@@ -1,0 +1,28 @@
+<Project>
+  
+  <PropertyGroup>
+    <!-- .NET targeting and common properties -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    
+    <!-- Application metadata -->
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+    <Authors>Social Media Commander Team</Authors>
+    <Company>Social Media Commander</Company>
+    <Product>Social Media Commander</Product>
+    <Copyright>Copyright © 2024 Social Media Commander</Copyright>
+    
+    <!-- Package management -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    
+    <!-- Build configuration -->
+    <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
+    <WarningsAsErrors />
+    <WarningsNotAsErrors />
+  </PropertyGroup>
+  
+</Project>
