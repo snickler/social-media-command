@@ -1,0 +1,36 @@
+<Project>
+  <PropertyGroup>
+    <!-- Set central package management on -->
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+
+    <!-- Common build properties for all projects -->
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  <LangVersion>13.0</LangVersion>
+
+    <!-- Common versioning - can be overridden per-project if needed -->
+    <Version>2.0.0</Version>
+    <AssemblyVersion>2.0.0.0</AssemblyVersion>
+    <FileVersion>2.0.0.0</FileVersion>
+
+    <!-- Designer / packaging -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+    <!-- Repository & authorship metadata (editable) -->
+    <Authors>Social Media Commander Team</Authors>
+    <Company>Social Media Commander</Company>
+    <Product>Social Media Commander</Product>
+    <Description>Social Media Commander - shared Directory.Build.props</Description>
+
+    <!-- Enable deterministic builds where appropriate -->
+    <ContinuousIntegrationBuild Condition="'$(ContinuousIntegrationBuild)'==''">false</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
+  <!-- Recommended defaults for package restore and SDK resolution -->
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+    <RestoreUseStaticGraph>true</RestoreUseStaticGraph>
+  </PropertyGroup>
+
+</Project>
