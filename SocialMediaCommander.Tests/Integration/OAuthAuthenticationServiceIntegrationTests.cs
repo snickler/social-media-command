@@ -21,9 +21,11 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddHttpClient();
-        services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
+    // Use in-memory test OAuth config service to avoid file IO and provide valid configs
+    services.AddSingleton<IOAuthConfigurationService, TestOAuthConfigurationService>();
+        // Use a test authentication service that does not start listeners or open a browser
         services.AddSingleton<IAuthenticationService>(provider =>
-            new OAuthAuthenticationService(
+            new TestAuthenticationService(
                 provider.GetRequiredService<HttpClient>(),
                 provider.GetRequiredService<IOAuthConfigurationService>()
             ));

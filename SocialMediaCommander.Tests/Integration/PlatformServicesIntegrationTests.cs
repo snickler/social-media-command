@@ -22,7 +22,10 @@ public class PlatformServicesIntegrationTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddHttpClient();
-        services.AddSingleton<IAuthenticationService, OAuthAuthenticationService>();
+    // Use in-memory test OAuth config service to avoid file IO and provide valid configs
+    services.AddSingleton<IOAuthConfigurationService, TestOAuthConfigurationService>();
+    // Use test authentication service to avoid starting listeners during tests
+    services.AddSingleton<IAuthenticationService, TestAuthenticationService>();
         services.AddSingleton<IBlueSkyService, BlueSkyService>();
         services.AddSingleton<ITwitterService, TwitterService>();
         services.AddSingleton<ILinkedInService, LinkedInService>();
