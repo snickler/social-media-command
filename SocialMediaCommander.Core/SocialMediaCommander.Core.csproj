@@ -17,33 +17,33 @@
 
   <ItemGroup>
     <!-- Core dependencies -->
-    <PackageReference Include="Serilog" Version="4.3.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+  <PackageReference Include="Serilog" />
+  <PackageReference Include="Serilog.Sinks.Console" />
+  <PackageReference Include="Serilog.Sinks.File" />
+  <PackageReference Include="System.ComponentModel.Annotations" />
+  <PackageReference Include="System.Text.Json" />
     
     <!-- Authentication and Security -->
-    <PackageReference Include="System.Security.Claims" Version="4.3.0" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.2.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.2.1" />
+  <PackageReference Include="System.Security.Claims" />
+  <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+  <PackageReference Include="Microsoft.IdentityModel.Tokens" />
     
     <!-- AI and ML -->
-    <PackageReference Include="Microsoft.ML" Version="3.0.1" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.20.1" />
+  <PackageReference Include="Microsoft.ML" />
+  <PackageReference Include="Microsoft.ML.OnnxRuntime" />
     
     <!-- Reactive Extensions -->
-    <PackageReference Include="System.Reactive" Version="6.0.1" />
+  <PackageReference Include="System.Reactive" />
     
     <!-- Configuration -->
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="9.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
+  <PackageReference Include="Microsoft.Extensions.Options" />
     
     <!-- Logging -->
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     
     <!-- Validation -->
-    <PackageReference Include="FluentValidation" Version="11.10.0" />
+  <PackageReference Include="FluentValidation" />
   </ItemGroup>
 
 </Project>
