@@ -49,6 +49,7 @@ Project-specific conventions & gotchas (do not assume defaults)
 - `appsettings.enhanced.json` is optional — enabling features often requires editing it (see `App.axaml.cs` BuildConfiguration).
 - `MainWindowViewModel` is composed manually from child viewmodels in `App.axaml.cs` — if you change constructor signatures, update that site.
 - Service lifetimes: many services are `Scoped` (UI lifetime) while performance helpers are `Singleton`. Match lifetimes to intended usage in `ServiceCollectionExtensions.cs`.
+- MSBuild standardization: Repository should use `Directory.Build.props` to set common properties across projects (.NET version target, application name, version, copyright, etc.) and `Directory.Packages.props` for Central Package Management to avoid duplicated package references across project files.
 
 Debugging tips
 - Logs: `%LOCALAPPDATA%\\SocialMediaCommander\\Logs` (Serilog file sink) — inspect `app-*.log` and `errors-*.log`.
