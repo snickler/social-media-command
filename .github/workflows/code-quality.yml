@@ -23,13 +23,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore SocialMediaCommander.sln
+        run: dotnet restore SocialMediaCommander.sln -r ${{ matrix.rid }}
 
       - name: Format check
-        run: dotnet format --verify-no-changes --verbosity diagnostic SocialMediaCommander.sln
+        run: dotnet format --verify-no-changes --verbosity diagnostic SocialMediaCommander.sln -r ${{ matrix.rid }}
 
       - name: Build for analysis
-        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore
+        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore -r ${{ matrix.rid }}
 
   # security:
   #   name: Security Scan
@@ -87,10 +87,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore SocialMediaCommander.sln
+        run: dotnet restore SocialMediaCommander.sln -r ${{ matrix.rid }}
 
       - name: Build with analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true -r ${{ matrix.rid }}
 
       - name: Run .NET analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true -r ${{ matrix.rid }}
