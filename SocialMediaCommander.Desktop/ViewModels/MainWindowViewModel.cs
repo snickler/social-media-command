@@ -30,6 +30,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public SettingsViewModel Settings { get; }
     public SchedulerViewModel Scheduler { get; }
     public AIAssistantViewModel AIAssistant { get; }
+    public DocumentationViewModel Documentation { get; }
     
     [ObservableProperty]
     private ViewMode currentViewMode = ViewMode.Standard;
@@ -45,6 +46,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     
     [ObservableProperty]
     private bool isAIAssistantVisible = false;
+    
+    [ObservableProperty]
+    private bool isDocumentationVisible = false;
     
     [ObservableProperty]
     private string encryptionStatus = "Initializing...";
@@ -66,6 +70,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         SettingsViewModel settings,
         SchedulerViewModel scheduler,
         AIAssistantViewModel aiAssistant,
+        DocumentationViewModel documentation,
         IDataIntegrityService dataIntegrityService,
         ISettingsService settingsService)
     {
@@ -78,6 +83,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Settings = settings;
         Scheduler = scheduler;
         AIAssistant = aiAssistant;
+        Documentation = documentation;
         _dataIntegrityService = dataIntegrityService;
         _settingsService = settingsService;
         
@@ -166,6 +172,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         Console.WriteLine("CloseAIAssistant command executed!");
         IsAIAssistantVisible = false;
+    }
+    
+    #endregion
+    
+    #region Documentation Commands - Memory efficient
+    
+    [RelayCommand]
+    private void ToggleDocumentation()
+    {
+        Console.WriteLine("ToggleDocumentation command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling Documentation");
+        
+        IsDocumentationVisible = !IsDocumentationVisible;
+    }
+    
+    [RelayCommand]
+    private void CloseDocumentation()
+    {
+        Console.WriteLine("CloseDocumentation command executed!");
+        IsDocumentationVisible = false;
     }
     
     #endregion

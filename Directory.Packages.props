@@ -97,6 +97,9 @@
     <PackageVersion Include="FluentValidation" Version="12.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     
+    <!-- Markdown Processing -->
+    <PackageVersion Include="Markdig.Signed" Version="0.38.0" />
+    
     <!-- Security -->
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="9.0.8" />
     <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="9.0.8" />

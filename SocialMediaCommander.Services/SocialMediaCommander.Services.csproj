@@ -73,6 +73,9 @@
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Newtonsoft.Json" />
     
+    <!-- Markdown Processing -->
+    <PackageReference Include="Markdig.Signed" />
+    
     <!-- Background Services -->
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <PackageReference Include="Hangfire.Core" />
