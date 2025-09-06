@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using SocialMediaCommander.Desktop.ViewModels;
 using SocialMediaCommander.Desktop.Views;
 using SocialMediaCommander.Core.Services;
+using SocialMediaCommander.Services.Interfaces;
 using Serilog;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
@@ -133,6 +134,14 @@ public partial class App : Application
                 var aiAssistantViewModel = _serviceProvider.GetRequiredService<AIAssistantViewModel>();
                 _logger?.Information("AIAssistantViewModel created successfully");
                 
+                _logger?.Information("Getting IDataIntegrityService...");
+                var dataIntegrityService = _serviceProvider.GetRequiredService<IDataIntegrityService>();
+                _logger?.Information("IDataIntegrityService retrieved successfully");
+                
+                _logger?.Information("Getting ISettingsService...");
+                var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+                _logger?.Information("ISettingsService retrieved successfully");
+                
                 _logger?.Information("Creating MainWindowViewModel with individual dependencies...");
                 var mainWindowViewModel = new MainWindowViewModel(
                     postEditorViewModel,
@@ -141,7 +150,9 @@ public partial class App : Application
                     analyticsDashboardViewModel,
                     settingsViewModel,
                     schedulerViewModel,
-                    aiAssistantViewModel);
+                    aiAssistantViewModel,
+                    dataIntegrityService,
+                    settingsService);
                 _logger?.Information("MainWindowViewModel created successfully");
                 
                 _logger?.Information("Creating MainWindow...");

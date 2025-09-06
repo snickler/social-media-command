@@ -22,7 +22,8 @@ public class PlatformServicesIntegrationTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddHttpClient();
-        services.AddSingleton<IAuthenticationService, OAuthAuthenticationService>();
+        services.AddSingleton<IOAuthConfigurationService, TestOAuthConfigurationService>();
+        services.AddSingleton<IAuthenticationService, TestAuthenticationService>();
         services.AddSingleton<IBlueSkyService, BlueSkyService>();
         services.AddSingleton<ITwitterService, TwitterService>();
         services.AddSingleton<ILinkedInService, LinkedInService>();

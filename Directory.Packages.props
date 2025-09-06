@@ -1,0 +1,114 @@
+<Project>
+  
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <!-- Avalonia UI Framework -->
+    <PackageVersion Include="Avalonia" Version="11.3.5" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.3.5" />
+    <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.3.5" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.3.5" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.3.5" />
+    <PackageVersion Include="AvaloniaUI.DiagnosticsSupport" Version="2.0.4" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+    <PackageVersion Include="WebViewControl-Avalonia" Version="3.120.10" />
+    
+    <!-- Logging -->
+    <PackageVersion Include="Serilog" Version="4.3.0" />
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="9.0.2" />
+    
+    <!-- Microsoft Extensions -->
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Options" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Memory" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.8" />
+    
+    <!-- Core .NET -->
+    <PackageVersion Include="System.Text.Json" Version="9.0.8" />
+    <PackageVersion Include="System.Net.Http.Json" Version="9.0.8" />
+    <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
+    <PackageVersion Include="System.Reactive" Version="6.0.2" />
+    <PackageVersion Include="System.Reactive.Linq" Version="6.0.2" />
+    <PackageVersion Include="System.IO.Pipelines" Version="9.0.8" />
+    
+    <!-- Authentication and Security -->
+    <PackageVersion Include="System.Security.Claims" Version="4.3.0" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
+    <PackageVersion Include="Microsoft.IdentityModel.Tokens" Version="8.14.0" />
+    <PackageVersion Include="System.Security.Cryptography.Algorithms" Version="4.3.1" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.8" />
+    <PackageVersion Include="IdentityModel" Version="7.0.0" />
+    <PackageVersion Include="QRCoder" Version="1.6.0" />
+    <PackageVersion Include="Otp.NET" Version="1.4.0" />
+    
+    <!-- Duende IdentityServer -->
+    <PackageVersion Include="Duende.IdentityServer" Version="7.3.1" />
+    <PackageVersion Include="Duende.IdentityServer.AspNetIdentity" Version="7.3.1" />
+    
+    <!-- AI and ML -->
+    <PackageVersion Include="Microsoft.ML" Version="4.0.2" />
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1" />
+    <PackageVersion Include="Microsoft.ML.Tokenizers" Version="1.0.2" />
+    <PackageVersion Include="OllamaSharp" Version="5.3.6" />
+    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.64.0" />
+    <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.64.0" />
+    
+    <!-- gRPC - Pinned to actual resolved versions to remove NU1603 warnings -->
+    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageVersion Include="Grpc.Tools" Version="2.72.0" />
+    <PackageVersion Include="Google.Protobuf" Version="3.32.0" />
+    
+    <!-- Windows Integration -->
+    <PackageVersion Include="System.Management" Version="9.0.8" />
+    <PackageVersion Include="System.ServiceProcess.ServiceController" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageVersion Include="System.Diagnostics.EventLog" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.Windows.Compatibility" Version="9.0.8" />
+    <PackageVersion Include="System.Management.Automation" Version="7.5.2" />
+    <PackageVersion Include="Microsoft.PowerShell.SDK" Version="7.5.2" />
+    <PackageVersion Include="TaskScheduler" Version="2.12.2" />
+    
+    <!-- Background Services -->
+    <PackageVersion Include="Hangfire.Core" Version="1.8.21" />
+    <PackageVersion Include="Hangfire.MemoryStorage" Version="1.8.1.2" />
+    
+    <!-- Database -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.8" />
+    
+    <!-- Validation and Serialization -->
+    <PackageVersion Include="FluentValidation" Version="12.0.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    
+    <!-- Security -->
+    <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="9.0.8" />
+    <PackageVersion Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="9.0.8" />
+    
+    <!-- Testing -->
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Moq" Version="4.20.72" />
+    <PackageVersion Include="FluentAssertions" Version="8.6.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.TestHost" Version="9.0.8" />
+  </ItemGroup>
+  
+</Project>

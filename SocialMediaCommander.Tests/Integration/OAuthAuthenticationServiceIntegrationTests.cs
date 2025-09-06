@@ -21,12 +21,8 @@ public class OAuthAuthenticationServiceIntegrationTests : IDisposable
     {
         var services = new ServiceCollection();
         services.AddHttpClient();
-        services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
-        services.AddSingleton<IAuthenticationService>(provider =>
-            new OAuthAuthenticationService(
-                provider.GetRequiredService<HttpClient>(),
-                provider.GetRequiredService<IOAuthConfigurationService>()
-            ));
+        services.AddSingleton<IOAuthConfigurationService, TestOAuthConfigurationService>();
+        services.AddSingleton<IAuthenticationService, TestAuthenticationService>();
         
         _serviceProvider = services.BuildServiceProvider();
         _httpClient = _serviceProvider.GetRequiredService<HttpClient>();
