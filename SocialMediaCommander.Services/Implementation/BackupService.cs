@@ -209,7 +209,7 @@ public class BackupService : IBackupService
         }
     }
 
-    public async Task DeleteBackupAsync(string backupPath)
+    public Task DeleteBackupAsync(string backupPath)
     {
         try
         {
@@ -218,6 +218,8 @@ public class BackupService : IBackupService
                 File.Delete(backupPath);
                 _logger.Information("Deleted backup: {BackupPath}", backupPath);
             }
+
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {

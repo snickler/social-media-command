@@ -107,11 +107,11 @@ public class LinkedInService : ILinkedInService
         }
     }
 
-    public async Task<PublishResult> PostThreadAsync(Post post, Account account)
+    public Task<PublishResult> PostThreadAsync(Post post, Account account)
     {
         // LinkedIn doesn't support native threads like Twitter
         // Post as a single long-form post
-        return await PostAsync(post, account);
+        return PostAsync(post, account);
     }
 
     public async Task<bool> DeletePostAsync(string postId, Account account)
@@ -157,23 +157,23 @@ public class LinkedInService : ILinkedInService
         }
     }
 
-    public async Task<IEnumerable<SocialFeedItem>> GetTimelineAsync(Account account, int limit = 50)
+    public Task<IEnumerable<SocialFeedItem>> GetTimelineAsync(Account account, int limit = 50)
     {
         // LinkedIn doesn't have a public timeline API for personal accounts
         // Return user's own posts instead
-        return await GetUserPostsAsync(account, limit);
+        return GetUserPostsAsync(account, limit);
     }
 
-    public async Task<IEnumerable<SocialFeedItem>> SearchPostsAsync(string query, Account account, int limit = 20)
+    public Task<IEnumerable<SocialFeedItem>> SearchPostsAsync(string query, Account account, int limit = 20)
     {
         // LinkedIn search API is limited - return empty for now
-        return Enumerable.Empty<SocialFeedItem>();
+        return Task.FromResult(Enumerable.Empty<SocialFeedItem>());
     }
 
-    public async Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
+    public Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
     {
         // LinkedIn doesn't have a trending hashtags API
-        return Enumerable.Empty<string>();
+        return Task.FromResult(Enumerable.Empty<string>());
     }
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
@@ -197,25 +197,25 @@ public class LinkedInService : ILinkedInService
         return result;
     }
 
-    public async Task<string> UploadMediaAsync(Media media, Account account)
+    public Task<string> UploadMediaAsync(Media media, Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) return "";
+            if (!account.IsAuthenticated) return Task.FromResult(string.Empty);
 
             // LinkedIn media upload implementation would go here
             // This is a placeholder - actual implementation would use LinkedIn's media upload API
-            return $"linkedin-media-{Guid.NewGuid()}";
+            return Task.FromResult($"linkedin-media-{Guid.NewGuid()}");
         }
         catch
         {
-            return "";
+            return Task.FromResult(string.Empty);
         }
     }
 
-    public async Task<PlatformLimits> GetPlatformLimitsAsync()
+    public Task<PlatformLimits> GetPlatformLimitsAsync()
     {
-        return new PlatformLimits
+        return Task.FromResult(new PlatformLimits
         {
             CharacterLimit = 3000,
             MaxMediaCount = 9,
@@ -224,7 +224,7 @@ public class LinkedInService : ILinkedInService
             MaxThreadLength = 1, // LinkedIn doesn't support threads
             PostingInterval = TimeSpan.FromMinutes(1),
             DailyPostLimit = 100
-        };
+        });
     }
 
     public async Task<bool> SharePostAsync(string postId, Account account, string? commentary = null)
@@ -422,25 +422,25 @@ public class LinkedInService : ILinkedInService
         }
     }
 
-    public async Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
+    public Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) 
-                return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            if (!account.IsAuthenticated)
+                return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
 
             // LinkedIn rate limits are complex and vary by API
             // For now, return conservative default values
-            return new RateLimitInfo
+            return Task.FromResult(new RateLimitInfo
             {
                 Remaining = 500,
                 Limit = 500,
                 ResetTime = DateTime.UtcNow.AddHours(1)
-            };
+            });
         }
         catch
         {
-            return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
         }
     }
 

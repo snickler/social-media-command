@@ -122,10 +122,10 @@ public class ThreadsService : IThreadsService
         }
     }
 
-    public async Task<PublishResult> PostThreadAsync(Post post, Account account)
+    public Task<PublishResult> PostThreadAsync(Post post, Account account)
     {
         // Implementation similar to main PostAsync since Threads handles threading natively
-        return await PostAsync(post, account);
+        return PostAsync(post, account);
     }
 
     public async Task<bool> DeletePostAsync(string postId, Account account)
@@ -168,22 +168,22 @@ public class ThreadsService : IThreadsService
         }
     }
 
-    public async Task<IEnumerable<SocialFeedItem>> GetTimelineAsync(Account account, int limit = 50)
+    public Task<IEnumerable<SocialFeedItem>> GetTimelineAsync(Account account, int limit = 50)
     {
         // Threads API doesn't provide a timeline endpoint for third-party apps
-        return await GetUserPostsAsync(account, limit);
+        return GetUserPostsAsync(account, limit);
     }
 
-    public async Task<IEnumerable<SocialFeedItem>> SearchPostsAsync(string query, Account account, int limit = 20)
+    public Task<IEnumerable<SocialFeedItem>> SearchPostsAsync(string query, Account account, int limit = 20)
     {
         // Threads API doesn't provide a public search endpoint for third-party apps
-        return Enumerable.Empty<SocialFeedItem>();
+        return Task.FromResult(Enumerable.Empty<SocialFeedItem>());
     }
 
-    public async Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
+    public Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
     {
         // Threads API doesn't provide trending hashtags for third-party apps
-        return Enumerable.Empty<string>();
+        return Task.FromResult(Enumerable.Empty<string>());
     }
 
     public async Task<ValidationResult> ValidateContentAsync(Post post)
@@ -207,24 +207,24 @@ public class ThreadsService : IThreadsService
         return result;
     }
 
-    public async Task<string> UploadMediaAsync(Media media, Account account)
+    public Task<string> UploadMediaAsync(Media media, Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) return "";
+            if (!account.IsAuthenticated) return Task.FromResult(string.Empty);
 
             // Threads media upload implementation placeholder
-            return $"threads-media-{Guid.NewGuid()}";
+            return Task.FromResult($"threads-media-{Guid.NewGuid()}");
         }
         catch
         {
-            return "";
+            return Task.FromResult(string.Empty);
         }
     }
 
-    public async Task<PlatformLimits> GetPlatformLimitsAsync()
+    public Task<PlatformLimits> GetPlatformLimitsAsync()
     {
-        return new PlatformLimits
+        return Task.FromResult(new PlatformLimits
         {
             CharacterLimit = 500,
             MaxMediaCount = 10,
@@ -233,7 +233,7 @@ public class ThreadsService : IThreadsService
             MaxThreadLength = 500,
             PostingInterval = TimeSpan.FromSeconds(1),
             DailyPostLimit = 250
-        };
+        });
     }
 
     public async Task<UserProfile?> GetProfileAsync(Account account)
@@ -260,23 +260,23 @@ public class ThreadsService : IThreadsService
         }
     }
 
-    public async Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
+    public Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) 
-                return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            if (!account.IsAuthenticated)
+                return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
 
-            return new RateLimitInfo
+            return Task.FromResult(new RateLimitInfo
             {
                 Remaining = 200,
                 Limit = 250,
                 ResetTime = DateTime.UtcNow.AddHours(1)
-            };
+            });
         }
         catch
         {
-            return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
         }
     }
 

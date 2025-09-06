@@ -72,6 +72,8 @@ public class SettingsService : ISettingsService
     public async Task<T> GetSettingAsync<T>(string key, T defaultValue = default!)
     {
         var settings = await GetSettingsAsync();
+    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+    settings.CustomSettings ??= new Dictionary<string, object?>();
         
         if (settings.CustomSettings.TryGetValue(key, out var value))
         {
@@ -79,9 +81,15 @@ public class SettingsService : ISettingsService
             {
                 if (value is JsonElement jsonElement)
                 {
-                    return jsonElement.Deserialize<T>() ?? defaultValue;
+                    var deserialized = jsonElement.Deserialize<T>();
+                    return deserialized != null ? deserialized : defaultValue;
                 }
-                return (T)Convert.ChangeType(value, typeof(T)) ?? defaultValue;
+
+                // Convert.ChangeType may return null for incompatible conversions; handle defensively
+                object? convertedObj = Convert.ChangeType(value, typeof(T));
+                if (convertedObj is T convertedT)
+                    return convertedT;
+                return defaultValue;
             }
             catch (Exception ex)
             {
@@ -96,13 +104,17 @@ public class SettingsService : ISettingsService
     public async Task SetSettingAsync<T>(string key, T value)
     {
         var settings = await GetSettingsAsync();
-        settings.CustomSettings[key] = value;
+    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+    settings.CustomSettings ??= new Dictionary<string, object?>();
+    settings.CustomSettings[key] = (object?)value;
         await SaveSettingsAsync(settings);
     }
 
     public async Task<bool> RemoveSettingAsync(string key)
     {
         var settings = await GetSettingsAsync();
+    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+    settings.CustomSettings ??= new Dictionary<string, object?>();
         var removed = settings.CustomSettings.Remove(key);
         
         if (removed)
@@ -203,9 +215,12 @@ public class SettingsService : ISettingsService
 
             if (settings != null)
             {
+                // Ensure CustomSettings dictionary is never null to satisfy callers and nullability checks
+                settings.CustomSettings ??= new Dictionary<string, object?>();
+
                 lock (_lock)
                 {
-                    _cachedSettings = settings;
+                    _cachedSettings = settings!;
                 }
                 
                 _logger.Debug("Settings loaded successfully");
@@ -261,7 +276,7 @@ public class SettingsService : ISettingsService
             LogLevel = "Information",
             MaxLogFileSize = 10 * 1024 * 1024, // 10MB
             
-            CustomSettings = new Dictionary<string, object>()
+            CustomSettings = new Dictionary<string, object?>()
         };
     }
 }
@@ -307,7 +322,7 @@ public class AppSettings
     public long MaxLogFileSize { get; set; } = 10 * 1024 * 1024; // 10MB
     
     // Custom settings dictionary for extensibility
-    public Dictionary<string, object> CustomSettings { get; set; } = new();
+    public Dictionary<string, object?> CustomSettings { get; set; } = new();
     
     // Window Settings
     public WindowSettings? WindowSettings { get; set; }

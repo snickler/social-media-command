@@ -243,7 +243,7 @@ public class AccountManagerIntegrationTests : IDisposable
     #region Account Management Tests
 
     [Fact]
-    public async Task SaveAccountCommand_ShouldBeAvailable()
+    public void SaveAccountCommand_ShouldBeAvailable()
     {
         // Arrange & Act
         var command = _viewModel.SaveAccountCommand;

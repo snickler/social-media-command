@@ -111,15 +111,15 @@ public class OptimizedAsyncService : IDisposable
             var batchTasks = batch.Select(async id =>
             {
                 await _concurrencyLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
-                try
-                {
-                    var account = await GetAccountFastAsync(id, cancellationToken).ConfigureAwait(false);
-                    return new { Success = true, Account = account, Error = (string?)null };
-                }
-                catch (Exception ex)
-                {
-                    return new { Success = false, Account = (Account?)null, Error = ex.Message };
-                }
+                    try
+                    {
+                        var account = await GetAccountFastAsync(id, cancellationToken).ConfigureAwait(false);
+                        return new { Success = true, Account = account, Error = (string?)null };
+                    }
+                    catch (Exception ex)
+                    {
+                        return new { Success = false, Account = (Account?)null, Error = (string?)ex.Message };
+                    }
                 finally
                 {
                     _concurrencyLimiter.Release();
@@ -272,7 +272,7 @@ public class OptimizedAsyncService : IDisposable
             }
             catch (Exception ex)
             {
-                return new { Success = false, Error = ex.Message };
+                return new { Success = false, Error = (string?)ex.Message };
             }
             finally
             {
