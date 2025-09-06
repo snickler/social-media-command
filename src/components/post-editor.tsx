@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { Plus, X, Pencil, UserCircle, Check } from '@phosphor-icons/react';
 import { 
   Account, 

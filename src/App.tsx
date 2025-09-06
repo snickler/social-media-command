@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast, Toaster } from 'sonner';
 import { PlatformSelectors } from '@/components/platform-controls';
@@ -9,6 +9,7 @@ import { Rocket, StackSimple, Atom, Gear, Question, BookOpen } from '@phosphor-i
 import { CompactView } from '@/components/compact-view';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AccountManager } from '@/components/account-manager';
+import { DocumentationViewer } from '@/components/documentation-viewer';
 import { 
   Sheet, 
   SheetContent, 
@@ -180,7 +181,7 @@ function App() {
                           <BookOpen size={20} weight="regular" />
                         </Button>
                       </SheetTrigger>
-                      <SheetContent className="w-full sm:max-w-md overflow-y-auto" side="right">
+                      <SheetContent className="w-full sm:max-w-2xl overflow-y-auto" side="right">
                         <SheetHeader className="pb-4">
                           <SheetTitle>Documentation</SheetTitle>
                           <SheetDescription>
@@ -188,101 +189,11 @@ function App() {
                           </SheetDescription>
                         </SheetHeader>
                         
-                        <Tabs defaultValue="user-guide" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="user-guide">User Guide</TabsTrigger>
-                            <TabsTrigger value="technical">Technical Docs</TabsTrigger>
-                          </TabsList>
-                          
-                          <TabsContent value="user-guide" className="mt-4 space-y-4">
-                            <div className="prose prose-sm max-w-none">
-                              <h3>Getting Started</h3>
-                              <p>Welcome to the Social Media Management Hub! This guide will help you get started with the platform.</p>
-                              
-                              <h4>Creating Posts</h4>
-                              <ol>
-                                <li>Select your target platforms using the platform selectors</li>
-                                <li>Choose which accounts to use for each platform</li>
-                                <li>Write your post content in the editor</li>
-                                <li>Add media files if desired</li>
-                                <li>Toggle "Promo Mode" to automatically add hashtags</li>
-                                <li>Click "Post" to publish to all selected platforms</li>
-                              </ol>
-                              
-                              <h4>Creating Threads</h4>
-                              <ol>
-                                <li>Toggle "Thread Mode" in the post editor</li>
-                                <li>Write your first post in the main editor</li>
-                                <li>Click "Add Thread Post" to add additional posts to your thread</li>
-                                <li>Add content to each thread post</li>
-                                <li>Arrange posts in the desired order using the up/down controls</li>
-                                <li>Click "Post Thread" to publish the entire thread</li>
-                              </ol>
-                              
-                              <h4>Managing Multiple Accounts</h4>
-                              <ol>
-                                <li>Click the "Manage Accounts" button in the top toolbar</li>
-                                <li>Add new accounts for any platform</li>
-                                <li>Set a default account for each platform</li>
-                                <li>When posting, select which accounts to use for each platform</li>
-                              </ol>
-                              
-                              <h4>View Modes</h4>
-                              <p>The application offers two main view modes:</p>
-                              <ul>
-                                <li><strong>Standard View:</strong> Full interface with separated sections</li>
-                                <li><strong>Compact View:</strong> Split-screen interface with feeds and composer side by side</li>
-                              </ul>
-                            </div>
-                          </TabsContent>
-                          
-                          <TabsContent value="technical" className="mt-4 space-y-4">
-                            <div className="prose prose-sm max-w-none">
-                              <h3>Technical Documentation</h3>
-                              <p>This section provides technical details about the application architecture and implementation.</p>
-                              
-                              <h4>Application Architecture</h4>
-                              <ul>
-                                <li><strong>Framework:</strong> React with TypeScript</li>
-                                <li><strong>State Management:</strong> React hooks with persistence via <code>useKV</code></li>
-                                <li><strong>UI Components:</strong> Shadcn UI component library</li>
-                                <li><strong>Animations:</strong> Framer Motion</li>
-                                <li><strong>Icons:</strong> Phosphor Icons</li>
-                                <li><strong>Notifications:</strong> Sonner toast library</li>
-                              </ul>
-                              
-                              <h4>Key Components</h4>
-                              <ul>
-                                <li><strong>PostEditor:</strong> Unified interface for post and thread creation</li>
-                                <li><strong>PlatformSelectors:</strong> Manages platform selection</li>
-                                <li><strong>AccountManager:</strong> Handles account management</li>
-                                <li><strong>MediaUploader:</strong> Handles media file uploads</li>
-                                <li><strong>CompactView:</strong> Provides the split-screen interface</li>
-                                <li><strong>SocialFeed:</strong> Displays platform feeds</li>
-                              </ul>
-                              
-                              <h4>Data Structures</h4>
-                              <p>Key data types include:</p>
-                              <ul>
-                                <li><strong>SocialPlatform:</strong> Platform identifier</li>
-                                <li><strong>SocialPlatformConfig:</strong> Platform configuration</li>
-                                <li><strong>Account:</strong> User account information</li>
-                                <li><strong>Media:</strong> Media file information</li>
-                                <li><strong>ThreadPost:</strong> Individual post in a thread</li>
-                                <li><strong>Post:</strong> Complete post data</li>
-                              </ul>
-                              
-                              <h4>Persistence</h4>
-                              <p>The application uses the <code>useKV</code> hook to persist state across sessions, including:</p>
-                              <ul>
-                                <li>Post content and media</li>
-                                <li>Selected platforms and accounts</li>
-                                <li>Thread posts</li>
-                                <li>Application preferences</li>
-                              </ul>
-                            </div>
-                          </TabsContent>
-                        </Tabs>
+                        <DocumentationViewer 
+                          defaultTab="user-guide"
+                          activeTab={activeTab}
+                          onTabChange={setActiveTab}
+                        />
                         
                         <SheetFooter className="mt-6">
                           <SheetClose asChild>

@@ -3,9 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PostEditor } from '@/components/post-editor';
 import { SocialFeed } from '@/components/social-feed';
 import { SocialPlatform, ThreadPost, Media, PLATFORMS, Account } from '@/lib/platform-utils';
-import { ViewGrid, PencilSimple } from '@phosphor-icons/react';
+import { StackSimple, PencilSimple } from '@phosphor-icons/react';
 import { PlatformSelectors } from '@/components/platform-controls';
-import { useKV } from '@github/spark/hooks';
+import { useKV } from '@/hooks/useKV';
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 
@@ -57,7 +57,7 @@ export function CompactView({
         <Tabs value={activeView} onValueChange={setActiveView} className="w-auto">
           <TabsList>
             <TabsTrigger value="split" className="flex items-center gap-1">
-              <ViewGrid size={16} />
+              <StackSimple size={16} />
               <span>Split View</span>
             </TabsTrigger>
             <TabsTrigger value="compose" className="flex items-center gap-1">
