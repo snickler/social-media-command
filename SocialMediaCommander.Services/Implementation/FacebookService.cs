@@ -91,10 +91,10 @@ public class FacebookService : IFacebookService
         }
     }
 
-    public async Task<PublishResult> PostThreadAsync(Post post, Account account)
+    public Task<PublishResult> PostThreadAsync(Post post, Account account)
     {
         // Facebook doesn't support native threads, post as single message
-        return await PostAsync(post, account);
+        return PostAsync(post, account);
     }
 
     public async Task<bool> DeletePostAsync(string postId, Account account)
@@ -179,13 +179,13 @@ public class FacebookService : IFacebookService
         }
     }
 
-    public async Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
+    public Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account)
     {
         // Facebook doesn't provide a trending hashtags API for third-party apps
-        return Enumerable.Empty<string>();
+        return Task.FromResult(Enumerable.Empty<string>());
     }
 
-    public async Task<ValidationResult> ValidateContentAsync(Post post)
+    public Task<ValidationResult> ValidateContentAsync(Post post)
     {
         var config = PlatformConfigurations.GetPlatformConfig(Platform);
         var content = post.FormatForPlatform(Platform);
@@ -204,27 +204,27 @@ public class FacebookService : IFacebookService
             result.Errors.Add("Facebook supports maximum 10 media attachments per post");
         }
 
-        return result;
+        return Task.FromResult(result);
     }
 
-    public async Task<string> UploadMediaAsync(Media media, Account account)
+    public Task<string> UploadMediaAsync(Media media, Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) return "";
+            if (!account.IsAuthenticated) return Task.FromResult(string.Empty);
 
             // Facebook media upload implementation placeholder
-            return $"facebook-media-{Guid.NewGuid()}";
+            return Task.FromResult($"facebook-media-{Guid.NewGuid()}");
         }
         catch
         {
-            return "";
+            return Task.FromResult(string.Empty);
         }
     }
 
-    public async Task<PlatformLimits> GetPlatformLimitsAsync()
+    public Task<PlatformLimits> GetPlatformLimitsAsync()
     {
-        return new PlatformLimits
+        return Task.FromResult(new PlatformLimits
         {
             CharacterLimit = null, // Facebook doesn't have a strict character limit
             MaxMediaCount = 10,
@@ -233,7 +233,7 @@ public class FacebookService : IFacebookService
             MaxThreadLength = 1, // Facebook doesn't support threads
             PostingInterval = TimeSpan.FromMinutes(1),
             DailyPostLimit = 200
-        };
+        });
     }
 
     public async Task<UserProfile?> GetProfileAsync(Account account)
@@ -257,24 +257,24 @@ public class FacebookService : IFacebookService
         }
     }
 
-    public async Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
+    public Task<RateLimitInfo> GetRateLimitInfoAsync(Account account)
     {
         try
         {
-            if (!account.IsAuthenticated) 
-                return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            if (!account.IsAuthenticated)
+                return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
 
             // Facebook has rate limits but doesn't expose them in headers like Twitter
-            return new RateLimitInfo
+            return Task.FromResult(new RateLimitInfo
             {
                 Remaining = 180,
                 Limit = 200,
                 ResetTime = DateTime.UtcNow.AddHours(1)
-            };
+            });
         }
         catch
         {
-            return new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow };
+            return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
         }
     }
 

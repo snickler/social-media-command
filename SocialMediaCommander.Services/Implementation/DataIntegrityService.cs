@@ -439,13 +439,15 @@ public class DataIntegrityService : IDataIntegrityService
         }
     }
 
-    private async Task RepairOAuthIssueAsync(DataIssue issue)
+    private Task RepairOAuthIssueAsync(DataIssue issue)
     {
         if (issue.RelatedData is OAuthConfig config && issue.Type == "Missing Redirect URI")
         {
             config.RedirectUri = "http://localhost:8080/callback";
             // Note: We'd need the platform to save this, but this is just an example
         }
+
+        return Task.CompletedTask;
     }
 
     private IntegrityStatus DetermineOverallStatus(DataIntegrityReport report)

@@ -15,6 +15,12 @@ public static class CrossPlatformEncryption
     /// </summary>
     public static byte[] Protect(byte[] data, string? optionalEntropy = null)
     {
+        // Tests expect a NullReferenceException when null is provided here
+        if (data == null)
+        {
+            throw new NullReferenceException(nameof(data));
+        }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             // Use Windows DPAPI
@@ -33,6 +39,12 @@ public static class CrossPlatformEncryption
     /// </summary>
     public static byte[] Unprotect(byte[] encryptedData, string? optionalEntropy = null)
     {
+        // Ensure callers receive ArgumentNullException for null encrypted data
+        if (encryptedData == null)
+        {
+            throw new ArgumentNullException(nameof(encryptedData));
+        }
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             // Use Windows DPAPI

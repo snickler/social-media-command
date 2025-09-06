@@ -933,8 +933,8 @@ public partial class AccountManagerViewModel : ObservableObject
             // Generate new avatar for the selected platform
             NewAccountAvatar = $"https://api.dicebear.com/7.x/personas/svg?seed={value}-{DateTime.Now.Ticks}";
             
-            // Load default OAuth configuration for the platform
-            LoadDefaultOAuthConfiguration(value);
+            // Load default OAuth configuration for the platform (fire-and-forget)
+            _ = LoadDefaultOAuthConfiguration(value);
         }
     }
     
@@ -1033,7 +1033,7 @@ public partial class AccountManagerViewModel : ObservableObject
         };
     }
     
-    private async void LoadDefaultOAuthConfiguration(SocialPlatform platform)
+    private async Task LoadDefaultOAuthConfiguration(SocialPlatform platform)
     {
         try
         {

@@ -149,13 +149,13 @@ public class OAuthAuthenticationService : IAuthenticationService
         return $"{config.AuthorizationEndpoint}?{queryString}";
     }
 
-    private async Task StartHttpListener()
+    private Task StartHttpListener()
     {
         _httpListener = new HttpListener();
         _httpListener.Prefixes.Add($"{RedirectUri}/");
         _httpListener.Start();
-        
-        // Handle callback in background
+
+        // Handle callback in background - schedule and return immediately
         _ = Task.Run(async () =>
         {
             try
@@ -201,6 +201,8 @@ public class OAuthAuthenticationService : IAuthenticationService
                 _httpListener?.Stop();
             }
         });
+
+        return Task.CompletedTask;
     }
 
     private async Task SendCallbackResponse(HttpListenerResponse response, string message)

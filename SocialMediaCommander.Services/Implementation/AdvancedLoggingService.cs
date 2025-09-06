@@ -132,7 +132,7 @@ public partial class AdvancedLoggingService : IDisposable
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         
         // Initialize log flush timer (every 5 seconds)
-        _logFlushTimer = new Timer(FlushLogsCallback, null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
+    _logFlushTimer = new Timer(_ => _ = FlushLogsCallbackAsync(), null, TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(5));
         
         _logger.LogInformation("Advanced logging service initialized with high-performance patterns");
     }
@@ -337,7 +337,7 @@ public partial class AdvancedLoggingService : IDisposable
     /// <summary>
     /// Flush accumulated logs (called by timer)
     /// </summary>
-    private async void FlushLogsCallback(object? state)
+    private async Task FlushLogsCallbackAsync()
     {
         if (_disposed || !await _flushSemaphore.WaitAsync(100).ConfigureAwait(false))
             return;
@@ -396,8 +396,15 @@ public partial class AdvancedLoggingService : IDisposable
         {
             _logFlushTimer?.Dispose();
             
-            // Flush any remaining logs
-            FlushLogsCallback(null);
+            // Flush any remaining logs synchronously
+            try
+            {
+                Task.Run(() => FlushLogsCallbackAsync()).GetAwaiter().GetResult();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error flushing logs during Dispose");
+            }
             
             _flushSemaphore?.Dispose();
         }

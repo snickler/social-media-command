@@ -257,7 +257,7 @@ public class AccountManagementIntegrationTests : IDisposable
     }
 
     [Fact]
-    public async Task RefreshAccountsCommand_ShouldBeAvailable()
+    public void RefreshAccountsCommand_ShouldBeAvailable()
     {
         // Arrange & Act
         var command = _viewModel.RefreshAccountsCommand;
