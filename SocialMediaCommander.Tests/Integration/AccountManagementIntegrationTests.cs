@@ -105,10 +105,10 @@ public class AccountManagementIntegrationTests : IDisposable
         var twitterAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.X);
 
         // Assert
-        blueSkyAccounts.Should().HaveCountGreaterOrEqualTo(1);
+        blueSkyAccounts.Should().HaveCountGreaterThanOrEqualTo(1);
         blueSkyAccounts.First(a => a.Username == "bluesky_user").PlatformId.Should().Be(SocialPlatform.BlueSky);
 
-        twitterAccounts.Should().HaveCountGreaterOrEqualTo(1);
+        twitterAccounts.Should().HaveCountGreaterThanOrEqualTo(1);
         twitterAccounts.First(a => a.Username == "twitter_user").PlatformId.Should().Be(SocialPlatform.X);
     }
 
@@ -327,7 +327,7 @@ public class AccountManagementIntegrationTests : IDisposable
         var allAccounts = await _accountService.GetAllAccountsAsync();
 
         // Assert
-        allAccounts.Should().HaveCountGreaterOrEqualTo(3);
+        allAccounts.Should().HaveCountGreaterThanOrEqualTo(3);
         allAccounts.Should().Contain(a => a.Username == "user1");
         allAccounts.Should().Contain(a => a.Username == "user2");
         allAccounts.Should().Contain(a => a.Username == "user3");
