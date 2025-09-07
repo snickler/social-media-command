@@ -126,15 +126,7 @@ jobs:
 
       - name: Publish Desktop App
         run: |
-          dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj \
-            --configuration Release \
-            --runtime ${{ matrix.rid }} \
-            --self-contained true \
-            --output ./publish/${{ matrix.os }}-${{ matrix.arch }} \
-            /p:Version=${{ steps.version.outputs.version }} \
-            /p:PublishSingleFile=true \
-            /p:PublishTrimmed=false \
-            /p:IncludeNativeLibrariesForSelfExtract=true
+          dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} /p:Version=${{ steps.version.outputs.version }} /p:PublishSingleFile=true /p:PublishTrimmed=false /p:IncludeNativeLibrariesForSelfExtract=true
         timeout-minutes: 15
 
       - name: Create Windows Installer
