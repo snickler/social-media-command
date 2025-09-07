@@ -41,10 +41,10 @@ jobs:
             arch: arm64
             runner: ubuntu-latest
             rid: linux-arm64
-          - os: macos
-            arch: x64
-            runner: macos-latest
-            rid: osx-x64
+          #- os: macos
+          #  arch: x64
+          #  runner: macos-latest
+          #  rid: osx-x64
           # Temporarily disabled due to missing SwiftShader libraries for ARM64 macOS
           # - os: macos
           #   arch: arm64
