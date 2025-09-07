@@ -391,7 +391,7 @@ public class TwitterServiceTests : IDisposable
         result.Should().NotBeNull();
         result.IsValid.Should().BeFalse();
         result.Errors.Should().NotBeEmpty();
-        result.Errors.Should().Contain(e => e.Contains("character limit"));
+        result.Errors.Should().Contain(e => e.Contains("exceeds 280 characters"));
     }
 
     [Fact]
@@ -442,7 +442,8 @@ public class TwitterServiceTests : IDisposable
             Tokens = isAuthenticated ? new OAuthTokens
             {
                 AccessToken = "test_access_token",
-                RefreshToken = "test_refresh_token"
+                RefreshToken = "test_refresh_token",
+                ExpiresAt = new DateTime(2025, 12, 31, 23, 59, 59, DateTimeKind.Utc) // Set a safe future date
             } : null
         };
     }
