@@ -99,10 +99,7 @@ jobs:
 
       - name: Test
         run: |
-          if [[ "${{ matrix.os }}" == "macos" ]]; then
-            # Skip code coverage on macOS to avoid platform-specific issues
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal /p:Platform=${{ matrix.arch}}
-          else
+          if [[ "${{ matrix.os }}" != "macos" ]]; then
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
