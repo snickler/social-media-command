@@ -90,7 +90,7 @@ jobs:
         run: dotnet restore SocialMediaCommander.sln -r ${{ matrix.rid }}
 
       - name: Build with analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true -a ${{ matrix.arch }}
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true /p:Platform=${{ matrix.arch}}
 
       - name: Run .NET analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true -a ${{ matrix.arch }}
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true /p:Platform=${{ matrix.arch}}
