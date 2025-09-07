@@ -101,7 +101,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         await SaveConfigurationsAsync();
     }
 
-    public Task<ValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config)
+    public Task<OAuthValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config)
     {
         var errors = new List<string>();
 
@@ -137,7 +137,11 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         if (config.Scopes == null || config.Scopes.Length == 0)
             errors.Add("At least one scope is required");
 
-        return Task.FromResult(new ValidationResult(errors));
+        return Task.FromResult(new OAuthValidationResult 
+        { 
+            IsValid = !errors.Any(), 
+            Errors = errors 
+        });
     }
 
     public OAuthConfig GetDefaultConfiguration(SocialPlatform platform)

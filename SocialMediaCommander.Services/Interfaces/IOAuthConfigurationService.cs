@@ -30,7 +30,7 @@ public interface IOAuthConfigurationService
     /// <summary>
     /// Validates OAuth configuration
     /// </summary>
-    Task<ValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config);
+    Task<OAuthValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config);
 
     /// <summary>
     /// Gets default OAuth configuration template for a platform

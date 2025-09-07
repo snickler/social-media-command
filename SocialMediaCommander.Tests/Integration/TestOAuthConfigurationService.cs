@@ -47,7 +47,7 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
         return Task.CompletedTask;
     }
 
-    public Task<ValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config)
+    public Task<OAuthValidationResult> ValidateConfigurationAsync(SocialPlatform platform, OAuthConfig config)
     {
         // Simple validation for test purposes
         var isValid = !string.IsNullOrEmpty(config.ClientId) &&
@@ -55,7 +55,11 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
                      !string.IsNullOrEmpty(config.AuthorizationEndpoint) &&
                      !string.IsNullOrEmpty(config.TokenEndpoint);
 
-        var result = new ValidationResult(isValid ? [] : ["Invalid test configuration"]);
+        var result = new OAuthValidationResult 
+        { 
+            IsValid = isValid, 
+            Errors = isValid ? new List<string>() : new List<string> { "Invalid test configuration" }
+        };
 
         return Task.FromResult(result);
     }
