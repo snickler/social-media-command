@@ -28,12 +28,12 @@ public class DataIntegrityService : IDataIntegrityService
         _accountService = accountService;
         _oauthConfigService = oauthConfigService;
         _logger = Log.ForContext<DataIntegrityService>();
-        
+
         _dataDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SocialMediaCommander"
         );
-        
+
         _integrityDirectory = Path.Combine(_dataDirectory, "Integrity");
         Directory.CreateDirectory(_integrityDirectory);
     }
@@ -339,11 +339,11 @@ public class DataIntegrityService : IDataIntegrityService
             var storedChecksums = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
 
             // Verify accounts file
-            await VerifyFileIntegrity("accounts", Path.Combine(_dataDirectory, "Data", "accounts.encrypted"), 
+            await VerifyFileIntegrity("accounts", Path.Combine(_dataDirectory, "Data", "accounts.encrypted"),
                 storedChecksums, report);
 
             // Verify OAuth configurations file
-            await VerifyFileIntegrity("oauth", Path.Combine(_dataDirectory, "Config", "oauth-configs.encrypted"), 
+            await VerifyFileIntegrity("oauth", Path.Combine(_dataDirectory, "Config", "oauth-configs.encrypted"),
                 storedChecksums, report);
         }
         catch (Exception ex)
@@ -352,7 +352,7 @@ public class DataIntegrityService : IDataIntegrityService
         }
     }
 
-    private async Task VerifyFileIntegrity(string name, string filePath, Dictionary<string, string> storedChecksums, 
+    private async Task VerifyFileIntegrity(string name, string filePath, Dictionary<string, string> storedChecksums,
         DataIntegrityReport report)
     {
         if (!File.Exists(filePath))
@@ -372,7 +372,7 @@ public class DataIntegrityService : IDataIntegrityService
         }
 
         var currentChecksum = await CalculateFileChecksumAsync(filePath);
-        
+
         if (storedChecksums.TryGetValue(name, out var storedChecksum))
         {
             if (currentChecksum != storedChecksum)
@@ -418,12 +418,12 @@ public class DataIntegrityService : IDataIntegrityService
                     account.Id = Guid.NewGuid().ToString();
                     await _accountService.UpdateAccountAsync(account);
                     break;
-                    
+
                 case "Missing Display Name":
                     account.DisplayName = account.Username ?? "Unnamed Account";
                     await _accountService.UpdateAccountAsync(account);
                     break;
-                    
+
                 case "Duplicate Account":
                     // Remove duplicates, keep the most recently used
                     if (issue.RelatedData is List<Account> duplicates)
@@ -452,7 +452,7 @@ public class DataIntegrityService : IDataIntegrityService
 
     private IntegrityStatus DetermineOverallStatus(DataIntegrityReport report)
     {
-        if (report.Errors.Any() || 
+        if (report.Errors.Any() ||
             report.AccountIssues.Any(i => i.Severity == IssueSeverity.Error) ||
             report.OAuthIssues.Any(i => i.Severity == IssueSeverity.Error) ||
             report.FileIssues.Any(i => i.Severity == IssueSeverity.Error))
@@ -487,8 +487,8 @@ public class DataIntegrityReport
     public List<DataIssue> FileIssues { get; set; } = new();
 
     public int TotalIssues => AccountIssues.Count + OAuthIssues.Count + FileIssues.Count;
-    public int RepairableIssues => AccountIssues.Count(i => i.CanRepair) + 
-                                   OAuthIssues.Count(i => i.CanRepair) + 
+    public int RepairableIssues => AccountIssues.Count(i => i.CanRepair) +
+                                   OAuthIssues.Count(i => i.CanRepair) +
                                    FileIssues.Count(i => i.CanRepair);
 }
 
@@ -524,4 +524,4 @@ public enum IntegrityStatus
     Healthy,
     Warning,
     Error
-} 
+}

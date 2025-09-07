@@ -11,9 +11,9 @@ public interface IBlueSkyService : IPlatformService
     /// Creates a BlueSky session
     /// </summary>
     Task<bool> CreateSessionAsync(Account account);
-    
+
     /// <summary>
     /// Gets user's BlueSky profile
     /// </summary>
     Task<UserProfile?> GetProfileAsync(Account account);
-} 
+}

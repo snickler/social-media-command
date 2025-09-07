@@ -32,10 +32,10 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             "SocialMediaCommander",
             "Config"
         );
-        
+
         Directory.CreateDirectory(_configDirectory);
         _configurations = new Dictionary<SocialPlatform, OAuthConfig>();
-        
+
         // Note: Removed synchronous async calls from constructor to prevent deadlocks
         // Configurations will be loaded lazily when first accessed via EnsureConfigurationsLoadedAsync()
         _logger.Information("OAuthConfigurationService initialized. Configuration loading will be done lazily.");
@@ -44,7 +44,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     public async Task<OAuthConfig?> GetConfigurationAsync(SocialPlatform platform)
     {
         await EnsureConfigurationsLoadedAsync();
-        
+
         lock (_lock)
         {
             return _configurations.TryGetValue(platform, out var config) ? config : null;
@@ -67,7 +67,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     public async Task<Dictionary<SocialPlatform, OAuthConfig>> GetAllConfigurationsAsync()
     {
         await EnsureConfigurationsLoadedAsync();
-        
+
         lock (_lock)
         {
             return new Dictionary<SocialPlatform, OAuthConfig>(_configurations);
@@ -109,11 +109,11 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         else if (!Uri.TryCreate(config.RedirectUri, UriKind.Absolute, out _))
             errors.Add("Redirect URI must be a valid URL");
 
-        if (!string.IsNullOrWhiteSpace(config.UserInfoEndpoint) && 
+        if (!string.IsNullOrWhiteSpace(config.UserInfoEndpoint) &&
             !Uri.TryCreate(config.UserInfoEndpoint, UriKind.Absolute, out _))
             errors.Add("User Info Endpoint must be a valid URL");
 
-        if (!string.IsNullOrWhiteSpace(config.RevokeEndpoint) && 
+        if (!string.IsNullOrWhiteSpace(config.RevokeEndpoint) &&
             !Uri.TryCreate(config.RevokeEndpoint, UriKind.Absolute, out _))
             errors.Add("Revoke Endpoint must be a valid URL");
 
@@ -205,16 +205,16 @@ public class OAuthConfigurationService : IOAuthConfigurationService
 
     public bool HasPlaceholderValues(OAuthConfig config)
     {
-        return config.ClientId == "YOUR_CLIENT_ID_HERE" || 
+        return config.ClientId == "YOUR_CLIENT_ID_HERE" ||
                config.ClientSecret == "YOUR_CLIENT_SECRET_HERE" ||
-               string.IsNullOrWhiteSpace(config.ClientId) || 
+               string.IsNullOrWhiteSpace(config.ClientId) ||
                string.IsNullOrWhiteSpace(config.ClientSecret);
     }
-    
+
     public async Task<ConfigurationStatus> GetConfigurationStatusAsync(SocialPlatform platform)
     {
         var config = await GetConfigurationAsync(platform);
-        
+
         if (config == null)
         {
             return new ConfigurationStatus
@@ -225,18 +225,18 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 Message = "OAuth configuration not found. Default configuration will be created."
             };
         }
-        
+
         var hasPlaceholders = HasPlaceholderValues(config);
         var validation = await ValidateConfigurationAsync(platform, config);
-        
+
         return new ConfigurationStatus
         {
             IsConfigured = validation.IsValid && !hasPlaceholders,
             HasPlaceholders = hasPlaceholders,
             Status = hasPlaceholders ? "Needs setup" : validation.IsValid ? "Ready" : "Invalid",
-            Message = hasPlaceholders 
+            Message = hasPlaceholders
                 ? "Please replace placeholder values with your actual OAuth credentials"
-                : validation.IsValid 
+                : validation.IsValid
                     ? "OAuth configuration is ready to use"
                     : $"Configuration errors: {string.Join(", ", validation.Errors)}"
         };
@@ -270,7 +270,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     public async Task ExportConfigurationsAsync(string filePath)
     {
         await EnsureConfigurationsLoadedAsync();
-        
+
         Dictionary<string, OAuthConfig> exportConfigs;
         lock (_lock)
         {
@@ -291,7 +291,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     private async Task LoadConfigurationsAsync()
     {
         var configPath = Path.Combine(_configDirectory, _configFileName);
-        
+
         if (!File.Exists(configPath))
         {
             // Initialize with default configurations
@@ -304,11 +304,11 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         {
             // Read encrypted data
             var encryptedData = await File.ReadAllBytesAsync(configPath);
-            
+
             // Decrypt using cross-platform encryption
             var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_OAuth");
             var json = Encoding.UTF8.GetString(decryptedData);
-            
+
             // Check if file is empty or just contains empty JSON
             if (string.IsNullOrWhiteSpace(json) || json.Trim() == "{}")
             {
@@ -316,7 +316,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 await InitializeDefaultConfigurationsAsync();
                 return;
             }
-            
+
             var configs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
 
             if (configs != null && configs.Count > 0)
@@ -356,7 +356,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     private async Task SaveConfigurationsAsync()
     {
         var configPath = Path.Combine(_configDirectory, _configFileName);
-        
+
         try
         {
             Dictionary<string, OAuthConfig> saveConfigs;
@@ -403,7 +403,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 _configurations[platform] = defaultConfig;
             }
         }
-        
+
         await SaveConfigurationsAsync();
     }
 
@@ -417,11 +417,11 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 return; // Already loaded
             }
         }
-        
+
         // Load configurations if not already loaded
         _logger.Debug("Configurations not loaded, loading now...");
         await LoadConfigurationsAsync();
-        
+
         // Verify configurations were loaded
         lock (_lock)
         {
@@ -435,4 +435,4 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             }
         }
     }
-} 
+}

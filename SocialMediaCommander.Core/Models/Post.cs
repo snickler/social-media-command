@@ -8,34 +8,34 @@ namespace SocialMediaCommander.Core.Models;
 public class Media
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    
+
     [Required]
     public string FileName { get; set; } = string.Empty;
-    
+
     [Required]
     public string FilePath { get; set; } = string.Empty;
-    
+
     public string? PreviewUrl { get; set; }
-    
+
     [Required]
     public MediaType Type { get; set; }
-    
+
     public long FileSize { get; set; }
-    
+
     public string MimeType { get; set; } = string.Empty;
-    
+
     public int? Width { get; set; }
-    
+
     public int? Height { get; set; }
-    
+
     public TimeSpan? Duration { get; set; }
-    
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Gets a formatted file size string
     /// </summary>
-    public string FileSizeFormatted 
+    public string FileSizeFormatted
     {
         get
         {
@@ -68,15 +68,15 @@ public enum MediaType
 public class ThreadPost
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    
+
     [Required]
     [StringLength(2000)]
     public string Content { get; set; } = string.Empty;
-    
+
     public List<Media> Media { get; set; } = new();
-    
+
     public int Order { get; set; }
-    
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -86,38 +86,38 @@ public class ThreadPost
 public class Post
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    
+
     [Required]
     [StringLength(2000)]
     public string Content { get; set; } = string.Empty;
-    
+
     public List<SocialPlatform> TargetPlatforms { get; set; } = new();
-    
+
     public List<string> Hashtags { get; set; } = new();
-    
+
     public bool PromoMode { get; set; }
-    
+
     public List<Media> Media { get; set; } = new();
-    
+
     public bool IsThread { get; set; }
-    
+
     public List<ThreadPost> ThreadPosts { get; set; } = new();
-    
+
     public bool ThreadsOnlyMode { get; set; }
-    
+
     /// <summary>
     /// Maps platform to selected account IDs
     /// </summary>
     public Dictionary<SocialPlatform, List<string>> SelectedAccounts { get; set; } = new();
-    
+
     public PostStatus Status { get; set; } = PostStatus.Draft;
-    
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
     public DateTime? PublishedAt { get; set; }
-    
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Results of publishing to each platform
     /// </summary>
@@ -129,13 +129,13 @@ public class Post
     public int GetCharacterCount()
     {
         var baseCount = Content.Length;
-        
+
         if (PromoMode && Hashtags.Any())
         {
             var hashtagText = string.Join(" ", Hashtags.Select(h => $"#{h}"));
             baseCount += hashtagText.Length + 2; // +2 for line breaks
         }
-        
+
         return baseCount;
     }
 
@@ -309,4 +309,4 @@ public static class DefaultHashtags
     {
         return Marketing.Take(5).ToList();
     }
-} 
+}

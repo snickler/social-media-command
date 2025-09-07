@@ -390,7 +390,7 @@ public class DefaultAccountsTests
         accounts.Should().Contain(a => a.PlatformId == SocialPlatform.LinkedIn);
         accounts.Should().Contain(a => a.PlatformId == SocialPlatform.Threads);
         accounts.Should().Contain(a => a.PlatformId == SocialPlatform.Facebook);
-        
+
         accounts.Should().OnlyContain(a => a.IsDefault);
         accounts.Should().OnlyContain(a => !string.IsNullOrEmpty(a.Avatar));
     }

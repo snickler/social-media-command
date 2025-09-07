@@ -26,13 +26,13 @@ public class BackupService : IBackupService
         _accountService = accountService;
         _oauthConfigService = oauthConfigService;
         _logger = Log.ForContext<BackupService>();
-        
+
         _backupDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SocialMediaCommander",
             "Backups"
         );
-        
+
         Directory.CreateDirectory(_backupDirectory);
     }
 
@@ -71,7 +71,7 @@ public class BackupService : IBackupService
             // Write to file
             await File.WriteAllBytesAsync(backupPath, encryptedData);
 
-            _logger.Information("Backup created successfully: {BackupPath} ({Size} bytes)", 
+            _logger.Information("Backup created successfully: {BackupPath} ({Size} bytes)",
                 backupPath, encryptedData.Length);
 
             return backupPath;
@@ -143,7 +143,7 @@ public class BackupService : IBackupService
                 }
                 catch (Exception ex)
                 {
-                    _logger.Warning(ex, "Failed to restore OAuth configuration for {Platform}: {Error}", 
+                    _logger.Warning(ex, "Failed to restore OAuth configuration for {Platform}: {Error}",
                         kvp.Key, ex.Message);
                 }
             }
@@ -233,7 +233,7 @@ public class BackupService : IBackupService
         var encryptedData = await File.ReadAllBytesAsync(backupPath);
         var compressedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Backup");
         var json = await DecompressDataAsync(compressedData);
-        
+
         var backupData = JsonSerializer.Deserialize<BackupData>(json, new JsonSerializerOptions
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -245,13 +245,13 @@ public class BackupService : IBackupService
     private async Task<byte[]> CompressDataAsync(string data)
     {
         var bytes = System.Text.Encoding.UTF8.GetBytes(data);
-        
+
         using var output = new MemoryStream();
         using (var gzip = new GZipStream(output, CompressionMode.Compress))
         {
             await gzip.WriteAsync(bytes, 0, bytes.Length);
         }
-        
+
         return output.ToArray();
     }
 
@@ -260,7 +260,7 @@ public class BackupService : IBackupService
         using var input = new MemoryStream(compressedData);
         using var gzip = new GZipStream(input, CompressionMode.Decompress);
         using var output = new MemoryStream();
-        
+
         await gzip.CopyToAsync(output);
         return System.Text.Encoding.UTF8.GetString(output.ToArray());
     }
@@ -292,9 +292,9 @@ public class BackupInfo
     public int AccountCount { get; set; }
     public int OAuthConfigCount { get; set; }
     public bool IsCorrupted { get; set; }
-    
+
     public string FormattedSize => FormatBytes(Size);
-    
+
     private static string FormatBytes(long bytes)
     {
         string[] suffixes = { "B", "KB", "MB", "GB" };
@@ -307,4 +307,4 @@ public class BackupInfo
         }
         return $"{number:n1} {suffixes[counter]}";
     }
-} 
+}

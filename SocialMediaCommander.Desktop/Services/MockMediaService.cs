@@ -39,7 +39,7 @@ public class MockMediaService : IMediaService
     {
         var fileName = Path.GetFileName(filePath);
         var mimeType = GetMimeTypeFromExtension(Path.GetExtension(filePath));
-        
+
         await using var fileStream = File.OpenRead(filePath);
         return await UploadMediaAsync(fileStream, fileName, mimeType).ConfigureAwait(false);
     }
@@ -65,8 +65,8 @@ public class MockMediaService : IMediaService
 
     public Task<string?> GeneratePreviewAsync(string mediaId)
     {
-        return Task.FromResult(_mediaStore.ContainsKey(mediaId) 
-            ? $"https://example.com/previews/{mediaId}" 
+        return Task.FromResult(_mediaStore.ContainsKey(mediaId)
+            ? $"https://example.com/previews/{mediaId}"
             : null);
     }
 
@@ -111,12 +111,12 @@ public class MockMediaService : IMediaService
         var toRemove = _mediaStore.Where(kvp => kvp.Value.CreatedAt < cutoffDate)
                                  .Select(kvp => kvp.Key)
                                  .ToList();
-        
+
         foreach (var id in toRemove)
         {
             _mediaStore.Remove(id);
         }
-        
+
         return Task.FromResult(toRemove.Count);
     }
 
@@ -148,13 +148,13 @@ public class MockMediaService : IMediaService
     public Task<ValidationResult> ValidateFileAsync(Stream fileStream, string fileName, string mimeType)
     {
         var errors = new List<string>();
-        
+
         // Mock validation
         if (fileStream.Length > 50 * 1024 * 1024) // 50MB limit
         {
             errors.Add("File size exceeds 50MB limit");
         }
-        
+
         return Task.FromResult(new ValidationResult(errors));
     }
 
@@ -195,4 +195,4 @@ public class MockMediaService : IMediaService
             _ => "application/octet-stream"
         };
     }
-} 
+}

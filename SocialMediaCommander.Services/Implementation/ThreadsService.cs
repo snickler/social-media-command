@@ -153,7 +153,7 @@ public class ThreadsService : IThreadsService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/v1.0/{userProfile.Id}/threads?fields=id,text,timestamp,permalink&limit={limit}&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -245,7 +245,7 @@ public class ThreadsService : IThreadsService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return null;
 
-            var request = new HttpRequestMessage(HttpMethod.Get, 
+            var request = new HttpRequestMessage(HttpMethod.Get,
                 $"{BaseUrl}/v1.0/{userProfile.Id}?fields=id,username,name,biography,followers_count&access_token={account.Tokens!.AccessToken}");
 
             var response = await _httpClient.SendAsync(request);
@@ -289,9 +289,9 @@ public class ThreadsService : IThreadsService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return false;
 
-            var request = new HttpRequestMessage(HttpMethod.Post, 
+            var request = new HttpRequestMessage(HttpMethod.Post,
                 $"{BaseUrl}/v1.0/{userProfile.Id}/threads_likes?access_token={account.Tokens!.AccessToken}");
-            
+
             var likeData = new { thread_id = postId };
             var json = JsonSerializer.Serialize(likeData);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -395,4 +395,4 @@ public class ThreadsService : IThreadsService
             return null;
         }
     }
-} 
+}

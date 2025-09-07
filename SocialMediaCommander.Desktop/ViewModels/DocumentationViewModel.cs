@@ -44,7 +44,7 @@ public partial class DocumentationViewModel : ObservableObject
     {
         _documentationService = documentationService;
         _logger = Log.ForContext<DocumentationViewModel>();
-        
+
         LoadCategories();
     }
 
@@ -54,7 +54,7 @@ public partial class DocumentationViewModel : ObservableObject
         {
             var categories = _documentationService.GetCategories().ToList();
             Categories.Clear();
-            
+
             foreach (var category in categories)
             {
                 Categories.Add(category);
@@ -86,7 +86,7 @@ public partial class DocumentationViewModel : ObservableObject
         {
             var files = _documentationService.GetFilesByCategory(categoryName).ToList();
             FilesInCategory.Clear();
-            
+
             foreach (var file in files)
             {
                 FilesInCategory.Add(file);
@@ -118,7 +118,7 @@ public partial class DocumentationViewModel : ObservableObject
         {
             IsLoading = true;
             LoadingMessage = $"Loading {file.Title}...";
-            
+
             var content = await _documentationService.LoadAndParseDocumentationAsync(file.FilePath);
             DocumentContent = content;
         }
@@ -159,7 +159,7 @@ public partial class DocumentationViewModel : ObservableObject
                 if (category != null)
                 {
                     SelectedCategory = category;
-                    
+
                     // Wait for files to load, then select the file
                     await Task.Delay(100); // Small delay to ensure files are loaded
                     SelectedFile = FilesInCategory.FirstOrDefault(f => f.Id == fileId);

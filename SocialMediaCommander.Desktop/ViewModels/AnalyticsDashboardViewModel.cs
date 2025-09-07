@@ -190,7 +190,7 @@ public partial class AnalyticsDashboardViewModel : ObservableObject
 
             // Generate mock analytics data
             await GenerateMockAnalyticsData();
-            
+
             // Update computed properties
             OnPropertyChanged(nameof(HasData));
             OnPropertyChanged(nameof(EngagementRateFormatted));
@@ -450,4 +450,4 @@ public partial class TimeRangeOption : ObservableObject
 
     [ObservableProperty]
     private string _name = string.Empty;
-} 
+}

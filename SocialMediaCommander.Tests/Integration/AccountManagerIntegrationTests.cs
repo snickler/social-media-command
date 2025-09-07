@@ -26,19 +26,19 @@ public class AccountManagerIntegrationTests : IDisposable
         services.AddHttpClient();
         services.AddSingleton<IAccountService, InMemoryAccountService>();
         services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
-        services.AddSingleton<IAuthenticationService>(provider => 
+        services.AddSingleton<IAuthenticationService>(provider =>
             new OAuthAuthenticationService(
                 provider.GetRequiredService<HttpClient>(),
                 provider.GetRequiredService<IOAuthConfigurationService>()
             ));
         services.AddSingleton<ILogger>(Logger.None); // Add logger for tests
-        
+
         _serviceProvider = services.BuildServiceProvider();
         _accountService = _serviceProvider.GetRequiredService<IAccountService>();
         _authService = _serviceProvider.GetRequiredService<IAuthenticationService>();
         _oauthConfigService = _serviceProvider.GetRequiredService<IOAuthConfigurationService>();
         var logger = _serviceProvider.GetRequiredService<ILogger>();
-        
+
         _viewModel = new AccountManagerViewModel(_accountService, _authService, _oauthConfigService);
     }
 
@@ -385,7 +385,7 @@ public class AccountManagerIntegrationTests : IDisposable
         platformGroups.Should().HaveCount(2, "Should have groups for BlueSky and X");
         platformGroups.Should().Contain(g => g.Platform == SocialPlatform.BlueSky, "Should have BlueSky group");
         platformGroups.Should().Contain(g => g.Platform == SocialPlatform.X, "Should have X group");
-        
+
         var blueSkyGroup = platformGroups.First(g => g.Platform == SocialPlatform.BlueSky);
         blueSkyGroup.Accounts.Should().HaveCount(1, "BlueSky group should have 1 account");
         blueSkyGroup.AccountCount.Should().Be(1, "BlueSky group count should be 1");
@@ -422,10 +422,10 @@ public class AccountManagerIntegrationTests : IDisposable
         };
 
         await _accountService.CreateAccountAsync(account);
-        
+
         // Add to ViewModel collection for UI tests
         _viewModel.Accounts.Add(account);
-        
+
         return account;
     }
 
@@ -435,4 +435,4 @@ public class AccountManagerIntegrationTests : IDisposable
     {
         _serviceProvider?.Dispose();
     }
-} 
+}

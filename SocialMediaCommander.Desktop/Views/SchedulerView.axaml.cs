@@ -8,4 +8,4 @@ public partial class SchedulerView : UserControl
     {
         InitializeComponent();
     }
-} 
+}

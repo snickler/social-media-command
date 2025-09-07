@@ -25,4 +25,4 @@ public interface IDataIntegrityService
     /// Updates integrity checksums for all data files
     /// </summary>
     Task UpdateIntegrityChecksumsAsync();
-} 
+}

@@ -62,4 +62,4 @@ public interface ISettingsService
     /// <param name="filePath">Path to import file</param>
     /// <returns>True if import was successful</returns>
     Task<bool> ImportSettingsAsync(string filePath);
-} 
+}

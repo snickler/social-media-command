@@ -8,4 +8,4 @@ public partial class SocialFeedView : UserControl
     {
         InitializeComponent();
     }
-} 
+}

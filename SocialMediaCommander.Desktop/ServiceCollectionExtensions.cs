@@ -20,41 +20,41 @@ public static class ServiceCollectionExtensions
     {
         // Configuration
         services.Configure<AIModelConfig>(configuration.GetSection("AI"));
-        
+
         // Core Services
         services.AddHttpClient<IAIService, FoundryLocalAIService>();
         services.AddSingleton<IOAuthConfigurationService, OAuthConfigurationService>();
         services.AddHttpClient<IAuthenticationService, OAuthAuthenticationService>();
-        
+
         // Platform Services
         services.AddScoped<IBlueSkyService, BlueSkyService>();
         services.AddScoped<ITwitterService, TwitterService>();
         services.AddScoped<ILinkedInService, LinkedInService>();
         services.AddScoped<IThreadsService, ThreadsService>();
         services.AddScoped<IFacebookService, FacebookService>();
-        
+
         // Application Services
         services.AddScoped<IPostService, MockPostService>();
         services.AddScoped<IAccountService, SecureAccountService>();
         services.AddScoped<IMediaService, MockMediaService>();
         services.AddScoped<IFeedService, InMemoryFeedService>();
-        
+
         // Enhanced Security Services
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IDataIntegrityService, DataIntegrityService>();
         services.AddSingleton<ISettingsService, SettingsService>();
-        
+
         // Documentation Service
         services.AddSingleton<IDocumentationService, DocumentationService>();
-        
+
         // Enhanced Services
         services.AddScoped<IAIService, FoundryLocalAIService>();
-        
+
         // Performance-Optimized Services
         services.AddSingleton<PerformanceOptimizedService>();
         services.AddSingleton<AdvancedLoggingService>();
         services.AddScoped<OptimizedAsyncService>();
-        
+
         // ViewModels
         services.AddTransient<MainWindowViewModel>();
         services.AddTransient<PostEditorViewModel>();
@@ -66,14 +66,14 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AIAssistantViewModel>();
         services.AddTransient<OAuthConfigurationViewModel>();
         services.AddTransient<DocumentationViewModel>();
-        
+
         // Logging
         services.AddLogging(builder =>
         {
             builder.AddConsole();
             builder.AddDebug();
         });
-        
+
         return services;
     }
-} 
+}

@@ -8,42 +8,42 @@ namespace SocialMediaCommander.Core.Models;
 public class Account
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    
+
     [Required]
     public SocialPlatform PlatformId { get; set; }
-    
+
     [Required]
     [StringLength(50, MinimumLength = 1)]
     public string Username { get; set; } = string.Empty;
-    
+
     [Required]
     [StringLength(100, MinimumLength = 1)]
     public string DisplayName { get; set; } = string.Empty;
-    
+
     public string? Avatar { get; set; }
-    
+
     public bool IsDefault { get; set; }
-    
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    
+
     public DateTime LastUsed { get; set; } = DateTime.UtcNow;
-    
+
     /// <summary>
     /// Authentication status of the account
     /// </summary>
     public AuthenticationStatus AuthStatus { get; set; } = AuthenticationStatus.NotAuthenticated;
-    
+
     /// <summary>
     /// OAuth tokens for API authentication
     /// </summary>
     public OAuthTokens? Tokens { get; set; }
-    
+
     /// <summary>
     /// OAuth configuration for this account (client credentials, endpoints, etc.)
     /// This will be encrypted when stored
     /// </summary>
     public OAuthConfig? OAuthConfiguration { get; set; }
-    
+
     /// <summary>
     /// Additional metadata for the account
     /// </summary>
@@ -56,7 +56,7 @@ public class Account
     {
         if (!string.IsNullOrEmpty(Avatar))
             return Avatar;
-            
+
         var platformName = PlatformId.ToString().ToLower();
         var seed = $"{platformName}-{Id}";
         return $"https://api.dicebear.com/7.x/personas/svg?seed={seed}";
@@ -65,8 +65,8 @@ public class Account
     /// <summary>
     /// Checks if the account has valid authentication
     /// </summary>
-    public bool IsAuthenticated => AuthStatus == AuthenticationStatus.Authenticated && 
-                                   Tokens != null && 
+    public bool IsAuthenticated => AuthStatus == AuthenticationStatus.Authenticated &&
+                                   Tokens != null &&
                                    !Tokens.IsExpired;
 }
 
@@ -80,12 +80,12 @@ public class OAuthTokens
     public DateTime ExpiresAt { get; set; }
     public string TokenType { get; set; } = "Bearer";
     public string[]? Scopes { get; set; }
-    
+
     /// <summary>
     /// Checks if the access token is expired
     /// </summary>
     public bool IsExpired => DateTime.UtcNow >= ExpiresAt.AddMinutes(-5); // 5 minute buffer
-    
+
     /// <summary>
     /// Checks if the token can be refreshed
     /// </summary>
@@ -202,4 +202,4 @@ public static class DefaultAccounts
         }
         return null;
     }
-} 
+}

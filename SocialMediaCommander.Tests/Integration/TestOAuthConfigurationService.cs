@@ -18,8 +18,8 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
 
     public OAuthConfig GetDefaultConfiguration(SocialPlatform platform)
     {
-        return _testConfigs.TryGetValue(platform, out var config) 
-            ? config 
+        return _testConfigs.TryGetValue(platform, out var config)
+            ? config
             : throw new ArgumentException($"Test configuration not found for platform: {platform}");
     }
 
@@ -54,9 +54,9 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
                      !string.IsNullOrEmpty(config.ClientSecret) &&
                      !string.IsNullOrEmpty(config.AuthorizationEndpoint) &&
                      !string.IsNullOrEmpty(config.TokenEndpoint);
-        
+
         var result = new ValidationResult(isValid ? [] : ["Invalid test configuration"]);
-        
+
         return Task.FromResult(result);
     }
 

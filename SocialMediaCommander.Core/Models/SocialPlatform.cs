@@ -120,4 +120,4 @@ public static class PlatformConfigurations
     {
         return Platforms.Values.Where(p => p.ThreadSupport);
     }
-} 
+}

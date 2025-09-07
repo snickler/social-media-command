@@ -18,7 +18,7 @@ public class OAuthAuthenticationService : IAuthenticationService
     private readonly IOAuthConfigurationService _configService;
     private HttpListener? _httpListener;
     private const string RedirectUri = "http://localhost:8080/oauth/callback";
-    
+
     public OAuthAuthenticationService(HttpClient httpClient, IOAuthConfigurationService configService)
     {
         _httpClient = httpClient;
@@ -52,16 +52,16 @@ public class OAuthAuthenticationService : IAuthenticationService
 
             // Generate state parameter for security
             var state = Guid.NewGuid().ToString("N");
-            
+
             // Build authorization URL
             var authUrl = BuildAuthorizationUrl(config, state);
-            
+
             // Start HTTP listener for callback
             await StartHttpListener();
-            
+
             // Open browser
             OpenBrowser(authUrl);
-            
+
             return new AuthenticationResult
             {
                 IsSuccess = true,
@@ -95,7 +95,7 @@ public class OAuthAuthenticationService : IAuthenticationService
 
             // Exchange authorization code for access token
             var tokenResponse = await ExchangeCodeForTokenAsync(config, authorizationCode);
-            
+
             if (tokenResponse == null)
             {
                 return new AuthenticationResult
@@ -107,7 +107,7 @@ public class OAuthAuthenticationService : IAuthenticationService
 
             // Get user profile
             var userProfile = await GetUserProfileAsync(platform, tokenResponse.AccessToken);
-            
+
             return new AuthenticationResult
             {
                 IsSuccess = true,
@@ -143,7 +143,7 @@ public class OAuthAuthenticationService : IAuthenticationService
             queryParams[param.Key] = param.Value;
         }
 
-        var queryString = string.Join("&", queryParams.Select(kvp => 
+        var queryString = string.Join("&", queryParams.Select(kvp =>
             $"{Uri.EscapeDataString(kvp.Key)}={Uri.EscapeDataString(kvp.Value)}"));
 
         return $"{config.AuthorizationEndpoint}?{queryString}";
@@ -287,7 +287,7 @@ public class OAuthAuthenticationService : IAuthenticationService
 
             var content = new FormUrlEncodedContent(tokenRequest);
             var response = await _httpClient.PostAsync(config.TokenEndpoint, content);
-            
+
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
@@ -301,7 +301,7 @@ public class OAuthAuthenticationService : IAuthenticationService
             return new OAuthTokens
             {
                 AccessToken = tokenData.GetProperty("access_token").GetString() ?? string.Empty,
-                RefreshToken = tokenData.TryGetProperty("refresh_token", out var refreshToken) 
+                RefreshToken = tokenData.TryGetProperty("refresh_token", out var refreshToken)
                     ? refreshToken.GetString() : null,
                 ExpiresAt = tokenData.TryGetProperty("expires_in", out var expiresIn)
                     ? DateTime.UtcNow.AddSeconds(expiresIn.GetInt32())
@@ -331,7 +331,7 @@ public class OAuthAuthenticationService : IAuthenticationService
             _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {accessToken}");
 
             var response = await _httpClient.GetAsync(config.UserInfoEndpoint);
-            
+
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -432,4 +432,4 @@ public class OAuthAuthenticationService : IAuthenticationService
         _httpListener?.Close();
         _httpClient?.Dispose();
     }
-} 
+}

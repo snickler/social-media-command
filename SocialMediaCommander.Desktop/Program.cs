@@ -18,7 +18,7 @@ sealed class Program
         {
             // Initialize logging system first
             LoggingService.Initialize();
-            
+
             var logger = LoggingService.ForContext<Program>();
             logger.Information("=== APPLICATION STARTUP ===");
             logger.Information("Process ID: {ProcessId}", Process.GetCurrentProcess().Id);
@@ -27,12 +27,12 @@ sealed class Program
             logger.Information("Current Directory: {CurrentDirectory}", Environment.CurrentDirectory);
             logger.Information("OS Version: {OSVersion}", Environment.OSVersion);
             logger.Information(".NET Version: {NetVersion}", Environment.Version);
-            
+
             // Log before building Avalonia app
             logger.Information("Building Avalonia app...");
             var appBuilder = BuildAvaloniaApp();
             logger.Information("Avalonia app built successfully");
-            
+
             // Log before starting the application
             logger.Information("Starting application with classic desktop lifetime...");
             appBuilder.StartWithClassicDesktopLifetime(args);
@@ -43,7 +43,7 @@ sealed class Program
             // Log any unhandled exceptions
             var logger = LoggingService.ForContext<Program>();
             logger.Fatal(ex, "Application failed to start");
-            
+
             // Also write to console as fallback
             Console.WriteLine($"FATAL ERROR: {ex}");
             throw;
@@ -62,19 +62,19 @@ sealed class Program
     {
         var logger = LoggingService.ForContext<Program>();
         logger.Information("Configuring Avalonia AppBuilder...");
-        
+
         var builder = AppBuilder.Configure<App>();
         logger.Information("App configured");
-        
+
         builder = builder.UsePlatformDetect();
         logger.Information("Platform detection enabled");
-        
+
         builder = builder.WithInterFont();
         logger.Information("InterFont configured");
-        
+
         builder = builder.LogToTrace();
         logger.Information("Trace logging enabled");
-        
+
         logger.Information("AppBuilder configuration complete");
         return builder;
     }

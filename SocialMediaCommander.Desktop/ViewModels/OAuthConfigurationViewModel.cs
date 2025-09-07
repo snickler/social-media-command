@@ -65,7 +65,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
     private bool _isConfigured = false;
 
     public OAuthConfigurationViewModel(
-        IOAuthConfigurationService configService, 
+        IOAuthConfigurationService configService,
         IAuthenticationService authService)
     {
         _configService = configService ?? throw new ArgumentNullException(nameof(configService));
@@ -76,7 +76,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
 
         InitializePlatforms();
         PropertyChanged += OnPropertyChanged;
-        
+
         // Load configuration for default platform
         _ = Task.Run(() => LoadConfigurationAsync(SelectedPlatform));
     }
@@ -96,15 +96,15 @@ public partial class OAuthConfigurationViewModel : ObservableObject
     public bool CanTest => IsValid && !IsLoading;
     public bool CanLoadDefaults => !IsLoading && !IsSaving;
 
-    public string PlatformDisplayName => 
+    public string PlatformDisplayName =>
         PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name;
 
-    public string ConfigurationStatus => IsConfigured 
-        ? "✓ Configured" 
+    public string ConfigurationStatus => IsConfigured
+        ? "✓ Configured"
         : "⚠ Not Configured";
 
-    public string ConfigurationStatusColor => IsConfigured 
-        ? "#28a745" 
+    public string ConfigurationStatusColor => IsConfigured
+        ? "#28a745"
         : "#ffc107";
 
     #endregion
@@ -142,11 +142,11 @@ public partial class OAuthConfigurationViewModel : ObservableObject
             }
 
             await _configService.SaveConfigurationAsync(SelectedPlatform, config);
-            
+
             HasUnsavedChanges = false;
             IsConfigured = true;
             ValidationMessage = "Configuration saved successfully!";
-            
+
             // Clear validation errors on successful save
             ValidationErrors.Clear();
         }
@@ -169,7 +169,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
         {
             IsLoading = true;
             var defaultConfig = _configService.GetDefaultConfiguration(SelectedPlatform);
-            
+
             LoadConfigurationFromModel(defaultConfig);
             HasUnsavedChanges = true;
             ValidationMessage = "Default configuration loaded. Remember to set your Client ID and Secret.";
@@ -228,7 +228,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
         try
         {
             await _configService.DeleteConfigurationAsync(SelectedPlatform);
-            
+
             ClearConfiguration();
             HasUnsavedChanges = false;
             IsConfigured = false;
@@ -299,7 +299,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
             }
 
             HasUnsavedChanges = false;
-            
+
             // Update platform status
             var platformItem = AvailablePlatforms.FirstOrDefault(p => p.Platform == platform);
             if (platformItem != null)
@@ -367,7 +367,7 @@ public partial class OAuthConfigurationViewModel : ObservableObject
         {
             ValidationErrors.Clear();
 
-            if (string.IsNullOrWhiteSpace(ClientId) || 
+            if (string.IsNullOrWhiteSpace(ClientId) ||
                 string.IsNullOrWhiteSpace(ClientSecret) ||
                 string.IsNullOrWhiteSpace(AuthorizationEndpoint) ||
                 string.IsNullOrWhiteSpace(TokenEndpoint) ||
@@ -380,9 +380,9 @@ public partial class OAuthConfigurationViewModel : ObservableObject
 
             var config = CreateOAuthConfig();
             var validation = await _configService.ValidateConfigurationAsync(SelectedPlatform, config);
-            
+
             IsValid = validation.IsValid;
-            
+
             if (!validation.IsValid)
             {
                 foreach (var error in validation.Errors)
@@ -438,7 +438,7 @@ public class PlatformConfigItem
     public string Name { get; set; } = string.Empty;
     public string Color { get; set; } = string.Empty;
     public bool IsConfigured { get; set; }
-    
+
     public string StatusIcon => IsConfigured ? "✓" : "⚠";
     public string StatusColor => IsConfigured ? "#28a745" : "#ffc107";
-} 
+}

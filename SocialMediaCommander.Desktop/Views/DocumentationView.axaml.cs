@@ -12,10 +12,10 @@ public partial class DocumentationView : UserControl
     public DocumentationView()
     {
         InitializeComponent();
-        
+
         // Get the TextBlock reference
         _documentContentBlock = this.FindControl<TextBlock>("DocumentContentBlock");
-        
+
         // Subscribe to DataContext changes
         DataContextChanged += OnDataContextChanged;
     }
@@ -31,7 +31,7 @@ public partial class DocumentationView : UserControl
 
     private void OnViewModelPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(DocumentationViewModel.DocumentContent) && 
+        if (e.PropertyName == nameof(DocumentationViewModel.DocumentContent) &&
             DataContext is DocumentationViewModel viewModel)
         {
             UpdateDocumentContent(viewModel.DocumentContent);
@@ -68,11 +68,11 @@ public partial class DocumentationView : UserControl
                   .Replace("&amp;", "&")
                   .Replace("&quot;", "\"")
                   .Replace("&nbsp;", " ");
-        
+
         // Clean up extra whitespace
         text = Regex.Replace(text, @"\s+", " ");
         text = text.Trim();
-        
+
         return text;
     }
 }

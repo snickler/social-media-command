@@ -29,7 +29,7 @@ public class PlatformServicesIntegrationTests : IDisposable
         services.AddSingleton<ILinkedInService, LinkedInService>();
         services.AddSingleton<IThreadsService, ThreadsService>();
         services.AddSingleton<IFacebookService, FacebookService>();
-        
+
         _serviceProvider = services.BuildServiceProvider();
         _httpClient = _serviceProvider.GetRequiredService<HttpClient>();
         _blueSkyService = _serviceProvider.GetRequiredService<IBlueSkyService>();
@@ -311,10 +311,10 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         blueSkyResults.Should().NotBeNull();
         blueSkyResults.Should().BeEmpty();
-        
+
         twitterResults.Should().NotBeNull();
         twitterResults.Should().BeEmpty();
-        
+
         linkedInResults.Should().NotBeNull();
         linkedInResults.Should().BeEmpty();
     }
@@ -338,10 +338,10 @@ public class PlatformServicesIntegrationTests : IDisposable
         // Assert
         blueSkyResults.Should().NotBeNull();
         blueSkyResults.Should().BeEmpty();
-        
+
         twitterResults.Should().NotBeNull();
         twitterResults.Should().BeEmpty();
-        
+
         linkedInResults.Should().NotBeNull();
         linkedInResults.Should().BeEmpty();
     }
@@ -351,7 +351,7 @@ public class PlatformServicesIntegrationTests : IDisposable
     {
         // This test verifies that services handle network errors gracefully
         // In a real scenario, we might use a mock HTTP client that throws exceptions
-        
+
         var post = new Post { Content = "Test post" };
         var account = new Account
         {
@@ -359,7 +359,7 @@ public class PlatformServicesIntegrationTests : IDisposable
             Username = "test_user",
             DisplayName = "Test User"
         };
-        
+
         // Test each service handles exceptions
         var blueSkyResult = await _blueSkyService.PostAsync(post, account);
         var twitterResult = await _twitterService.PostAsync(post, account);
@@ -501,4 +501,4 @@ public class PlatformServicesIntegrationTests : IDisposable
     {
         _serviceProvider?.Dispose();
     }
-} 
+}

@@ -9,4 +9,4 @@ public partial class AccountManagerView : UserControl
     {
         InitializeComponent();
     }
-} 
+}

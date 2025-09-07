@@ -11,52 +11,52 @@ public interface IPlatformService
     /// The platform this service handles
     /// </summary>
     SocialPlatform Platform { get; }
-    
+
     /// <summary>
     /// Posts content to the platform
     /// </summary>
     Task<PublishResult> PostAsync(Post post, Account account);
-    
+
     /// <summary>
     /// Posts a thread to the platform
     /// </summary>
     Task<PublishResult> PostThreadAsync(Post post, Account account);
-    
+
     /// <summary>
     /// Deletes a post from the platform
     /// </summary>
     Task<bool> DeletePostAsync(string postId, Account account);
-    
+
     /// <summary>
     /// Gets user's posts from the platform
     /// </summary>
     Task<IEnumerable<SocialFeedItem>> GetUserPostsAsync(Account account, int limit = 20);
-    
+
     /// <summary>
     /// Gets user's timeline/feed from the platform
     /// </summary>
     Task<IEnumerable<SocialFeedItem>> GetTimelineAsync(Account account, int limit = 50);
-    
+
     /// <summary>
     /// Searches for posts on the platform
     /// </summary>
     Task<IEnumerable<SocialFeedItem>> SearchPostsAsync(string query, Account account, int limit = 20);
-    
+
     /// <summary>
     /// Gets trending topics/hashtags
     /// </summary>
     Task<IEnumerable<string>> GetTrendingHashtagsAsync(Account account);
-    
+
     /// <summary>
     /// Validates content for platform-specific requirements
     /// </summary>
     Task<ValidationResult> ValidateContentAsync(Post post);
-    
+
     /// <summary>
     /// Uploads media to the platform
     /// </summary>
     Task<string> UploadMediaAsync(Media media, Account account);
-    
+
     /// <summary>
     /// Gets platform-specific posting limits and restrictions
     /// </summary>
@@ -88,4 +88,3 @@ public class RateLimitInfo
     public DateTime ResetTime { get; set; }
 }
 
- 

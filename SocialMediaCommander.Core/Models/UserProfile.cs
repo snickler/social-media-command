@@ -21,4 +21,4 @@ public class UserProfile
     public DateTime CreatedAt { get; set; }
     public SocialPlatform Platform { get; set; }
     public Dictionary<string, object> AdditionalData { get; set; } = new();
-} 
+}

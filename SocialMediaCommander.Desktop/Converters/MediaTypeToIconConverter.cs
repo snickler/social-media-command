@@ -30,4 +30,4 @@ public class MediaTypeToIconConverter : IValueConverter
     {
         throw new NotImplementedException();
     }
-} 
+}

@@ -6,29 +6,29 @@ namespace SocialMediaCommander.Core.Models;
 public class SocialFeedItem
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
-    
+
     public SocialPlatform Platform { get; set; }
-    
+
     public string AuthorName { get; set; } = string.Empty;
-    
+
     public string AuthorUsername { get; set; } = string.Empty;
-    
+
     public string AuthorAvatar { get; set; } = string.Empty;
-    
+
     public string Content { get; set; } = string.Empty;
-    
+
     public DateTime PostedAt { get; set; }
-    
+
     public List<Media> Media { get; set; } = new();
-    
+
     public SocialEngagement Engagement { get; set; } = new();
-    
+
     public bool IsThread { get; set; }
-    
+
     public List<string> Hashtags { get; set; } = new();
-    
+
     public string? PlatformPostId { get; set; }
-    
+
     public string? PlatformUrl { get; set; }
 
     /// <summary>
@@ -37,7 +37,7 @@ public class SocialFeedItem
     public string GetTimeAgo()
     {
         var timeSpan = DateTime.UtcNow - PostedAt;
-        
+
         return timeSpan.TotalDays switch
         {
             >= 365 => $"{(int)(timeSpan.TotalDays / 365)}y ago",
@@ -63,13 +63,13 @@ public class SocialFeedItem
 public class SocialEngagement
 {
     public int Likes { get; set; }
-    
+
     public int Comments { get; set; }
-    
+
     public int Shares { get; set; }
-    
+
     public int Views { get; set; }
-    
+
     /// <summary>
     /// Platform-specific engagement metrics
     /// </summary>
@@ -90,17 +90,17 @@ public class SocialEngagement
 public class FeedConfiguration
 {
     public List<SocialPlatform> EnabledPlatforms { get; set; } = new();
-    
+
     public int MaxItemsPerPlatform { get; set; } = 10;
-    
+
     public TimeSpan MaxAge { get; set; } = TimeSpan.FromDays(7);
-    
+
     public bool ShowEngagement { get; set; } = true;
-    
+
     public bool ShowMedia { get; set; } = true;
-    
+
     public bool GroupByPlatform { get; set; } = false;
-    
+
     public FeedSortOrder SortOrder { get; set; } = FeedSortOrder.Chronological;
 }
 
@@ -120,7 +120,7 @@ public enum FeedSortOrder
 public static class MockFeedData
 {
     private static readonly Random _random = new();
-    
+
     private static readonly List<string> _sampleAuthors = new()
     {
         "BlueSky User 1", "BlueSky User 2", "BlueSky User 3",
@@ -129,7 +129,7 @@ public static class MockFeedData
         "Threads User 1", "Threads User 2", "Threads User 3",
         "Facebook User 1", "Facebook User 2", "Facebook User 3"
     };
-    
+
     private static readonly List<string> _sampleContent = new()
     {
         "Latest updates from the world of tech! #technology #innovation",
@@ -148,14 +148,14 @@ public static class MockFeedData
     {
         var items = new List<SocialFeedItem>();
         var platforms = Enum.GetValues<SocialPlatform>();
-        
+
         for (int i = 0; i < count; i++)
         {
             var platform = platforms[_random.Next(platforms.Length)];
             var platformConfig = PlatformConfigurations.GetPlatformConfig(platform);
             var author = _sampleAuthors[_random.Next(_sampleAuthors.Count)];
             var content = _sampleContent[_random.Next(_sampleContent.Count)];
-            
+
             var item = new SocialFeedItem
             {
                 Platform = platform,
@@ -176,18 +176,18 @@ public static class MockFeedData
                 PlatformPostId = $"{platform.ToString().ToLower()}-{Guid.NewGuid().ToString()[..8]}",
                 PlatformUrl = $"https://{platform.ToString().ToLower()}.com/post/{Guid.NewGuid().ToString()[..8]}"
             };
-            
+
             items.Add(item);
         }
-        
+
         return items.OrderByDescending(item => item.PostedAt).ToList();
     }
-    
+
     private static List<string> ExtractHashtags(string content)
     {
         var hashtags = new List<string>();
         var words = content.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        
+
         foreach (var word in words)
         {
             if (word.StartsWith('#') && word.Length > 1)
@@ -195,7 +195,7 @@ public static class MockFeedData
                 hashtags.Add(word[1..].TrimEnd('!', '.', ',', '?'));
             }
         }
-        
+
         return hashtags;
     }
-} 
+}

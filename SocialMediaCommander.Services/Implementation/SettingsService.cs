@@ -22,13 +22,13 @@ public class SettingsService : ISettingsService
     public SettingsService()
     {
         _logger = Log.ForContext<SettingsService>();
-        
+
         _settingsDirectory = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
             "SocialMediaCommander",
             "Settings"
         );
-        
+
         _settingsFile = Path.Combine(_settingsDirectory, "app-settings.encrypted");
         Directory.CreateDirectory(_settingsDirectory);
     }
@@ -72,9 +72,9 @@ public class SettingsService : ISettingsService
     public async Task<T> GetSettingAsync<T>(string key, T defaultValue = default!)
     {
         var settings = await GetSettingsAsync();
-    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
-    settings.CustomSettings ??= new Dictionary<string, object?>();
-        
+        // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+        settings.CustomSettings ??= new Dictionary<string, object?>();
+
         if (settings.CustomSettings.TryGetValue(key, out var value))
         {
             try
@@ -104,34 +104,34 @@ public class SettingsService : ISettingsService
     public async Task SetSettingAsync<T>(string key, T value)
     {
         var settings = await GetSettingsAsync();
-    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
-    settings.CustomSettings ??= new Dictionary<string, object?>();
-    settings.CustomSettings[key] = (object?)value;
+        // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+        settings.CustomSettings ??= new Dictionary<string, object?>();
+        settings.CustomSettings[key] = (object?)value;
         await SaveSettingsAsync(settings);
     }
 
     public async Task<bool> RemoveSettingAsync(string key)
     {
         var settings = await GetSettingsAsync();
-    // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
-    settings.CustomSettings ??= new Dictionary<string, object?>();
+        // Ensure the CustomSettings dictionary is initialized to avoid nullability warnings
+        settings.CustomSettings ??= new Dictionary<string, object?>();
         var removed = settings.CustomSettings.Remove(key);
-        
+
         if (removed)
         {
             await SaveSettingsAsync(settings);
         }
-        
+
         return removed;
     }
 
     public async Task ResetToDefaultsAsync()
     {
         _logger.Information("Resetting settings to defaults");
-        
+
         var defaultSettings = CreateDefaultSettings();
         await SaveSettingsAsync(defaultSettings);
-        
+
         lock (_lock)
         {
             _cachedSettings = defaultSettings;
@@ -222,7 +222,7 @@ public class SettingsService : ISettingsService
                 {
                     _cachedSettings = settings!;
                 }
-                
+
                 _logger.Debug("Settings loaded successfully");
                 return settings;
             }
@@ -244,7 +244,7 @@ public class SettingsService : ISettingsService
             Version = "1.0",
             CreatedAt = DateTime.UtcNow,
             LastModified = DateTime.UtcNow,
-            
+
             // UI Settings
             Theme = "Auto",
             Language = "en-US",
@@ -252,30 +252,30 @@ public class SettingsService : ISettingsService
             AutoSaveInterval = TimeSpan.FromMinutes(5),
             ShowNotifications = true,
             MinimizeToTray = false,
-            
+
             // Security Settings
             AutoLockTimeout = TimeSpan.FromMinutes(30),
             RequirePasswordOnStartup = false,
             EncryptBackups = true,
             AutoCreateBackups = true,
             BackupRetentionDays = 30,
-            
+
             // Performance Settings
             EnableCaching = true,
             CacheTimeout = TimeSpan.FromHours(1),
             MaxConcurrentRequests = 5,
             RequestTimeout = TimeSpan.FromSeconds(30),
-            
+
             // Privacy Settings
             AllowAnalytics = false,
             AllowCrashReporting = true,
             ClearLogsOnExit = false,
-            
+
             // Advanced Settings
             EnableDebugLogging = false,
             LogLevel = "Information",
             MaxLogFileSize = 10 * 1024 * 1024, // 10MB
-            
+
             CustomSettings = new Dictionary<string, object?>()
         };
     }
@@ -289,7 +289,7 @@ public class AppSettings
     public string Version { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime LastModified { get; set; }
-    
+
     // UI Settings
     public string Theme { get; set; } = "Auto"; // Light, Dark, Auto
     public string Language { get; set; } = "en-US";
@@ -297,33 +297,33 @@ public class AppSettings
     public TimeSpan AutoSaveInterval { get; set; } = TimeSpan.FromMinutes(5);
     public bool ShowNotifications { get; set; } = true;
     public bool MinimizeToTray { get; set; } = false;
-    
+
     // Security Settings
     public TimeSpan AutoLockTimeout { get; set; } = TimeSpan.FromMinutes(30);
     public bool RequirePasswordOnStartup { get; set; } = false;
     public bool EncryptBackups { get; set; } = true;
     public bool AutoCreateBackups { get; set; } = true;
     public int BackupRetentionDays { get; set; } = 30;
-    
+
     // Performance Settings
     public bool EnableCaching { get; set; } = true;
     public TimeSpan CacheTimeout { get; set; } = TimeSpan.FromHours(1);
     public int MaxConcurrentRequests { get; set; } = 5;
     public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
-    
+
     // Privacy Settings
     public bool AllowAnalytics { get; set; } = false;
     public bool AllowCrashReporting { get; set; } = true;
     public bool ClearLogsOnExit { get; set; } = false;
-    
+
     // Advanced Settings
     public bool EnableDebugLogging { get; set; } = false;
     public string LogLevel { get; set; } = "Information";
     public long MaxLogFileSize { get; set; } = 10 * 1024 * 1024; // 10MB
-    
+
     // Custom settings dictionary for extensibility
     public Dictionary<string, object?> CustomSettings { get; set; } = new();
-    
+
     // Window Settings
     public WindowSettings? WindowSettings { get; set; }
 }
@@ -339,4 +339,4 @@ public class WindowSettings
     public double Top { get; set; } = 100;
     public bool IsMaximized { get; set; } = false;
     public bool RememberPosition { get; set; } = true;
-} 
+}

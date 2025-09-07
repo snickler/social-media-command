@@ -1,0 +1,96 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  lint:
+    name: Lint and Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+
+      - name: Format check
+        run: dotnet format --verify-no-changes --verbosity diagnostic SocialMediaCommander.sln
+
+      - name: Build for analysis
+        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore
+
+  # security:
+  #   name: Security Scan
+  #   runs-on: ubuntu-latest
+  #   permissions:
+  #     security-events: write
+  #     actions: read
+  #     contents: read
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Run CodeQL Analysis
+  #       uses: github/codeql-action/init@v3
+  #       with:
+  #         languages: csharp
+
+  #     - name: Setup .NET
+  #       uses: actions/setup-dotnet@v4
+  #       with:
+  #         dotnet-version: ${{ env.DOTNET_VERSION }}
+
+  #     - name: Restore and build
+  #       run: |
+  #         dotnet restore SocialMediaCommander.sln
+  #         dotnet build SocialMediaCommander.sln --configuration Release --no-restore
+
+  #     - name: Perform CodeQL Analysis
+  #       uses: github/codeql-action/analyze@v3
+
+  # dependency-review:
+  #   name: Dependency Review
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'pull_request'
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+
+  #     - name: Dependency Review
+  #       uses: actions/dependency-review-action@v4
+  #       with:
+  #         fail-on-severity: moderate
+  #         fail-on-scopes: runtime
+
+  analyze:
+    name: Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+
+      - name: Build with analyzers
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true
+
+      - name: Run .NET analyzers
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true

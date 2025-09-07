@@ -62,19 +62,19 @@ public static class CrossPlatformEncryption
     {
         // Generate a key based on machine and user characteristics
         var key = GenerateMachineUserKey(optionalEntropy);
-        
+
         using var aes = Aes.Create();
         aes.Key = key;
         aes.GenerateIV();
-        
+
         using var encryptor = aes.CreateEncryptor();
         var encryptedData = encryptor.TransformFinalBlock(data, 0, data.Length);
-        
+
         // Prepend IV to encrypted data
         var result = new byte[aes.IV.Length + encryptedData.Length];
         Array.Copy(aes.IV, 0, result, 0, aes.IV.Length);
         Array.Copy(encryptedData, 0, result, aes.IV.Length, encryptedData.Length);
-        
+
         return result;
     }
 
@@ -82,19 +82,19 @@ public static class CrossPlatformEncryption
     {
         // Generate the same key used for encryption
         var key = GenerateMachineUserKey(optionalEntropy);
-        
+
         using var aes = Aes.Create();
         aes.Key = key;
-        
+
         // Extract IV from the beginning of encrypted data
         var iv = new byte[aes.IV.Length];
         Array.Copy(encryptedData, 0, iv, 0, iv.Length);
         aes.IV = iv;
-        
+
         // Extract actual encrypted data
         var actualEncryptedData = new byte[encryptedData.Length - iv.Length];
         Array.Copy(encryptedData, iv.Length, actualEncryptedData, 0, actualEncryptedData.Length);
-        
+
         using var decryptor = aes.CreateDecryptor();
         return decryptor.TransformFinalBlock(actualEncryptedData, 0, actualEncryptedData.Length);
     }
@@ -141,7 +141,7 @@ public static class CrossPlatformEncryption
             return "AES-256 with machine/user-specific key derivation";
         }
     }
-    
+
     /// <summary>
     /// Checks if the current platform supports secure encryption
     /// </summary>
@@ -149,4 +149,4 @@ public static class CrossPlatformEncryption
     {
         return true; // Both Windows DPAPI and AES are considered secure
     }
-} 
+}
