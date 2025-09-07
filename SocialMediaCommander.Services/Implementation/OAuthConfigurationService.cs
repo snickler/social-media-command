@@ -24,6 +24,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     private readonly object _lock = new object();
     private readonly ILogger _logger;
     private readonly bool _autoInitializeDefaults;
+    private bool _isLoaded = false;
 
     public OAuthConfigurationService()
     {
@@ -359,20 +360,33 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             }
             else
             {
-                _logger.Warning("OAuth configuration file contains no valid configurations, initializing defaults");
-                await InitializeDefaultConfigurationsAsync();
+                if (_autoInitializeDefaults)
+                {
+                    _logger.Warning("OAuth configuration file contains no valid configurations, initializing defaults");
+                    await InitializeDefaultConfigurationsAsync();
+                }
+                else
+                {
+                    _logger.Debug("OAuth configuration file contains no valid configurations, skipping default initialization in test mode");
+                }
             }
         }
         catch (CryptographicException ex)
         {
             _logger.Error(ex, "Failed to decrypt OAuth configurations - may have been encrypted by different user or platform");
-            await InitializeDefaultConfigurationsAsync();
+            if (_autoInitializeDefaults)
+            {
+                await InitializeDefaultConfigurationsAsync();
+            }
         }
         catch (Exception ex)
         {
             // Log error and initialize defaults
             _logger.Error(ex, "Error loading OAuth configurations");
-            await InitializeDefaultConfigurationsAsync();
+            if (_autoInitializeDefaults)
+            {
+                await InitializeDefaultConfigurationsAsync();
+            }
         }
     }
 
@@ -435,7 +449,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         // Check if configurations are loaded
         lock (_lock)
         {
-            if (_configurations.Count > 0)
+            if (_isLoaded)
             {
                 return; // Already loaded
             }
@@ -445,17 +459,11 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         _logger.Debug("Configurations not loaded, loading now...");
         await LoadConfigurationsAsync();
 
-        // Verify configurations were loaded
+        // Mark as loaded
         lock (_lock)
         {
-            if (_configurations.Count == 0)
-            {
-                _logger.Warning("No configurations loaded, initializing defaults");
-            }
-            else
-            {
-                _logger.Debug("Configurations loaded successfully: {Count} platforms", _configurations.Count);
-            }
+            _isLoaded = true;
+            _logger.Debug("Configurations loaded successfully: {Count} platforms", _configurations.Count);
         }
     }
 }
