@@ -61,7 +61,7 @@
         "react": "^19.0.0",
         "react-day-picker": "^9.6.7",
         "react-dom": "^19.0.0",
-        "react-hook-form": "^7.58.0",
+        "react-hook-form": "^7.62.0",
         "react-resizable-panels": "^2.1.9",
         "recharts": "^2.15.3",
         "sonner": "^2.0.5",
