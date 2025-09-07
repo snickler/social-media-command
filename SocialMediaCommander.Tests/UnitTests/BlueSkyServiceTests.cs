@@ -80,7 +80,7 @@ public class BlueSkyServiceTests : IDisposable
     public void Constructor_NullHttpClient_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
+        Assert.Throws<ArgumentNullException>(() =>
             new BlueSkyService(null!, _mockAuthService.Object));
     }
 
@@ -88,7 +88,7 @@ public class BlueSkyServiceTests : IDisposable
     public void Constructor_NullAuthService_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => 
+        Assert.Throws<ArgumentNullException>(() =>
             new BlueSkyService(_httpClient, null!));
     }
 

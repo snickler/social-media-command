@@ -38,6 +38,20 @@ public class DataIntegrityService : IDataIntegrityService
         Directory.CreateDirectory(_integrityDirectory);
     }
 
+    /// <summary>
+    /// Constructor for testing with custom directory path
+    /// </summary>
+    internal DataIntegrityService(IAccountService accountService, IOAuthConfigurationService oauthConfigService, string customDirectory)
+    {
+        _accountService = accountService;
+        _oauthConfigService = oauthConfigService;
+        _logger = Log.ForContext<DataIntegrityService>();
+
+        _dataDirectory = Path.Combine(customDirectory, "SocialMediaCommander");
+        _integrityDirectory = Path.Combine(_dataDirectory, "Integrity");
+        Directory.CreateDirectory(_integrityDirectory);
+    }
+
     public async Task<DataIntegrityReport> ValidateDataIntegrityAsync()
     {
         var report = new DataIntegrityReport

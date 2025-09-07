@@ -21,15 +21,9 @@ public class SecureAccountServiceTests : IDisposable
         // Create unique temp directory for this test instance
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"SMC_AccountTest_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDirectory);
-        
-        // Create a test-specific subdirectory for Social Media Commander data
-        var smcTestDir = Path.Combine(_tempDirectory, "SocialMediaCommander");
-        Directory.CreateDirectory(smcTestDir);
-        
-        // Set the environment variable to point to our test directory
-        Environment.SetEnvironmentVariable("APPDATA", _tempDirectory, EnvironmentVariableTarget.Process);
-        
-        _accountService = new SecureAccountService();
+
+        // Use the new constructor that accepts a custom directory
+        _accountService = new SecureAccountService(_tempDirectory);
     }
 
     [Fact]
@@ -122,7 +116,7 @@ public class SecureAccountServiceTests : IDisposable
         // Arrange
         var twitterAccount = CreateTestAccount(SocialPlatform.X);
         var blueskyAccount = CreateTestAccount(SocialPlatform.BlueSky);
-        
+
         await _accountService.CreateAccountAsync(twitterAccount);
         await _accountService.CreateAccountAsync(blueskyAccount);
 
@@ -133,7 +127,7 @@ public class SecureAccountServiceTests : IDisposable
         // Assert
         twitterAccounts.Should().HaveCount(1);
         twitterAccounts.First().PlatformId.Should().Be(SocialPlatform.X);
-        
+
         blueskyAccounts.Should().HaveCount(1);
         blueskyAccounts.First().PlatformId.Should().Be(SocialPlatform.BlueSky);
     }
@@ -144,7 +138,7 @@ public class SecureAccountServiceTests : IDisposable
         // Arrange
         var account = CreateTestAccount();
         var createdAccount = await _accountService.CreateAccountAsync(account);
-        
+
         createdAccount.DisplayName = "Updated Name";
         createdAccount.AuthStatus = AuthenticationStatus.NotAuthenticated;
 
@@ -175,13 +169,13 @@ public class SecureAccountServiceTests : IDisposable
         var account1 = CreateTestAccount();
         var account2 = CreateTestAccount();
         account2.Username = "test2";
-        
+
         var created1 = await _accountService.CreateAccountAsync(account1);
         var created2 = await _accountService.CreateAccountAsync(account2);
-        
+
         created1.IsDefault.Should().BeTrue(); // First should be default
         created2.IsDefault.Should().BeFalse(); // Second should not be default
-        
+
         // Act - Set second account as default
         created2.IsDefault = true;
         await _accountService.UpdateAccountAsync(created2);
@@ -189,7 +183,7 @@ public class SecureAccountServiceTests : IDisposable
         // Assert
         var updated1 = await _accountService.GetAccountByIdAsync(created1.Id);
         var updated2 = await _accountService.GetAccountByIdAsync(created2.Id);
-        
+
         updated1!.IsDefault.Should().BeFalse();
         updated2!.IsDefault.Should().BeTrue();
     }
@@ -201,7 +195,7 @@ public class SecureAccountServiceTests : IDisposable
         var account1 = CreateTestAccount();
         var account2 = CreateTestAccount();
         account2.Username = "test2";
-        
+
         var created1 = await _accountService.CreateAccountAsync(account1);
         var created2 = await _accountService.CreateAccountAsync(account2);
 
@@ -212,7 +206,7 @@ public class SecureAccountServiceTests : IDisposable
         deleted.Should().BeTrue();
         var remainingAccount = await _accountService.GetAccountByIdAsync(created2.Id);
         remainingAccount.Should().BeNull();
-        
+
         // First account should still exist
         var stillExists = await _accountService.GetAccountByIdAsync(created1.Id);
         stillExists.Should().NotBeNull();
@@ -247,7 +241,7 @@ public class SecureAccountServiceTests : IDisposable
         var account1 = CreateTestAccount();
         var account2 = CreateTestAccount();
         account2.Username = "test2";
-        
+
         var created1 = await _accountService.CreateAccountAsync(account1);
         var created2 = await _accountService.CreateAccountAsync(account2);
 
@@ -292,7 +286,7 @@ public class SecureAccountServiceTests : IDisposable
         var account1 = CreateTestAccount();
         var account2 = CreateTestAccount();
         account2.Username = "test2";
-        
+
         var created1 = await _accountService.CreateAccountAsync(account1);
         var created2 = await _accountService.CreateAccountAsync(account2);
 
@@ -301,10 +295,10 @@ public class SecureAccountServiceTests : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        
+
         var updated1 = await _accountService.GetAccountByIdAsync(created1.Id);
         var updated2 = await _accountService.GetAccountByIdAsync(created2.Id);
-        
+
         updated1!.IsDefault.Should().BeFalse();
         updated2!.IsDefault.Should().BeTrue();
     }
@@ -327,7 +321,7 @@ public class SecureAccountServiceTests : IDisposable
         var createdAccount = await _accountService.CreateAccountAsync(account);
 
         // Act - Create new service instance
-        var newService = new SecureAccountService();
+        var newService = new SecureAccountService(_tempDirectory);
         var loadedAccounts = await newService.GetAllAccountsAsync();
 
         // Assert
@@ -343,7 +337,7 @@ public class SecureAccountServiceTests : IDisposable
     {
         // Arrange
         var tasks = new List<Task<Account>>();
-        
+
         // Act - Create multiple accounts concurrently
         for (int i = 0; i < 10; i++)
         {
@@ -351,14 +345,14 @@ public class SecureAccountServiceTests : IDisposable
             account.Username = $"test{i}";
             tasks.Add(_accountService.CreateAccountAsync(account));
         }
-        
+
         var createdAccounts = await Task.WhenAll(tasks);
 
         // Assert
         createdAccounts.Should().HaveCount(10);
         createdAccounts.Select(a => a.Id).Should().OnlyHaveUniqueItems();
         createdAccounts.Select(a => a.Username).Should().OnlyHaveUniqueItems();
-        
+
         var allAccounts = await _accountService.GetAllAccountsAsync();
         allAccounts.Should().HaveCount(10);
     }

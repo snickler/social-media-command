@@ -23,6 +23,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
     private readonly Dictionary<SocialPlatform, OAuthConfig> _configurations;
     private readonly object _lock = new object();
     private readonly ILogger _logger;
+    private readonly bool _autoInitializeDefaults;
 
     public OAuthConfigurationService()
     {
@@ -35,10 +36,25 @@ public class OAuthConfigurationService : IOAuthConfigurationService
 
         Directory.CreateDirectory(_configDirectory);
         _configurations = new Dictionary<SocialPlatform, OAuthConfig>();
+        _autoInitializeDefaults = true; // Enable auto-initialization in production
 
         // Note: Removed synchronous async calls from constructor to prevent deadlocks
         // Configurations will be loaded lazily when first accessed via EnsureConfigurationsLoadedAsync()
         _logger.Information("OAuthConfigurationService initialized. Configuration loading will be done lazily.");
+    }
+
+    /// <summary>
+    /// Constructor for testing with custom directory path
+    /// </summary>
+    internal OAuthConfigurationService(string customDirectory)
+    {
+        _logger = LoggingService.ForContext<OAuthConfigurationService>();
+        _configDirectory = Path.Combine(customDirectory, "SocialMediaCommander", "Config");
+        Directory.CreateDirectory(_configDirectory);
+        _configurations = new Dictionary<SocialPlatform, OAuthConfig>();
+        _autoInitializeDefaults = false; // Disable auto-initialization in tests
+
+        _logger.Information("OAuthConfigurationService initialized with test directory. Configuration loading will be done lazily.");
     }
 
     public async Task<OAuthConfig?> GetConfigurationAsync(SocialPlatform platform)
@@ -294,9 +310,16 @@ public class OAuthConfigurationService : IOAuthConfigurationService
 
         if (!File.Exists(configPath))
         {
-            // Initialize with default configurations
-            _logger.Information("OAuth configuration file does not exist, creating defaults");
-            await InitializeDefaultConfigurationsAsync();
+            // Only initialize defaults in production, not in tests
+            if (_autoInitializeDefaults)
+            {
+                _logger.Information("OAuth configuration file does not exist, creating defaults");
+                await InitializeDefaultConfigurationsAsync();
+            }
+            else
+            {
+                _logger.Debug("OAuth configuration file does not exist, skipping default initialization in test mode");
+            }
             return;
         }
 

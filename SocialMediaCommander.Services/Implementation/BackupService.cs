@@ -36,6 +36,19 @@ public class BackupService : IBackupService
         Directory.CreateDirectory(_backupDirectory);
     }
 
+    /// <summary>
+    /// Constructor for testing with custom directory path
+    /// </summary>
+    internal BackupService(IAccountService accountService, IOAuthConfigurationService oauthConfigService, string customDirectory)
+    {
+        _accountService = accountService;
+        _oauthConfigService = oauthConfigService;
+        _logger = Log.ForContext<BackupService>();
+
+        _backupDirectory = Path.Combine(customDirectory, "SocialMediaCommander", "Backups");
+        Directory.CreateDirectory(_backupDirectory);
+    }
+
     public async Task<string> CreateBackupAsync(string? customName = null)
     {
         try

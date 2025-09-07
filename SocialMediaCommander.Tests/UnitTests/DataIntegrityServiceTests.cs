@@ -24,16 +24,16 @@ public class DataIntegrityServiceTests : IDisposable
     {
         _mockAccountService = new Mock<IAccountService>();
         _mockOAuthConfigService = new Mock<IOAuthConfigurationService>();
-        
+
         // Create temp directory for testing
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"SMC_IntegrityTest_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDirectory);
-        
-        // Override AppData environment variable for testing
+
+        // Store original AppData path for reference (not used in new constructor)
         _originalAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        Environment.SetEnvironmentVariable("APPDATA", _tempDirectory, EnvironmentVariableTarget.Process);
-        
-        _dataIntegrityService = new DataIntegrityService(_mockAccountService.Object, _mockOAuthConfigService.Object);
+
+        // Use the new constructor that accepts a custom directory
+        _dataIntegrityService = new DataIntegrityService(_mockAccountService.Object, _mockOAuthConfigService.Object, _tempDirectory);
     }
 
     [Fact]
@@ -42,7 +42,7 @@ public class DataIntegrityServiceTests : IDisposable
         // Arrange
         var healthyAccounts = CreateHealthyTestAccounts();
         var healthyOAuthConfigs = CreateHealthyTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(healthyAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -82,7 +82,7 @@ public class DataIntegrityServiceTests : IDisposable
                 DisplayName = "Test"
             }
         };
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(invalidAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -118,7 +118,7 @@ public class DataIntegrityServiceTests : IDisposable
                 }
             }
         };
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(accountsWithExpiredTokens);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -208,7 +208,7 @@ public class DataIntegrityServiceTests : IDisposable
         var configDir = Path.Combine(_tempDirectory, "SocialMediaCommander", "Config");
         Directory.CreateDirectory(dataDir);
         Directory.CreateDirectory(configDir);
-        
+
         // Create test encrypted files
         await File.WriteAllBytesAsync(Path.Combine(dataDir, "accounts.encrypted"), new byte[] { 1, 2, 3 });
         await File.WriteAllBytesAsync(Path.Combine(configDir, "oauth-configs.encrypted"), new byte[] { 4, 5, 6 });
@@ -220,7 +220,7 @@ public class DataIntegrityServiceTests : IDisposable
         var integrityDir = Path.Combine(_tempDirectory, "SocialMediaCommander", "Integrity");
         var checksumFile = Path.Combine(integrityDir, "checksums.json");
         File.Exists(checksumFile).Should().BeTrue();
-        
+
         var checksumContent = await File.ReadAllTextAsync(checksumFile);
         checksumContent.Should().Contain("accounts");
         checksumContent.Should().Contain("oauth");
@@ -306,7 +306,7 @@ public class DataIntegrityServiceTests : IDisposable
                 AuthorizationEndpoint = "" // Invalid: empty endpoint
             }
         };
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(new List<Account>());
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -348,7 +348,7 @@ public class DataIntegrityServiceTests : IDisposable
                 }
             }
         };
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(mixedAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -428,9 +428,6 @@ public class DataIntegrityServiceTests : IDisposable
 
     public void Dispose()
     {
-        // Restore original AppData environment variable
-        Environment.SetEnvironmentVariable("APPDATA", _originalAppData, EnvironmentVariableTarget.Process);
-        
         // Clean up test directory
         if (Directory.Exists(_tempDirectory))
         {

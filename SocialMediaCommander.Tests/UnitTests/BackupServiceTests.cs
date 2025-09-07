@@ -23,13 +23,13 @@ public class BackupServiceTests : IDisposable
     {
         _mockAccountService = new Mock<IAccountService>();
         _mockOAuthConfigService = new Mock<IOAuthConfigurationService>();
-        
+
         // Create temp directory for testing
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"SMC_Test_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDirectory);
-        
-        // Create backup service with mocked dependencies
-        _backupService = new BackupService(_mockAccountService.Object, _mockOAuthConfigService.Object);
+
+        // Create backup service with mocked dependencies and custom directory
+        _backupService = new BackupService(_mockAccountService.Object, _mockOAuthConfigService.Object, _tempDirectory);
     }
 
     [Fact]
@@ -38,7 +38,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -62,7 +62,7 @@ public class BackupServiceTests : IDisposable
         var customName = "MyCustomBackup";
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -86,7 +86,7 @@ public class BackupServiceTests : IDisposable
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _backupService.CreateBackupAsync());
-        
+
         exception.Message.Should().Contain("Failed to create backup");
         exception.InnerException?.Message.Should().Be("Account service error");
     }
@@ -97,7 +97,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -116,9 +116,9 @@ public class BackupServiceTests : IDisposable
         await _backupService.RestoreFromBackupAsync(backupPath);
 
         // Assert
-        _mockAccountService.Verify(x => x.CreateAccountAsync(It.IsAny<Account>()), 
+        _mockAccountService.Verify(x => x.CreateAccountAsync(It.IsAny<Account>()),
             Times.Exactly(testAccounts.Count()));
-        _mockOAuthConfigService.Verify(x => x.SaveConfigurationAsync(It.IsAny<SocialPlatform>(), It.IsAny<OAuthConfig>()), 
+        _mockOAuthConfigService.Verify(x => x.SaveConfigurationAsync(It.IsAny<SocialPlatform>(), It.IsAny<OAuthConfig>()),
             Times.Exactly(testOAuthConfigs.Count));
     }
 
@@ -131,7 +131,7 @@ public class BackupServiceTests : IDisposable
         // Act & Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => _backupService.RestoreFromBackupAsync(nonExistentPath));
-        
+
         exception.InnerException.Should().BeOfType<FileNotFoundException>();
     }
 
@@ -141,7 +141,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var existingAccount = testAccounts.First();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -157,7 +157,7 @@ public class BackupServiceTests : IDisposable
         await _backupService.RestoreFromBackupAsync(backupPath);
 
         // Assert
-        _mockAccountService.Verify(x => x.UpdateAccountAsync(It.Is<Account>(a => a.Id == existingAccount.Id)), 
+        _mockAccountService.Verify(x => x.UpdateAccountAsync(It.Is<Account>(a => a.Id == existingAccount.Id)),
             Times.Once);
     }
 
@@ -167,7 +167,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -202,7 +202,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())
@@ -234,7 +234,7 @@ public class BackupServiceTests : IDisposable
         // Arrange
         var testAccounts = CreateTestAccounts();
         var testOAuthConfigs = CreateTestOAuthConfigs();
-        
+
         _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(testAccounts);
         _mockOAuthConfigService.Setup(x => x.GetAllConfigurationsAsync())

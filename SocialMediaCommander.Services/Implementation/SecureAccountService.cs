@@ -37,6 +37,18 @@ public class SecureAccountService : IAccountService
         _logger.Information("SecureAccountService initialized with data directory: {DataDirectory}", _dataDirectory);
     }
 
+    /// <summary>
+    /// Constructor for testing with custom directory path
+    /// </summary>
+    /// <param name="customDirectory">Custom directory path for testing</param>
+    internal SecureAccountService(string customDirectory)
+    {
+        _logger = Log.ForContext<SecureAccountService>();
+        _dataDirectory = Path.Combine(customDirectory, "SocialMediaCommander", "Data");
+        Directory.CreateDirectory(_dataDirectory);
+        _logger.Information("SecureAccountService initialized with test data directory: {DataDirectory}", _dataDirectory);
+    }
+
     public async Task<IEnumerable<Account>> GetAllAccountsAsync()
     {
         await EnsureLoadedAsync();

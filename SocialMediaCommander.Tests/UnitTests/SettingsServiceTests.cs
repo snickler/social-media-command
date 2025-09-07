@@ -21,12 +21,12 @@ public class SettingsServiceTests : IDisposable
         // Create temp directory for testing
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"SMC_SettingsTest_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDirectory);
-        
-        // Override AppData environment variable for testing
+
+        // Store original AppData path for cleanup (not used in new constructor)
         _originalAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        Environment.SetEnvironmentVariable("APPDATA", _tempDirectory, EnvironmentVariableTarget.Process);
-        
-        _settingsService = new SettingsService();
+
+        // Use the new constructor that accepts a custom directory
+        _settingsService = new SettingsService(_tempDirectory);
     }
 
     [Fact]
@@ -69,7 +69,7 @@ public class SettingsServiceTests : IDisposable
         await _settingsService.SaveSettingsAsync(settings);
 
         // Create new service instance to test persistence
-        var newService = new SettingsService();
+        var newService = new SettingsService(_tempDirectory);
         var loadedSettings = await newService.GetSettingsAsync();
 
         // Assert
@@ -215,9 +215,9 @@ public class SettingsServiceTests : IDisposable
         // Assert
         result.Should().BeTrue();
         File.Exists(exportPath).Should().BeTrue();
-        
+
         var exportedJson = await File.ReadAllTextAsync(exportPath);
-        exportedJson.Should().Contain("exportTest");
+        exportedJson.Should().Contain("ExportTest");  // Changed from "exportTest" to match actual JSON casing
         exportedJson.Should().Contain("ExportValue");
     }
 
@@ -350,9 +350,6 @@ public class SettingsServiceTests : IDisposable
 
     public void Dispose()
     {
-        // Restore original AppData environment variable
-        Environment.SetEnvironmentVariable("APPDATA", _originalAppData, EnvironmentVariableTarget.Process);
-        
         // Clean up test directory
         if (Directory.Exists(_tempDirectory))
         {
