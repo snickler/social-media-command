@@ -304,9 +304,9 @@ public class FoundryLocalAIServiceTests : IDisposable
         // Assert
         Assert.NotNull(result);
         Assert.NotEmpty(result);
-        Assert.Contains("AI", result);
-        Assert.Contains("Technology", result);
-        Assert.Contains("Business", result);
+        Assert.Contains("#AI", result);
+        Assert.Contains("#Technology", result);
+        Assert.Contains("#Business", result);
     }
 
     [Fact]
@@ -733,17 +733,15 @@ public class FoundryLocalAIServiceTests : IDisposable
 
     private void SetupHttpResponse(HttpStatusCode statusCode, string content)
     {
-        var response = new HttpResponseMessage(statusCode)
-        {
-            Content = new StringContent(content, Encoding.UTF8, "application/json")
-        };
-
         _mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ReturnsAsync(response);
+            .ReturnsAsync(() => new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(content, Encoding.UTF8, "application/json")
+            });
     }
 }
