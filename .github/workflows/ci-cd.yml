@@ -83,7 +83,7 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet clean SocialMediaCommander.sln
-          dotnet restore SocialMediaCommander.sln --force --configuration Release /p:Platform=${{ matrix.arch }}
+          dotnet restore SocialMediaCommander.sln --force /p:Platform=${{ matrix.arch }}
 
       - name: Verify macOS dependencies (macOS only)
         if: matrix.os == 'macos'
