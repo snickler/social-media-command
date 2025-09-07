@@ -23,13 +23,13 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore SocialMediaCommander.sln -r ${{ matrix.rid }}
+        run: dotnet restore SocialMediaCommander.sln
 
       - name: Format check
-        run: dotnet format --verify-no-changes --verbosity diagnostic SocialMediaCommander.sln -r ${{ matrix.rid }}
+        run: dotnet format --verify-no-changes --verbosity diagnostic SocialMediaCommander.sln
 
       - name: Build for analysis
-        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore -r ${{ matrix.rid }}
+        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore
 
   # security:
   #   name: Security Scan
