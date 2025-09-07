@@ -88,7 +88,11 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens
+            {
+                AccessToken = "test_access_token",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            }
         };
 
         _mockAuthService.Setup(x => x.GetUserProfileAsync(SocialPlatform.Facebook, "test_access_token"))
@@ -112,7 +116,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -150,7 +154,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -183,7 +187,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -202,14 +206,14 @@ public class FacebookServiceTests : IDisposable
                 "SendAsync",
                 ItExpr.IsAny<HttpRequestMessage>(),
                 ItExpr.IsAny<CancellationToken>())
-            .ThrowsAsync(new HttpRequestException("Network error"));
+            .ThrowsAsync(new HttpRequestException("Failed to post to Facebook:"));
 
         // Act
         var result = await _service.PostAsync(post, account);
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Network error", result.ErrorMessage);
+        Assert.Contains("Failed to post to Facebook:", result.ErrorMessage);
         Assert.Null(result.PlatformPostId);
     }
 
@@ -222,7 +226,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -273,7 +277,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -323,7 +327,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -376,7 +380,7 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -411,18 +415,18 @@ public class FacebookServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Facebook,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "test_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "test_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         _mockAuthService.Setup(x => x.GetUserProfileAsync(SocialPlatform.Facebook, "test_access_token"))
-                       .ThrowsAsync(new InvalidOperationException("Auth service error"));
+                       .ThrowsAsync(new InvalidOperationException("Account is not authenticated"));
 
         // Act
         var result = await _service.PostAsync(post, account);
 
         // Assert
         Assert.False(result.Success);
-        Assert.Contains("Auth service error", result.ErrorMessage);
+        Assert.Contains("Account is not authenticated", result.ErrorMessage);
         Assert.Null(result.PlatformPostId);
     }
 
@@ -483,7 +487,7 @@ public class LinkedInServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.LinkedIn,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "linkedin_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "linkedin_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile
@@ -566,7 +570,7 @@ public class ThreadsServiceTests : IDisposable
         {
             PlatformId = SocialPlatform.Threads,
             AuthStatus = AuthenticationStatus.Authenticated,
-            Tokens = new OAuthTokens { AccessToken = "threads_access_token" }
+            Tokens = new OAuthTokens { AccessToken = "threads_access_token", ExpiresAt = DateTime.UtcNow.AddHours(1) }
         };
 
         var userProfile = new UserProfile

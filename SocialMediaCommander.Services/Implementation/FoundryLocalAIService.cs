@@ -206,6 +206,30 @@ public class FoundryLocalAIService : IAIService, IDisposable
     public async Task<AIContentResponse> GenerateContentAsync(AIContentRequest request)
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
+
+        if (request == null)
+        {
+            return new AIContentResponse
+            {
+                Success = false,
+                ErrorMessage = "Request cannot be null",
+                GeneratedAt = DateTime.UtcNow,
+                GeneratedContent = new List<AIGeneratedContent>()
+            };
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Prompt))
+        {
+            return new AIContentResponse
+            {
+                Success = false,
+                ErrorMessage = "Prompt cannot be empty",
+                GeneratedAt = DateTime.UtcNow,
+                GeneratedContent = new List<AIGeneratedContent>(),
+                Metrics = new AIMetrics()
+            };
+        }
+
         _logger.LogInformation("Generating AI content for request: {RequestId}", request.Id);
 
         try
@@ -636,7 +660,12 @@ public class FoundryLocalAIService : IAIService, IDisposable
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
             using var response = await _httpClient.PostAsync("/chat/completions", content).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new HttpRequestException($"HTTP error {response.StatusCode}: {errorContent}");
+            }
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var chatResponse = JsonSerializer.Deserialize<OpenAIChatResponse>(responseContent, _jsonOptions);
