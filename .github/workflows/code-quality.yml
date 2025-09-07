@@ -87,10 +87,10 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore SocialMediaCommander.sln -r ${{ matrix.rid }}
+        run: dotnet restore SocialMediaCommander.sln
 
       - name: Build with analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true /p:Platform=${{ matrix.arch}}
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:TreatWarningsAsErrors=true
 
       - name: Run .NET analyzers
-        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true /p:Platform=${{ matrix.arch}}
+        run: dotnet build SocialMediaCommander.sln --configuration Release --verbosity normal /p:RunAnalyzersDuringBuild=true
