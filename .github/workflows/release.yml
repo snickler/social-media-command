@@ -47,7 +47,7 @@ jobs:
           npm install -g semantic-release @semantic-release/changelog @semantic-release/git @semantic-release/exec
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
