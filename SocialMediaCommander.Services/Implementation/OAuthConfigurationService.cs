@@ -137,10 +137,10 @@ public class OAuthConfigurationService : IOAuthConfigurationService
         if (config.Scopes == null || config.Scopes.Length == 0)
             errors.Add("At least one scope is required");
 
-        return Task.FromResult(new OAuthValidationResult 
-        { 
-            IsValid = !errors.Any(), 
-            Errors = errors 
+        return Task.FromResult(new OAuthValidationResult
+        {
+            IsValid = !errors.Any(),
+            Errors = errors
         });
     }
 

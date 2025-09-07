@@ -54,7 +54,11 @@ public class OAuthAuthenticationServiceTests : IDisposable
             AuthorizationEndpoint = "invalid-url"
         };
 
-        var validationResult = new ValidationResult(new List<string> { "Client ID is required", "Invalid URL" });
+        var validationResult = new OAuthValidationResult
+        {
+            IsValid = false,
+            Errors = new List<string> { "Client ID is required", "Invalid URL" }
+        };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(invalidConfig);
@@ -78,7 +82,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
         var platform = SocialPlatform.X;
         var validConfig = CreateValidOAuthConfig();
 
-        var validationResult = new ValidationResult();
+        var validationResult = new OAuthValidationResult { IsValid = true };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(validConfig);
@@ -104,7 +108,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
         var validConfig = CreateValidOAuthConfig();
         var customRedirectUri = "http://localhost:9000/callback";
 
-        var validationResult = new ValidationResult();
+        var validationResult = new OAuthValidationResult { IsValid = true };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(validConfig);
@@ -127,7 +131,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     {
         // Arrange
         var validConfig = CreateValidOAuthConfig();
-        var validationResult = new ValidationResult();
+        var validationResult = new OAuthValidationResult { IsValid = true };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(validConfig);
@@ -187,7 +191,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
         // Arrange
         var platform = SocialPlatform.X;
         var validConfig = CreateValidOAuthConfig();
-        var validationResult = new ValidationResult();
+        var validationResult = new OAuthValidationResult { IsValid = true };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(validConfig);
@@ -208,7 +212,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
         // Arrange
         var platform = SocialPlatform.X;
         var validConfig = CreateValidOAuthConfig();
-        var validationResult = new ValidationResult();
+        var validationResult = new OAuthValidationResult { IsValid = true };
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync(validConfig);

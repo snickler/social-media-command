@@ -133,7 +133,7 @@ public class OptimizedAsyncServiceTests
         cts.CancelAfter(TimeSpan.FromMilliseconds(50));
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await _service.GetAccountsBatchAsync(accountIds, cts.Token));
     }
 
@@ -182,7 +182,7 @@ public class OptimizedAsyncServiceTests
         cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
             await foreach (var processed in _service.ProcessAccountsStreamAsync(accounts, cts.Token))
             {

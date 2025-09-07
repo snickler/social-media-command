@@ -6,6 +6,7 @@ using Xunit;
 using Moq;
 using SocialMediaCommander.Desktop.ViewModels;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Core.Models;
 
 namespace SocialMediaCommander.Tests;
 

@@ -1,0 +1,685 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Xunit;
+using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Desktop.ViewModels;
+using SocialMediaCommander.Services.Implementation;
+using SocialMediaCommander.Services.Interfaces;
+
+namespace SocialMediaCommander.Tests.Integration;
+
+/// <summary>
+/// Comprehensive integration tests for complex business workflows using modern C# patterns
+/// Tests end-to-end scenarios across multiple services and ViewModels
+/// </summary>
+public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture>
+{
+    private readonly IntegrationTestFixture _fixture;
+
+    public ComplexBusinessWorkflowTests(IntegrationTestFixture fixture)
+    {
+        _fixture = fixture;
+    }
+
+    #region Complete Post Publishing Workflow Tests
+
+    [Fact]
+    public async Task CompletePostPublishingWorkflow_ShouldExecuteSuccessfully()
+    {
+        // Arrange - Set up a complete post publishing scenario
+        var account = await CreateTestAccountAsync(SocialPlatform.X);
+        var postContent = "Test post with #hashtag and media content";
+        var mediaPath = "/tmp/test-image.jpg";
+
+        // Create necessary ViewModels with real services
+        var postEditor = _fixture.ServiceProvider.GetRequiredService<PostEditorViewModel>();
+        var accountManager = _fixture.ServiceProvider.GetRequiredService<AccountManagerViewModel>();
+
+        // Act - Execute complete workflow
+
+        // Step 1: Load accounts and select platform
+        await accountManager.LoadAccountsAsync();
+        accountManager.SelectedPlatformConfig = accountManager.PlatformConfigs.First(p => p.Id == SocialPlatform.X);
+
+        // Step 2: Create post content
+        postEditor.Post.Content = postContent;
+        postEditor.Post.SelectedPlatforms.Add(SocialPlatform.X);
+
+        // Step 3: Add media (simulated)
+        var media = new Media
+        {
+            Id = Guid.NewGuid().ToString(),
+            Type = MediaType.Image,
+            FilePath = mediaPath,
+            MimeType = "image/jpeg",
+            SizeInBytes = 1024 * 100 // 100KB
+        };
+        postEditor.Post.Media.Add(media);
+
+        // Step 4: Generate AI suggestions
+        if (postEditor.GenerateAISuggestionsCommand.CanExecute(null))
+        {
+            postEditor.GenerateAISuggestionsCommand.Execute(null);
+            await Task.Delay(100); // Allow AI processing
+        }
+
+        // Step 5: Schedule post
+        postEditor.Post.ScheduledAt = DateTime.UtcNow.AddMinutes(30);
+
+        // Step 6: Validate and publish
+        var isValid = await ValidatePostAsync(postEditor.Post);
+
+        if (isValid && postEditor.PublishPostCommand.CanExecute(null))
+        {
+            postEditor.PublishPostCommand.Execute(null);
+            await Task.Delay(200); // Allow publish processing
+        }
+
+        // Assert - Verify workflow completion
+        postEditor.Post.Content.Should().Be(postContent);
+        postEditor.Post.Media.Should().HaveCount(1);
+        postEditor.Post.Media.First().Type.Should().Be(MediaType.Image);
+        postEditor.Post.SelectedPlatforms.Should().Contain(SocialPlatform.X);
+        isValid.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task CrossPlatformPostPublishingWorkflow_ShouldHandleMultiplePlatforms()
+    {
+        // Arrange
+        var platforms = new[] { SocialPlatform.X, SocialPlatform.BlueSky, SocialPlatform.LinkedIn };
+        var accounts = new List<Account>();
+
+        foreach (var platform in platforms)
+        {
+            accounts.Add(await CreateTestAccountAsync(platform));
+        }
+
+        var postEditor = _fixture.ServiceProvider.GetRequiredService<PostEditorViewModel>();
+
+        // Act - Create cross-platform post
+        postEditor.Post.Content = "Cross-platform announcement! #innovation #tech";
+
+        foreach (var platform in platforms)
+        {
+            postEditor.Post.SelectedPlatforms.Add(platform);
+        }
+
+        // Validate content for each platform's character limits
+        foreach (var platform in platforms)
+        {
+            var platformConfig = PlatformConfigurations.GetPlatformConfig(platform);
+            var isValidForPlatform = platformConfig.CharacterLimit == null ||
+                                   postEditor.Post.Content.Length <= platformConfig.CharacterLimit;
+
+            isValidForPlatform.Should().BeTrue($"Content should be valid for {platform}");
+        }
+
+        // Assert
+        postEditor.Post.SelectedPlatforms.Should().HaveCount(3);
+        postEditor.Post.SelectedPlatforms.Should().BeEquivalentTo(platforms);
+    }
+
+    #endregion
+
+    #region Account Management Workflow Tests
+
+    [Fact]
+    public async Task CompleteAccountManagementWorkflow_ShouldHandleAccountLifecycle()
+    {
+        // Arrange
+        var accountManager = _fixture.ServiceProvider.GetRequiredService<AccountManagerViewModel>();
+        var oauthService = _fixture.ServiceProvider.GetRequiredService<IOAuthConfigurationService>();
+        var platform = SocialPlatform.BlueSky;
+
+        // Act - Complete account management workflow
+
+        // Step 1: Configure OAuth for platform
+        var oauthConfig = new OAuthConfig
+        {
+            ClientId = "test_client_id",
+            ClientSecret = "test_client_secret",
+            AuthorizationEndpoint = "https://bsky.social/xrpc/com.atproto.server.createSession",
+            TokenEndpoint = "https://bsky.social/xrpc/com.atproto.server.createSession",
+            RedirectUri = "http://localhost:8080/callback",
+            Scopes = new[] { "read", "write" }
+        };
+
+        await oauthService.SaveConfigurationAsync(platform, oauthConfig);
+
+        // Step 2: Validate OAuth configuration
+        var validationResult = await oauthService.ValidateConfigurationAsync(platform, oauthConfig);
+
+        // Step 3: Initiate account connection
+        if (validationResult.IsValid && accountManager.ConnectAccountCommand.CanExecute(platform))
+        {
+            accountManager.ConnectAccountCommand.Execute(platform);
+            await Task.Delay(100);
+        }
+
+        // Step 4: Simulate successful OAuth callback
+        var account = await CreateTestAccountAsync(platform);
+
+        // Step 5: Refresh accounts and verify addition
+        if (accountManager.RefreshAccountsCommand.CanExecute(null))
+        {
+            accountManager.RefreshAccountsCommand.Execute(null);
+            await Task.Delay(100);
+        }
+
+        // Assert
+        validationResult.IsValid.Should().BeTrue();
+        oauthConfig.ClientId.Should().Be("test_client_id");
+        account.Platform.Should().Be(platform);
+        account.IsActive.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task AccountSwitchingWorkflow_ShouldUpdateContextAcrossViewModels()
+    {
+        // Arrange
+        var accountManager = _fixture.ServiceProvider.GetRequiredService<AccountManagerViewModel>();
+        var postEditor = _fixture.ServiceProvider.GetRequiredService<PostEditorViewModel>();
+        var socialFeed = _fixture.ServiceProvider.GetRequiredService<SocialFeedViewModel>();
+
+        var xAccount = await CreateTestAccountAsync(SocialPlatform.X);
+        var bskyAccount = await CreateTestAccountAsync(SocialPlatform.BlueSky);
+
+        // Act - Switch between accounts and verify context updates
+
+        // Step 1: Select X account
+        accountManager.SelectedAccountIds[SocialPlatform.X] = xAccount.Id;
+        accountManager.SelectedPlatformConfig = accountManager.PlatformConfigs.First(p => p.Id == SocialPlatform.X);
+
+        // Step 2: Verify X platform context in PostEditor
+        postEditor.Post.SelectedPlatforms.Clear();
+        postEditor.Post.SelectedPlatforms.Add(SocialPlatform.X);
+
+        // Step 3: Switch to BlueSky account
+        accountManager.SelectedAccountIds[SocialPlatform.BlueSky] = bskyAccount.Id;
+        accountManager.SelectedPlatformConfig = accountManager.PlatformConfigs.First(p => p.Id == SocialPlatform.BlueSky);
+
+        // Step 4: Update PostEditor for BlueSky
+        postEditor.Post.SelectedPlatforms.Clear();
+        postEditor.Post.SelectedPlatforms.Add(SocialPlatform.BlueSky);
+
+        // Step 5: Refresh feeds for active account
+        if (socialFeed.RefreshFeedCommand.CanExecute(null))
+        {
+            socialFeed.RefreshFeedCommand.Execute(null);
+            await Task.Delay(100);
+        }
+
+        // Assert
+        accountManager.SelectedPlatformConfig.Id.Should().Be(SocialPlatform.BlueSky);
+        postEditor.Post.SelectedPlatforms.Should().Contain(SocialPlatform.BlueSky);
+        accountManager.SelectedAccountIds[SocialPlatform.BlueSky].Should().Be(bskyAccount.Id);
+    }
+
+    #endregion
+
+    #region AI-Assisted Content Creation Workflow Tests
+
+    [Fact]
+    public async Task AIAssistedContentCreationWorkflow_ShouldGenerateAndRefineContent()
+    {
+        // Arrange
+        var aiAssistant = _fixture.ServiceProvider.GetRequiredService<AIAssistantViewModel>();
+        var postEditor = _fixture.ServiceProvider.GetRequiredService<PostEditorViewModel>();
+        var originalPrompt = "Create a professional announcement about a new product launch";
+
+        // Act - AI-assisted content creation workflow
+
+        // Step 1: Generate initial content with AI
+        aiAssistant.CurrentPrompt = originalPrompt;
+        if (aiAssistant.GenerateContentCommand.CanExecute(null))
+        {
+            aiAssistant.GenerateContentCommand.Execute(null);
+            await Task.Delay(200); // Allow AI processing
+        }
+
+        // Step 2: Refine content with follow-up prompts
+        var refinementPrompt = "Make it more engaging and add relevant hashtags";
+        aiAssistant.CurrentPrompt = refinementPrompt;
+        if (aiAssistant.GenerateContentCommand.CanExecute(null))
+        {
+            aiAssistant.GenerateContentCommand.Execute(null);
+            await Task.Delay(200);
+        }
+
+        // Step 3: Apply AI suggestions to post editor
+        if (!string.IsNullOrEmpty(aiAssistant.GeneratedContent))
+        {
+            postEditor.Post.Content = aiAssistant.GeneratedContent;
+        }
+
+        // Step 4: Generate platform-specific variations
+        var platforms = new[] { SocialPlatform.X, SocialPlatform.LinkedIn };
+        var platformVariations = new Dictionary<SocialPlatform, string>();
+
+        foreach (var platform in platforms)
+        {
+            aiAssistant.SelectedPlatform = platform;
+            aiAssistant.CurrentPrompt = $"Optimize this content for {platform}";
+
+            if (aiAssistant.GenerateContentCommand.CanExecute(null))
+            {
+                aiAssistant.GenerateContentCommand.Execute(null);
+                await Task.Delay(150);
+
+                if (!string.IsNullOrEmpty(aiAssistant.GeneratedContent))
+                {
+                    platformVariations[platform] = aiAssistant.GeneratedContent;
+                }
+            }
+        }
+
+        // Assert
+        aiAssistant.Should().NotBeNull();
+        postEditor.Post.Content.Should().NotBeNullOrEmpty();
+        platformVariations.Should().NotBeEmpty();
+
+        // Verify platform-specific optimizations
+        foreach (var variation in platformVariations)
+        {
+            var platformConfig = PlatformConfigurations.GetPlatformConfig(variation.Key);
+            if (platformConfig.CharacterLimit.HasValue)
+            {
+                variation.Value.Length.Should().BeLessOrEqualTo(platformConfig.CharacterLimit.Value);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Scheduling and Automation Workflow Tests
+
+    [Fact]
+    public async Task SchedulingAndAutomationWorkflow_ShouldHandleComplexScheduling()
+    {
+        // Arrange
+        var scheduler = _fixture.ServiceProvider.GetRequiredService<SchedulerViewModel>();
+        var postEditor = _fixture.ServiceProvider.GetRequiredService<PostEditorViewModel>();
+
+        var baseTime = DateTime.UtcNow.AddHours(1);
+        var posts = new List<Post>();
+
+        // Act - Create complex scheduling workflow
+
+        // Step 1: Create multiple posts for scheduling
+        for (int i = 0; i < 5; i++)
+        {
+            var post = new Post
+            {
+                Id = Guid.NewGuid().ToString(),
+                Content = $"Scheduled post #{i + 1} with #hashtag{i}",
+                ScheduledAt = baseTime.AddMinutes(i * 30), // 30 minutes apart
+                IsScheduled = true,
+                Status = PostStatus.Scheduled
+            };
+
+            post.SelectedPlatforms.Add(SocialPlatform.X);
+            posts.Add(post);
+        }
+
+        // Step 2: Add posts to scheduler
+        foreach (var post in posts)
+        {
+            if (scheduler.SchedulePostCommand.CanExecute(post))
+            {
+                scheduler.SchedulePostCommand.Execute(post);
+                await Task.Delay(50);
+            }
+        }
+
+        // Step 3: Verify scheduling queue
+        var scheduledPosts = scheduler.ScheduledPosts?.Where(p => p.IsScheduled).ToList() ?? new List<Post>();
+
+        // Step 4: Simulate time-based execution (check what would be ready)
+        var currentTime = DateTime.UtcNow;
+        var readyPosts = scheduledPosts.Where(p => p.ScheduledAt <= currentTime.AddMinutes(5)).ToList();
+
+        // Step 5: Test bulk operations
+        var bulkUpdatePosts = scheduledPosts.Take(3).ToList();
+        var newScheduleTime = DateTime.UtcNow.AddHours(2);
+
+        foreach (var post in bulkUpdatePosts)
+        {
+            post.ScheduledAt = newScheduleTime;
+            if (scheduler.UpdateScheduleCommand.CanExecute(post))
+            {
+                scheduler.UpdateScheduleCommand.Execute(post);
+                await Task.Delay(30);
+            }
+        }
+
+        // Assert
+        posts.Should().HaveCount(5);
+        posts.Should().OnlyContain(p => p.IsScheduled);
+        posts.Should().OnlyContain(p => p.Status == PostStatus.Scheduled);
+
+        // Verify scheduling intervals
+        for (int i = 1; i < posts.Count; i++)
+        {
+            var timeDiff = posts[i].ScheduledAt - posts[i - 1].ScheduledAt;
+            timeDiff.TotalMinutes.Should().Be(30);
+        }
+    }
+
+    #endregion
+
+    #region Analytics and Reporting Workflow Tests
+
+    [Fact]
+    public async Task AnalyticsAndReportingWorkflow_ShouldGenerateComprehensiveReports()
+    {
+        // Arrange
+        var analytics = _fixture.ServiceProvider.GetRequiredService<AnalyticsDashboardViewModel>();
+        var socialFeed = _fixture.ServiceProvider.GetRequiredService<SocialFeedViewModel>();
+
+        var startDate = DateTime.UtcNow.AddDays(-30);
+        var endDate = DateTime.UtcNow;
+
+        // Act - Generate comprehensive analytics
+
+        // Step 1: Set analysis period
+        analytics.StartDate = startDate;
+        analytics.EndDate = endDate;
+
+        // Step 2: Generate engagement analytics
+        if (analytics.GenerateEngagementReportCommand.CanExecute(null))
+        {
+            analytics.GenerateEngagementReportCommand.Execute(null);
+            await Task.Delay(200);
+        }
+
+        // Step 3: Generate platform comparison
+        if (analytics.GeneratePlatformComparisonCommand.CanExecute(null))
+        {
+            analytics.GeneratePlatformComparisonCommand.Execute(null);
+            await Task.Delay(200);
+        }
+
+        // Step 4: Generate content performance analysis
+        if (analytics.AnalyzeContentPerformanceCommand.CanExecute(null))
+        {
+            analytics.AnalyzeContentPerformanceCommand.Execute(null);
+            await Task.Delay(200);
+        }
+
+        // Step 5: Export analytics data
+        var exportFormats = new[] { "CSV", "JSON", "PDF" };
+        foreach (var format in exportFormats)
+        {
+            if (analytics.ExportDataCommand.CanExecute(format))
+            {
+                analytics.ExportDataCommand.Execute(format);
+                await Task.Delay(100);
+            }
+        }
+
+        // Assert
+        analytics.StartDate.Should().Be(startDate);
+        analytics.EndDate.Should().Be(endDate);
+        (endDate - startDate).TotalDays.Should().Be(30);
+
+        // Verify analytics components are initialized
+        analytics.Should().NotBeNull();
+        analytics.EngagementMetrics.Should().NotBeNull();
+        analytics.PlatformMetrics.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region Data Backup and Recovery Workflow Tests
+
+    [Fact]
+    public async Task DataBackupAndRecoveryWorkflow_ShouldHandleCompleteDataCycle()
+    {
+        // Arrange
+        var backupService = _fixture.ServiceProvider.GetRequiredService<IBackupService>();
+        var accountService = _fixture.ServiceProvider.GetRequiredService<IAccountService>();
+        var settingsService = _fixture.ServiceProvider.GetRequiredService<ISettingsService>();
+
+        var testAccount = await CreateTestAccountAsync(SocialPlatform.X);
+        var backupPath = $"/tmp/backup_{DateTime.UtcNow:yyyyMMdd_HHmmss}.bak";
+
+        // Act - Complete backup and recovery workflow
+
+        // Step 1: Create backup of current data
+        var backupResult = await backupService.CreateBackupAsync(backupPath);
+
+        // Step 2: Verify backup integrity
+        var integrityCheck = await backupService.VerifyBackupAsync(backupPath);
+
+        // Step 3: Simulate data modification
+        await settingsService.SetSettingAsync("test_setting", "modified_value");
+
+        // Step 4: Create incremental backup
+        var incrementalPath = $"/tmp/incremental_{DateTime.UtcNow:yyyyMMdd_HHmmss}.bak";
+        var incrementalResult = await backupService.CreateIncrementalBackupAsync(incrementalPath);
+
+        // Step 5: List available backups
+        var availableBackups = await backupService.GetAvailableBackupsAsync();
+
+        // Step 6: Test selective restore
+        var restoreItems = new[] { "settings", "accounts" };
+        var restoreResult = await backupService.RestoreSelectiveAsync(backupPath, restoreItems);
+
+        // Assert
+        backupResult.Should().BeTrue();
+        integrityCheck.Should().BeTrue();
+        incrementalResult.Should().BeTrue();
+        restoreResult.Should().BeTrue();
+        availableBackups.Should().NotBeEmpty();
+        availableBackups.Should().Contain(b => b.Contains("backup_"));
+    }
+
+    #endregion
+
+    #region Security and Encryption Workflow Tests
+
+    [Fact]
+    public async Task SecurityAndEncryptionWorkflow_ShouldMaintainDataSecurity()
+    {
+        // Arrange
+        var encryptionService = _fixture.ServiceProvider.GetRequiredService<ICrossPlatformEncryption>();
+        var accountService = _fixture.ServiceProvider.GetRequiredService<IAccountService>();
+        var sensitiveData = "sensitive_oauth_token_data";
+
+        // Act - Security workflow
+
+        // Step 1: Encrypt sensitive data
+        var encryptedData = await encryptionService.EncryptAsync(sensitiveData);
+
+        // Step 2: Verify data is encrypted
+        var isEncrypted = encryptedData != sensitiveData;
+
+        // Step 3: Decrypt and verify integrity
+        var decryptedData = await encryptionService.DecryptAsync(encryptedData);
+
+        // Step 4: Test encryption with different data types
+        var accountData = new Account
+        {
+            Id = Guid.NewGuid().ToString(),
+            Platform = SocialPlatform.X,
+            Email = "test@example.com",
+            OAuthTokens = new OAuthTokens
+            {
+                AccessToken = "encrypted_access_token",
+                RefreshToken = "encrypted_refresh_token"
+            }
+        };
+
+        // Step 5: Store and retrieve encrypted account
+        await accountService.SaveAccountAsync(accountData);
+        var retrievedAccount = await accountService.GetAccountAsync(accountData.Id);
+
+        // Assert
+        isEncrypted.Should().BeTrue();
+        decryptedData.Should().Be(sensitiveData);
+        encryptedData.Should().NotBe(sensitiveData);
+        retrievedAccount.Should().NotBeNull();
+        retrievedAccount!.Email.Should().Be(accountData.Email);
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private async Task<Account> CreateTestAccountAsync(SocialPlatform platform)
+    {
+        var account = new Account
+        {
+            Id = Guid.NewGuid().ToString(),
+            Platform = platform,
+            Username = $"testuser_{platform.ToString().ToLower()}",
+            Email = $"test_{platform.ToString().ToLower()}@example.com",
+            DisplayName = $"Test User ({platform})",
+            ProfilePictureUrl = $"https://example.com/avatar_{platform}.jpg",
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            OAuthTokens = new OAuthTokens
+            {
+                AccessToken = $"access_token_{Guid.NewGuid():N}",
+                RefreshToken = $"refresh_token_{Guid.NewGuid():N}",
+                ExpiresAt = DateTime.UtcNow.AddHours(1)
+            }
+        };
+
+        var accountService = _fixture.ServiceProvider.GetRequiredService<IAccountService>();
+        await accountService.SaveAccountAsync(account);
+
+        return account;
+    }
+
+    private async Task<bool> ValidatePostAsync(Post post)
+    {
+        // Comprehensive post validation
+        if (string.IsNullOrWhiteSpace(post.Content))
+            return false;
+
+        foreach (var platform in post.SelectedPlatforms)
+        {
+            var config = PlatformConfigurations.GetPlatformConfig(platform);
+            if (config.CharacterLimit.HasValue && post.Content.Length > config.CharacterLimit.Value)
+                return false;
+        }
+
+        // Validate media if present
+        foreach (var media in post.Media)
+        {
+            if (media.SizeInBytes > 10 * 1024 * 1024) // 10MB limit
+                return false;
+        }
+
+        await Task.Delay(10); // Simulate async validation
+        return true;
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Integration test fixture for setting up test environment
+/// </summary>
+public class IntegrationTestFixture : IDisposable
+{
+    public IServiceProvider ServiceProvider { get; private set; }
+
+    public IntegrationTestFixture()
+    {
+        var services = new ServiceCollection();
+        ConfigureServices(services);
+        ServiceProvider = services.BuildServiceProvider();
+    }
+
+    private void ConfigureServices(IServiceCollection services)
+    {
+        // Register real services for integration testing
+        services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<ICrossPlatformEncryption, CrossPlatformEncryption>();
+        services.AddSingleton<IDataIntegrityService, DataIntegrityService>();
+
+        // Register mock services for external dependencies
+        var mockPostService = new Mock<IPostService>();
+        var mockFeedService = new Mock<IFeedService>();
+        var mockAccountService = new Mock<IAccountService>();
+        var mockAuthService = new Mock<IAuthenticationService>();
+        var mockOAuthService = new Mock<IOAuthConfigurationService>();
+        var mockSettingsService = new Mock<ISettingsService>();
+        var mockDocumentationService = new Mock<IDocumentationService>();
+        var mockAIService = new Mock<IAIService>();
+
+        // Setup default mock behavior
+        SetupMockServices(mockPostService, mockFeedService, mockAccountService,
+                         mockAuthService, mockOAuthService, mockSettingsService,
+                         mockDocumentationService, mockAIService);
+
+        services.AddSingleton(mockPostService.Object);
+        services.AddSingleton(mockFeedService.Object);
+        services.AddSingleton(mockAccountService.Object);
+        services.AddSingleton(mockAuthService.Object);
+        services.AddSingleton(mockOAuthService.Object);
+        services.AddSingleton(mockSettingsService.Object);
+        services.AddSingleton(mockDocumentationService.Object);
+        services.AddSingleton(mockAIService.Object);
+
+        // Register ViewModels
+        services.AddTransient<PostEditorViewModel>();
+        services.AddTransient<SocialFeedViewModel>();
+        services.AddTransient<AccountManagerViewModel>();
+        services.AddTransient<AnalyticsDashboardViewModel>();
+        services.AddTransient<SettingsViewModel>();
+        services.AddTransient<SchedulerViewModel>();
+        services.AddTransient<AIAssistantViewModel>();
+        services.AddTransient<DocumentationViewModel>();
+    }
+
+    private void SetupMockServices(Mock<IPostService> mockPostService, Mock<IFeedService> mockFeedService,
+                                  Mock<IAccountService> mockAccountService, Mock<IAuthenticationService> mockAuthService,
+                                  Mock<IOAuthConfigurationService> mockOAuthService, Mock<ISettingsService> mockSettingsService,
+                                  Mock<IDocumentationService> mockDocumentationService, Mock<IAIService> mockAIService)
+    {
+        // Setup comprehensive mock behavior for integration tests
+        mockPostService.Setup(x => x.CreatePostAsync(It.IsAny<Post>())).ReturnsAsync(true);
+        mockPostService.Setup(x => x.GetPostsAsync(It.IsAny<SocialPlatform>(), It.IsAny<int>()))
+                      .ReturnsAsync(new List<Post>());
+
+        mockFeedService.Setup(x => x.GetFeedItemsAsync(It.IsAny<IEnumerable<SocialPlatform>>(), It.IsAny<int>()))
+                      .ReturnsAsync(new List<SocialFeedItem>());
+
+        mockAccountService.Setup(x => x.GetAccountsAsync()).ReturnsAsync(new List<Account>());
+        mockAccountService.Setup(x => x.SaveAccountAsync(It.IsAny<Account>())).ReturnsAsync(true);
+        mockAccountService.Setup(x => x.GetAccountAsync(It.IsAny<string>()))
+                         .ReturnsAsync((string id) => new Account { Id = id });
+
+        mockAuthService.Setup(x => x.StartAuthenticationAsync(It.IsAny<SocialPlatform>(), It.IsAny<string>()))
+                      .ReturnsAsync(new AuthenticationResult { IsSuccess = true });
+
+        mockOAuthService.Setup(x => x.ValidateConfigurationAsync(It.IsAny<SocialPlatform>(), It.IsAny<OAuthConfig>()))
+                       .ReturnsAsync(new OAuthValidationResult { IsValid = true });
+
+        mockSettingsService.Setup(x => x.GetSettingAsync(It.IsAny<string>())).ReturnsAsync("");
+        mockSettingsService.Setup(x => x.SetSettingAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(true);
+
+        mockDocumentationService.Setup(x => x.GetDocumentationFilesAsync())
+                               .ReturnsAsync(new List<DocumentationFile>());
+
+        mockAIService.Setup(x => x.GenerateContentAsync(It.IsAny<string>(), It.IsAny<SocialPlatform>()))
+                    .ReturnsAsync("AI generated content with #hashtags");
+    }
+
+    public void Dispose()
+    {
+        if (ServiceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+}

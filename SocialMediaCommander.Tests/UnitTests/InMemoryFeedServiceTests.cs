@@ -27,14 +27,14 @@ public class InMemoryFeedServiceTests : IDisposable
     }
 
     [Fact]
-    public void Constructor_ShouldInitializeWithMockData()
+    public async Task Constructor_ShouldInitializeWithMockData()
     {
         // Act & Assert - Service should be initialized with mock data
         Assert.NotNull(_service);
 
         // Verify that mock data was loaded by checking we can get feed items
         var platforms = new[] { SocialPlatform.X, SocialPlatform.Facebook };
-        var result = _service.GetFeedItemsAsync(platforms, 10).Result;
+        var result = await _service.GetFeedItemsAsync(platforms, 10);
 
         Assert.NotNull(result);
         // Should have some mock data
@@ -184,7 +184,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Assert
         Assert.True(refreshTimes[SocialPlatform.Facebook].HasValue);
-        Assert.True(refreshTimes[SocialPlatform.Facebook].Value > DateTime.UtcNow.AddMinutes(-1));
+        Assert.True(refreshTimes[SocialPlatform.Facebook]!.Value > DateTime.UtcNow.AddMinutes(-1));
     }
 
     [Fact]
@@ -409,7 +409,7 @@ public class InMemoryFeedServiceTests : IDisposable
         foreach (var platform in platforms)
         {
             Assert.True(refreshTimes[platform].HasValue);
-            Assert.True(refreshTimes[platform].Value > DateTime.UtcNow.AddMinutes(-1));
+            Assert.True(refreshTimes[platform]!.Value > DateTime.UtcNow.AddMinutes(-1));
         }
     }
 

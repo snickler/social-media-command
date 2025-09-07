@@ -55,9 +55,9 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
                      !string.IsNullOrEmpty(config.AuthorizationEndpoint) &&
                      !string.IsNullOrEmpty(config.TokenEndpoint);
 
-        var result = new OAuthValidationResult 
-        { 
-            IsValid = isValid, 
+        var result = new OAuthValidationResult
+        {
+            IsValid = isValid,
             Errors = isValid ? new List<string>() : new List<string> { "Invalid test configuration" }
         };
 
