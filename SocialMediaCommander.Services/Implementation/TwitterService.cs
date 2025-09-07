@@ -316,7 +316,17 @@ namespace SocialMediaCommander.Services.Implementation
                 if (!account.IsAuthenticated)
                     return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
 
-                return Task.FromResult(new RateLimitInfo { Remaining = 75, Limit = 75, ResetTime = DateTime.UtcNow.AddMinutes(15) });
+                var resetTime = DateTime.UtcNow;
+                try
+                {
+                    resetTime = DateTime.UtcNow.AddMinutes(15);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Handle case where DateTime.UtcNow + 15 minutes would overflow
+                    resetTime = DateTime.MaxValue.AddDays(-1);
+                }
+                return Task.FromResult(new RateLimitInfo { Remaining = 75, Limit = 75, ResetTime = resetTime });
             }
             catch
             {
