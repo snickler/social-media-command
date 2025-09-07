@@ -15,16 +15,18 @@ public class SecureAccountServiceTests : IDisposable
 {
     private readonly SecureAccountService _accountService;
     private readonly string _tempDirectory;
-    private readonly string _originalAppData;
 
     public SecureAccountServiceTests()
     {
-        // Create temp directory for testing
+        // Create unique temp directory for this test instance
         _tempDirectory = Path.Combine(Path.GetTempPath(), $"SMC_AccountTest_{Guid.NewGuid():N}");
         Directory.CreateDirectory(_tempDirectory);
         
-        // Override AppData environment variable for testing
-        _originalAppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        // Create a test-specific subdirectory for Social Media Commander data
+        var smcTestDir = Path.Combine(_tempDirectory, "SocialMediaCommander");
+        Directory.CreateDirectory(smcTestDir);
+        
+        // Set the environment variable to point to our test directory
         Environment.SetEnvironmentVariable("APPDATA", _tempDirectory, EnvironmentVariableTarget.Process);
         
         _accountService = new SecureAccountService();
@@ -377,9 +379,6 @@ public class SecureAccountServiceTests : IDisposable
 
     public void Dispose()
     {
-        // Restore original AppData environment variable
-        Environment.SetEnvironmentVariable("APPDATA", _originalAppData, EnvironmentVariableTarget.Process);
-        
         // Clean up test directory
         if (Directory.Exists(_tempDirectory))
         {
