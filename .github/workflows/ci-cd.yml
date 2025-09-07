@@ -98,6 +98,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Test
+        shell: bash
         run: |
           if [[ "${{ matrix.os }}" != "macos" && "${{ matrix.arch}}" == "x64" ]]; then
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
@@ -219,6 +220,7 @@ jobs:
           fi
 
       - name: Archive artifacts
+        shell: bash
         run: |
           cd ./publish/${{ matrix.os }}-${{ matrix.arch }}
           if [[ "${{ runner.os }}" == "Windows" ]]; then
