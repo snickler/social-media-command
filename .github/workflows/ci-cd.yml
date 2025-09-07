@@ -83,7 +83,7 @@ jobs:
       - name: Restore dependencies
         run: |
           dotnet clean SocialMediaCommander.sln
-          dotnet restore SocialMediaCommander.sln --force --no-cache /p:Platform=${{ matrix.arch}}
+          dotnet restore SocialMediaCommander.sln --force --configuration Release /p:Platform=${{ matrix.arch }}
 
       - name: Verify macOS dependencies (macOS only)
         if: matrix.os == 'macos'
@@ -94,13 +94,13 @@ jobs:
           dotnet list SocialMediaCommander.Desktop package | grep -i avalonia || true
 
       - name: Build
-        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch}}
+        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
         timeout-minutes: 10
 
       - name: Test
         shell: bash
         run: |
-          if [[ "${{ matrix.os }}" != "macos" && "${{ matrix.arch}}" == "x64" ]]; then
+          if [[ "${{ matrix.os }}" != "macos" && "${{ matrix.arch }}" == "x64" ]]; then
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
