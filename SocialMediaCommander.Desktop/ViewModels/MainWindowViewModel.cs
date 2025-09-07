@@ -31,7 +31,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public SchedulerViewModel Scheduler { get; }
     public AIAssistantViewModel AIAssistant { get; }
     public DocumentationViewModel Documentation { get; }
-    
+
     [ObservableProperty]
     private ViewMode currentViewMode = ViewMode.Standard;
 
@@ -49,7 +49,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     [ObservableProperty]
     private bool isDocumentationVisible = false;
-    
+
     [ObservableProperty]
     private string encryptionStatus = "Initializing...";
 
@@ -175,27 +175,27 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     }
 
     #endregion
-    
+
     #region Documentation Commands - Memory efficient
-    
+
     [RelayCommand]
     private void ToggleDocumentation()
     {
         Console.WriteLine("ToggleDocumentation command executed!");
         System.Diagnostics.Debug.WriteLine("Toggling Documentation");
-        
+
         IsDocumentationVisible = !IsDocumentationVisible;
     }
-    
+
     [RelayCommand]
     private void CloseDocumentation()
     {
         Console.WriteLine("CloseDocumentation command executed!");
         IsDocumentationVisible = false;
     }
-    
+
     #endregion
-    
+
     #region Workspace Mode Commands - Optimized state management
 
     [RelayCommand]

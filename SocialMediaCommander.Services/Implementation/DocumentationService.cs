@@ -61,7 +61,7 @@ public class DocumentationService : IDocumentationService
         _markdownPipeline = new MarkdownPipelineBuilder()
             .UseAdvancedExtensions()
             .Build();
-        
+
         // Find the documentation base path relative to the application
         _documentationBasePath = FindDocumentationPath();
     }
@@ -111,7 +111,7 @@ public class DocumentationService : IDocumentationService
         try
         {
             var fullPath = Path.Combine(_documentationBasePath, filePath);
-            
+
             if (!File.Exists(fullPath))
             {
                 _logger.Warning("Documentation file not found: {Path}", fullPath);
@@ -120,7 +120,7 @@ public class DocumentationService : IDocumentationService
 
             var markdownContent = await File.ReadAllTextAsync(fullPath);
             var htmlContent = Markdown.ToHtml(markdownContent, _markdownPipeline);
-            
+
             // Wrap in a styled HTML document
             return GenerateStyledHtml(htmlContent);
         }

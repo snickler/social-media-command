@@ -43,7 +43,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IDataIntegrityService, DataIntegrityService>();
         services.AddSingleton<ISettingsService, SettingsService>();
-        
+
         // Documentation Service
         services.AddSingleton<IDocumentationService, DocumentationService>();
 
@@ -66,7 +66,7 @@ public static class ServiceCollectionExtensions
         services.AddTransient<AIAssistantViewModel>();
         services.AddTransient<OAuthConfigurationViewModel>();
         services.AddTransient<DocumentationViewModel>();
-        
+
         // Logging
         services.AddLogging(builder =>
         {

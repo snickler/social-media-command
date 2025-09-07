@@ -133,7 +133,7 @@ public partial class App : Application
                 _logger?.Information("Creating AIAssistantViewModel...");
                 var aiAssistantViewModel = _serviceProvider.GetRequiredService<AIAssistantViewModel>();
                 _logger?.Information("AIAssistantViewModel created successfully");
-                
+
                 _logger?.Information("Creating DocumentationViewModel...");
                 var documentationViewModel = _serviceProvider.GetRequiredService<DocumentationViewModel>();
                 _logger?.Information("DocumentationViewModel created successfully");
