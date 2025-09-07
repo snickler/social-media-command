@@ -513,25 +513,25 @@ public class MainWindowViewModelTests : IDisposable
 
     private void SetupDefaultMockBehavior()
     {
-        _mockPostService.Setup(x => x.GetPostsAsync(It.IsAny<SocialPlatform>(), It.IsAny<int>()))
+        _mockPostService.Setup(x => x.GetPostsAsync(It.IsAny<PostStatus>(), It.IsAny<int>()))
             .ReturnsAsync(new List<Post>());
 
         _mockFeedService.Setup(x => x.GetFeedItemsAsync(It.IsAny<IEnumerable<SocialPlatform>>(), It.IsAny<int>()))
             .ReturnsAsync(new List<SocialFeedItem>());
 
-        _mockAccountService.Setup(x => x.GetAccountsAsync())
+        _mockAccountService.Setup(x => x.GetAllAccountsAsync())
             .ReturnsAsync(new List<Account>());
 
         _mockOAuthService.Setup(x => x.GetAllConfigurationsAsync())
             .ReturnsAsync(new Dictionary<SocialPlatform, OAuthConfig>());
 
-        _mockSettingsService.Setup(x => x.GetSettingAsync(It.IsAny<string>()))
+        _mockSettingsService.Setup(x => x.GetSettingAsync<string>(It.IsAny<string>(), It.IsAny<string>()))
             .ReturnsAsync("");
 
-        _mockDocumentationService.Setup(x => x.GetDocumentationFilesAsync())
+        _mockDocumentationService.Setup(x => x.GetDocumentationAsync())
             .ReturnsAsync(new List<DocumentationFile>());
 
-        _mockAIService.Setup(x => x.GenerateContentAsync(It.IsAny<string>(), It.IsAny<SocialPlatform>()))
+        _mockAIService.Setup(x => x.GenerateContentAsync(It.IsAny<string>()))
             .ReturnsAsync("Generated content");
     }
 

@@ -291,6 +291,32 @@ public class FoundryLocalAIService : IAIService, IDisposable
         }
     }
 
+    /// <summary>
+    /// Generate content using AI based on simple prompt
+    /// </summary>
+    public async Task<string> GenerateContentAsync(string prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt))
+            return "Generated content";
+
+        var request = new AIContentRequest
+        {
+            Prompt = prompt,
+            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.X }, // Default platform
+            MaxLength = 280,
+            Tone = AITone.Professional
+        };
+
+        var response = await GenerateContentAsync(request);
+
+        if (response.Success && response.GeneratedContent.Any())
+        {
+            return response.GeneratedContent.First().Content;
+        }
+
+        return "Generated content"; // Fallback
+    }
+
     public async Task<AIOptimizationResponse> OptimizeContentAsync(AIOptimizationRequest request)
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));

@@ -259,7 +259,7 @@ public class PerformanceBenchmarkTests : IClassFixture<PerformanceTestFixture>
                 try
                 {
                     // Simulate realistic user operations
-                    var accounts = await accountService.GetAccountsAsync();
+                    var accounts = await accountService.GetAllAccountsAsync();
                     await Task.Delay(Random.Shared.Next(10, 50)); // Simulate processing time
 
                     userStopwatch.Stop();
@@ -447,8 +447,7 @@ public class PerformanceBenchmarkTests : IClassFixture<PerformanceTestFixture>
                 Id = Guid.NewGuid().ToString(),
                 Content = $"Performance test post #{i} with #hashtag{i % 10}",
                 CreatedAt = DateTime.UtcNow.AddMinutes(-random.Next(0, 1440)), // Random time within last day
-                Status = PostStatus.Draft,
-                AuthorId = $"user_{i % 100}" // 100 different users
+                Status = PostStatus.Draft
             };
 
             // Add random platform selection
@@ -456,7 +455,7 @@ public class PerformanceBenchmarkTests : IClassFixture<PerformanceTestFixture>
             var selectedPlatforms = platforms.OrderBy(x => random.Next()).Take(platformCount);
             foreach (var platform in selectedPlatforms)
             {
-                post.SelectedPlatforms.Add(platform);
+                post.TargetPlatforms.Add(platform);
             }
 
             // Add random media occasionally
@@ -468,7 +467,7 @@ public class PerformanceBenchmarkTests : IClassFixture<PerformanceTestFixture>
                     Type = MediaType.Image,
                     FilePath = $"/tmp/test_image_{i}.jpg",
                     MimeType = "image/jpeg",
-                    SizeInBytes = random.Next(100000, 500000)
+                    FileSize = random.Next(100000, 500000)
                 });
             }
 
@@ -521,13 +520,13 @@ public class PerformanceTestFixture : IDisposable
 
         // Setup high-performance mock responses
         mockPostService.Setup(x => x.CreatePostAsync(It.IsAny<Post>()))
-                      .ReturnsAsync(true);
+                      .ReturnsAsync((Post post) => post);
 
         mockFeedService.Setup(x => x.GetFeedItemsAsync(It.IsAny<IEnumerable<SocialPlatform>>(), It.IsAny<int>()))
                       .ReturnsAsync((IEnumerable<SocialPlatform> platforms, int limit) =>
                           GenerateMockFeedItems(platforms.First(), limit));
 
-        mockAccountService.Setup(x => x.GetAccountsAsync())
+        mockAccountService.Setup(x => x.GetAllAccountsAsync())
                          .ReturnsAsync(new List<Account>());
 
         services.AddSingleton(mockPostService.Object);

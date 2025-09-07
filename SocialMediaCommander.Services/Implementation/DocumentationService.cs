@@ -248,4 +248,13 @@ public class DocumentationService : IDocumentationService
     <code>{error}</code>
 </div>");
     }
+
+    /// <summary>
+    /// Gets all documentation files
+    /// </summary>
+    /// <returns>All documentation files</returns>
+    public Task<IEnumerable<DocumentationFile>> GetDocumentationAsync()
+    {
+        return Task.FromResult((IEnumerable<DocumentationFile>)_files);
+    }
 }

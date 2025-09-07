@@ -118,7 +118,7 @@ public class FoundryLocalAIServiceTests : IDisposable
     public async Task GenerateContentAsync_WithNullRequest_ShouldReturnFailureResponse()
     {
         // Act
-        var result = await _service.GenerateContentAsync(null!);
+        var result = await _service.GenerateContentAsync((AIContentRequest)null!);
 
         // Assert
         Assert.False(result.Success);

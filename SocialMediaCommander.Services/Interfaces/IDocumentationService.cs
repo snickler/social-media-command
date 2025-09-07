@@ -35,4 +35,10 @@ public interface IDocumentationService
     /// <param name="fileId">ID of the documentation file</param>
     /// <returns>Documentation file information</returns>
     DocumentationFile? GetFileById(string fileId);
+
+    /// <summary>
+    /// Gets all documentation files
+    /// </summary>
+    /// <returns>All documentation files</returns>
+    Task<IEnumerable<DocumentationFile>> GetDocumentationAsync();
 }

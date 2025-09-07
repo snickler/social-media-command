@@ -507,9 +507,10 @@ public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture
         var accountData = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            Platform = SocialPlatform.X,
-            Email = "test@example.com",
-            OAuthTokens = new OAuthTokens
+            PlatformId = SocialPlatform.X,
+            Username = "test@example.com",
+            DisplayName = "Test User",
+            Tokens = new OAuthTokens
             {
                 AccessToken = "encrypted_access_token",
                 RefreshToken = "encrypted_refresh_token"
@@ -517,15 +518,15 @@ public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture
         };
 
         // Step 5: Store and retrieve encrypted account
-        await accountService.SaveAccountAsync(accountData);
-        var retrievedAccount = await accountService.GetAccountAsync(accountData.Id);
+        await accountService.CreateAccountAsync(accountData);
+        var retrievedAccount = await accountService.GetAccountByIdAsync(accountData.Id);
 
         // Assert
         isEncrypted.Should().BeTrue();
         decryptedData.Should().Be(sensitiveData);
         encryptedData.Should().NotBe(sensitiveData);
         retrievedAccount.Should().NotBeNull();
-        retrievedAccount!.Email.Should().Be(accountData.Email);
+        retrievedAccount!.Username.Should().Be(accountData.Username);
     }
 
     #endregion
@@ -537,14 +538,12 @@ public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture
         var account = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            Platform = platform,
+            PlatformId = platform,
             Username = $"testuser_{platform.ToString().ToLower()}",
-            Email = $"test_{platform.ToString().ToLower()}@example.com",
             DisplayName = $"Test User ({platform})",
-            ProfilePictureUrl = $"https://example.com/avatar_{platform}.jpg",
-            IsActive = true,
+            Avatar = $"https://example.com/avatar_{platform}.jpg",
             CreatedAt = DateTime.UtcNow,
-            OAuthTokens = new OAuthTokens
+            Tokens = new OAuthTokens
             {
                 AccessToken = $"access_token_{Guid.NewGuid():N}",
                 RefreshToken = $"refresh_token_{Guid.NewGuid():N}",
@@ -564,7 +563,7 @@ public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture
         if (string.IsNullOrWhiteSpace(post.Content))
             return false;
 
-        foreach (var platform in post.SelectedPlatforms)
+        foreach (var platform in post.TargetPlatforms)
         {
             var config = PlatformConfigurations.GetPlatformConfig(platform);
             if (config.CharacterLimit.HasValue && post.Content.Length > config.CharacterLimit.Value)
@@ -574,7 +573,7 @@ public class ComplexBusinessWorkflowTests : IClassFixture<IntegrationTestFixture
         // Validate media if present
         foreach (var media in post.Media)
         {
-            if (media.SizeInBytes > 10 * 1024 * 1024) // 10MB limit
+            if (media.FileSize > 10 * 1024 * 1024) // 10MB limit
                 return false;
         }
 
