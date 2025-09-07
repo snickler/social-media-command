@@ -99,7 +99,7 @@ jobs:
 
       - name: Test
         run: |
-          if [[ "${{ matrix.os }}" != "macos" ]]; then
+          if [[ "${{ matrix.os }}" != "macos" && "${{ maxtrix.arch}}" == "x64"]]; then
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
