@@ -315,7 +315,7 @@ public class OptimizedAsyncServiceTests
         cts.CancelAfter(TimeSpan.FromMilliseconds(10));
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
             await _service.UpdateAccountsAsync(accounts, cts.Token));
     }
 

@@ -274,6 +274,11 @@ public class OptimizedAsyncService : IOptimizedAsyncService
                 Interlocked.Increment(ref successCount);
                 return new { Success = true, Error = (string?)null };
             }
+            catch (OperationCanceledException)
+            {
+                // Let cancellation exceptions bubble up - don't convert to result
+                throw;
+            }
             catch (Exception ex)
             {
                 return new { Success = false, Error = (string?)ex.Message };
