@@ -87,7 +87,7 @@ namespace SocialMediaCommander.Services.Implementation
                 var threadTweetData = new ThreadTweetData 
                 { 
                     Text = threadPost.Content, 
-                    Reply = new ReplyInfo { InReplyToTweetId = replyToId } 
+                    Reply = new ReplyInfo { InReplyToTweetId = replyToId ?? string.Empty } 
                 };
                 var tjson = JsonSerializer.Serialize(threadTweetData, SocialMediaCommanderJsonContext.Default.ThreadTweetData);
                 var tcontent = new StringContent(tjson, Encoding.UTF8, "application/json");

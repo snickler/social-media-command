@@ -70,7 +70,7 @@ public class ThreadsService : IThreadsService
                 // Publish the created thread
                 var publishData = new ThreadsPublishData
                 {
-                    CreationId = id,
+                    CreationId = id ?? string.Empty,
                     AccessToken = account.Tokens!.AccessToken
                 };
 

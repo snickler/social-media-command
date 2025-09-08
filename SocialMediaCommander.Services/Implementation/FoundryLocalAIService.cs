@@ -697,7 +697,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             }
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var chatResponse = JsonSerializer.Deserialize(responseContent, CoreJsonContext.Default.OpenAIChatResponse);
+            var chatResponse = JsonSerializer.Deserialize(responseContent, SocialMediaCommanderJsonContext.Default.OpenAIChatResponse);
 
             return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
         }
