@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 using Serilog;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -168,7 +169,7 @@ public class DataIntegrityService : IDataIntegrityService
 
             // Save checksums
             var checksumFile = Path.Combine(_integrityDirectory, "checksums.json");
-            var json = JsonSerializer.Serialize(checksums, new JsonSerializerOptions { WriteIndented = true });
+            var json = JsonSerializer.Serialize(checksums, ServicesJsonContext.Default.DictionaryStringString);
             await File.WriteAllTextAsync(checksumFile, json);
 
             _logger.Debug("Integrity checksums updated");
@@ -350,7 +351,7 @@ public class DataIntegrityService : IDataIntegrityService
             }
 
             var json = await File.ReadAllTextAsync(checksumFile);
-            var storedChecksums = JsonSerializer.Deserialize<Dictionary<string, string>>(json) ?? new();
+            var storedChecksums = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.DictionaryStringString) ?? new();
 
             // Verify accounts file
             await VerifyFileIntegrity("accounts", Path.Combine(_dataDirectory, "Data", "accounts.encrypted"),

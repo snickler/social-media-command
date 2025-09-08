@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Core.Services;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 using Serilog;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -269,7 +270,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             throw new FileNotFoundException($"Configuration file not found: {filePath}");
 
         var json = await File.ReadAllTextAsync(filePath);
-        var importedConfigs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
+        var importedConfigs = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.DictionaryStringOAuthConfig);
 
         if (importedConfigs != null)
         {
@@ -301,10 +302,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
             );
         }
 
-        var json = JsonSerializer.Serialize(exportConfigs, new JsonSerializerOptions
-        {
-            WriteIndented = true
-        });
+        var json = JsonSerializer.Serialize(exportConfigs, ServicesJsonContext.Default.DictionaryStringOAuthConfig);
 
         await File.WriteAllTextAsync(filePath, json);
     }
@@ -345,7 +343,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 return;
             }
 
-            var configs = JsonSerializer.Deserialize<Dictionary<string, OAuthConfig>>(json);
+            var configs = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.DictionaryStringOAuthConfig);
 
             if (configs != null && configs.Count > 0)
             {
@@ -409,10 +407,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                 );
             }
 
-            var json = JsonSerializer.Serialize(saveConfigs, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            var json = JsonSerializer.Serialize(saveConfigs, ServicesJsonContext.Default.DictionaryStringOAuthConfig);
 
             // Encrypt the JSON data using cross-platform encryption
             var data = Encoding.UTF8.GetBytes(json);
