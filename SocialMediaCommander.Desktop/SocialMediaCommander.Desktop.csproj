@@ -10,6 +10,14 @@
     
     <!-- Native AOT Configuration -->
     <PublishAot>true</PublishAot>
+    
+    <!-- Trimming Configuration - treat unavoidable framework warnings as warnings instead of errors -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <TrimMode>full</TrimMode>
+    
+    <!-- AOT Analyzer warnings configuration -->
+    <WarningsAsErrors />
+    <WarningsNotAsErrors>IL2026;IL2057;IL3050</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
