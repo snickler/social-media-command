@@ -18,8 +18,24 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddSocialMediaCommanderServices(this IServiceCollection services, IConfiguration configuration)
     {
-        // Configuration
-        services.Configure<AIModelConfig>(configuration.GetSection("AI"));
+        // Configuration - Manual binding for AOT compatibility
+        services.AddSingleton(serviceProvider =>
+        {
+            var config = new AIModelConfig();
+            var section = configuration.GetSection("AI");
+            
+            // Manual property binding to avoid reflection
+            if (section.Exists())
+            {
+                config.BaseUrl = section["BaseUrl"] ?? config.BaseUrl;
+                config.ModelName = section["ModelName"] ?? config.ModelName;
+                config.Temperature = section.GetValue<double?>("Temperature") ?? config.Temperature;
+                config.MaxTokens = section.GetValue<int?>("MaxTokens") ?? config.MaxTokens;
+                config.SystemPrompt = section["SystemPrompt"] ?? config.SystemPrompt;
+            }
+            
+            return Microsoft.Extensions.Options.Options.Create(config);
+        });
 
         // Core Services
         services.AddHttpClient<IAIService, FoundryLocalAIService>();

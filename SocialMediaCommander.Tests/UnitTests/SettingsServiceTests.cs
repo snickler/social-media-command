@@ -4,6 +4,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SocialMediaCommander.Services.Implementation;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Tests.UnitTests;
 
@@ -252,11 +253,7 @@ public class SettingsServiceTests : IDisposable
             }
         };
 
-        var json = JsonSerializer.Serialize(testSettings, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+        var json = JsonSerializer.Serialize(testSettings, ServicesJsonContext.Default.AppSettings);
         await File.WriteAllTextAsync(importPath, json);
 
         // Act
