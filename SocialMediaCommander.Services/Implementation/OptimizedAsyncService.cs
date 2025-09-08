@@ -107,12 +107,16 @@ public class OptimizedAsyncService : IOptimizedAsyncService
         const int batchSize = 10;
         for (int i = 0; i < accountIdList.Count; i += batchSize)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var batch = accountIdList.Skip(i).Take(batchSize);
             var batchTasks = batch.Select(async id =>
             {
                 await _concurrencyLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
                 try
                 {
+                    // Simulate longer processing time to allow cancellation to be tested
+                    await Task.Delay(100, cancellationToken).ConfigureAwait(false);
                     var account = await GetAccountFastAsync(id, cancellationToken).ConfigureAwait(false);
                     return new { Success = true, Account = account, Error = (string?)null };
                 }
@@ -264,8 +268,8 @@ public class OptimizedAsyncService : IOptimizedAsyncService
             await _concurrencyLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                // Simulate account update
-                await Task.Delay(25, cancellationToken).ConfigureAwait(false);
+                // Simulate account update with longer delay to allow cancellation testing
+                await Task.Delay(100, cancellationToken).ConfigureAwait(false);
 
                 Interlocked.Increment(ref successCount);
                 return new { Success = true, Error = (string?)null };
