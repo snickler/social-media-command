@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -79,6 +80,8 @@ public class SettingsService : ISettingsService
         }
     }
 
+    [RequiresUnreferencedCode("Generic JSON deserialization may require types that cannot be statically analyzed")]
+    [RequiresDynamicCode("Generic JSON deserialization may require runtime code generation")]
     public async Task<T> GetSettingAsync<T>(string key, T defaultValue = default!)
     {
         var settings = await GetSettingsAsync();
@@ -91,7 +94,7 @@ public class SettingsService : ISettingsService
             {
                 if (value is JsonElement jsonElement)
                 {
-                    var deserialized = jsonElement.Deserialize<T>();
+                    var deserialized = JsonSerializer.Deserialize<T>(jsonElement, ServicesJsonContext.Default.Options);
                     return deserialized != null ? deserialized : defaultValue;
                 }
 

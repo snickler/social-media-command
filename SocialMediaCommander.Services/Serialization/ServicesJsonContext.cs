@@ -25,6 +25,16 @@ namespace SocialMediaCommander.Services.Serialization;
 [JsonSerializableAttribute(typeof(BlueSkyReply))]
 [JsonSerializableAttribute(typeof(BlueSkyParent))]
 [JsonSerializableAttribute(typeof(BlueSkyDeleteData))]
+[JsonSerializableAttribute(typeof(LinkedInPostData))]
+[JsonSerializableAttribute(typeof(LinkedInSpecificContent))]
+[JsonSerializableAttribute(typeof(LinkedInUgcShareContent))]
+[JsonSerializableAttribute(typeof(LinkedInShareCommentary))]
+[JsonSerializableAttribute(typeof(LinkedInVisibility))]
+[JsonSerializableAttribute(typeof(List<Account>))]
+[JsonSerializableAttribute(typeof(IEnumerable<Account>))]
+[JsonSerializableAttribute(typeof(Account))]
+[JsonSerializableAttribute(typeof(PerformanceMetrics))]
+[JsonSerializableAttribute(typeof(AsyncOperationData))]
 [JsonSerializableAttribute(typeof(string))]
 [JsonSerializableAttribute(typeof(int))]
 [JsonSerializableAttribute(typeof(bool))]
@@ -91,4 +101,48 @@ public class BlueSkyDeleteData
     public string Repo { get; set; } = string.Empty;
     public string Collection { get; set; } = string.Empty;
     public string Rkey { get; set; } = string.Empty;
+}
+
+// LinkedInService types for AOT compatibility
+public class LinkedInPostData
+{
+    public string Author { get; set; } = string.Empty;
+    public string LifecycleState { get; set; } = "PUBLISHED";
+    public LinkedInSpecificContent SpecificContent { get; set; } = new();
+    public LinkedInVisibility Visibility { get; set; } = new();
+}
+
+public class LinkedInSpecificContent
+{
+    public LinkedInUgcShareContent ComLinkedinUgcShareContent { get; set; } = new();
+}
+
+public class LinkedInUgcShareContent
+{
+    public LinkedInShareCommentary ShareCommentary { get; set; } = new();
+    public string ShareMediaCategory { get; set; } = "NONE";
+}
+
+public class LinkedInShareCommentary
+{
+    public string Text { get; set; } = string.Empty;
+}
+
+public class LinkedInVisibility
+{
+    public string ComLinkedinUgcMemberNetworkVisibility { get; set; } = "PUBLIC";
+}
+
+// Performance service types for AOT compatibility
+public class PerformanceMetrics
+{
+    public Dictionary<string, object> Metrics { get; set; } = new();
+    public DateTime Timestamp { get; set; }
+}
+
+public class AsyncOperationData
+{
+    public string Id { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public Dictionary<string, object> Data { get; set; } = new();
 }

@@ -14,6 +14,8 @@ namespace SocialMediaCommander.Core.Serialization;
 [JsonSerializableAttribute(typeof(AIModelConfig))]
 [JsonSerializableAttribute(typeof(OAuthTokens))]
 [JsonSerializableAttribute(typeof(ValidationResult))]
+[JsonSerializableAttribute(typeof(BackupData))]
+[JsonSerializableAttribute(typeof(BackupInfo))]
 [JsonSerializableAttribute(typeof(TweetData))]
 [JsonSerializableAttribute(typeof(ThreadTweetData))]
 [JsonSerializableAttribute(typeof(RetweetData))]

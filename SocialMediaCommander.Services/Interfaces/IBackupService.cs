@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
 
 namespace SocialMediaCommander.Services.Interfaces;

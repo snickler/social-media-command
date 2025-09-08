@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 using Serilog;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -293,7 +294,7 @@ public class SecureAccountService : IAccountService
             var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Accounts");
             var json = Encoding.UTF8.GetString(decryptedData);
 
-            var accounts = JsonSerializer.Deserialize<List<Account>>(json) ?? new List<Account>();
+            var accounts = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.ListAccount) ?? new List<Account>();
 
             lock (_lock)
             {
@@ -330,10 +331,7 @@ public class SecureAccountService : IAccountService
                 accountsList = _accounts.Values.ToList();
             }
 
-            var json = JsonSerializer.Serialize(accountsList, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            var json = JsonSerializer.Serialize(accountsList, ServicesJsonContext.Default.ListAccount);
 
             var data = Encoding.UTF8.GetBytes(json);
             var encryptedData = CrossPlatformEncryption.Protect(data, "SocialMediaCommander_Accounts");

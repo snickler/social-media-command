@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -45,28 +46,28 @@ public class LinkedInService : ILinkedInService
                 };
             }
 
-            var postData = new
+            var postData = new LinkedInPostData
             {
-                author = $"urn:li:person:{userProfile.Id}",
-                lifecycleState = "PUBLISHED",
-                specificContent = new
+                Author = $"urn:li:person:{userProfile.Id}",
+                LifecycleState = "PUBLISHED",
+                SpecificContent = new LinkedInSpecificContent
                 {
-                    comLinkedinUgcShareContent = new
+                    ComLinkedinUgcShareContent = new LinkedInUgcShareContent
                     {
-                        shareCommentary = new
+                        ShareCommentary = new LinkedInShareCommentary
                         {
-                            text = post.FormatForPlatform(Platform)
+                            Text = post.FormatForPlatform(Platform)
                         },
-                        shareMediaCategory = "NONE"
+                        ShareMediaCategory = "NONE"
                     }
                 },
-                visibility = new
+                Visibility = new LinkedInVisibility
                 {
-                    comLinkedinUgcMemberNetworkVisibility = "PUBLIC"
+                    ComLinkedinUgcMemberNetworkVisibility = "PUBLIC"
                 }
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.LinkedInPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/ugcPosts");
@@ -262,7 +263,7 @@ public class LinkedInService : ILinkedInService
                 }
             };
 
-            var json = JsonSerializer.Serialize(shareData);
+            var json = JsonSerializer.Serialize(shareData, ServicesJsonContext.Default.Object);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/ugcPosts");
@@ -381,7 +382,7 @@ public class LinkedInService : ILinkedInService
                 }
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.Object);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/ugcPosts");

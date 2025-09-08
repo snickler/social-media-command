@@ -29,8 +29,11 @@ public static class ServiceCollectionExtensions
             {
                 config.BaseUrl = section["BaseUrl"] ?? config.BaseUrl;
                 config.ModelName = section["ModelName"] ?? config.ModelName;
-                config.Temperature = section.GetValue<double?>("Temperature") ?? config.Temperature;
-                config.MaxTokens = section.GetValue<int?>("MaxTokens") ?? config.MaxTokens;
+                // Manual property binding for AOT compatibility  
+                if (double.TryParse(section["Temperature"], out var temperature))
+                    config.Temperature = temperature;
+                if (int.TryParse(section["MaxTokens"], out var maxTokens))
+                    config.MaxTokens = maxTokens;
                 config.SystemPrompt = section["SystemPrompt"] ?? config.SystemPrompt;
             }
             
