@@ -33,6 +33,19 @@ public class SettingsService : ISettingsService
         Directory.CreateDirectory(_settingsDirectory);
     }
 
+    /// <summary>
+    /// Constructor for testing with custom directory path
+    /// </summary>
+    /// <param name="customDirectory">Custom directory path for testing</param>
+    internal SettingsService(string customDirectory)
+    {
+        _logger = Log.ForContext<SettingsService>();
+
+        _settingsDirectory = Path.Combine(customDirectory, "SocialMediaCommander", "Settings");
+        _settingsFile = Path.Combine(_settingsDirectory, "app-settings.encrypted");
+        Directory.CreateDirectory(_settingsDirectory);
+    }
+
     public async Task<AppSettings> GetSettingsAsync()
     {
         if (_cachedSettings != null)

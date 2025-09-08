@@ -66,4 +66,9 @@ public interface IAIService
     /// Get AI model information
     /// </summary>
     Task<AIModelConfig> GetModelInfoAsync();
+
+    /// <summary>
+    /// Generate content using AI based on simple prompt
+    /// </summary>
+    Task<string> GenerateContentAsync(string prompt);
 }

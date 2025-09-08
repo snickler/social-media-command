@@ -84,7 +84,23 @@ public class OAuthTokens
     /// <summary>
     /// Checks if the access token is expired
     /// </summary>
-    public bool IsExpired => DateTime.UtcNow >= ExpiresAt.AddMinutes(-5); // 5 minute buffer
+    public bool IsExpired
+    {
+        get
+        {
+            try
+            {
+                var currentTime = DateTime.UtcNow;
+                var expirationWithBuffer = ExpiresAt.AddMinutes(-5); // 5 minute buffer
+                return currentTime >= expirationWithBuffer;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // If DateTime arithmetic fails, assume the token is expired for safety
+                return true;
+            }
+        }
+    }
 
     /// <summary>
     /// Checks if the token can be refreshed

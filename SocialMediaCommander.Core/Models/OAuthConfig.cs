@@ -41,3 +41,24 @@ public class ConfigurationStatus
     /// </summary>
     public string Message { get; set; } = string.Empty;
 }
+
+/// <summary>
+/// Result of OAuth configuration validation
+/// </summary>
+public class OAuthValidationResult
+{
+    /// <summary>
+    /// Whether the configuration is valid
+    /// </summary>
+    public bool IsValid { get; set; }
+
+    /// <summary>
+    /// List of validation errors if the configuration is invalid
+    /// </summary>
+    public IList<string> Errors { get; set; } = new List<string>();
+
+    /// <summary>
+    /// List of validation warnings
+    /// </summary>
+    public IList<string> Warnings { get; set; } = new List<string>();
+}

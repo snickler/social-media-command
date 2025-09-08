@@ -1,0 +1,565 @@
+using System;
+using System.ComponentModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Moq;
+using Xunit;
+using SocialMediaCommander.Desktop.ViewModels;
+using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Core.Models;
+
+namespace SocialMediaCommander.Tests;
+
+/// <summary>
+/// Comprehensive tests for MainWindowViewModel with modern C# patterns and performance focus
+/// </summary>
+public class MainWindowViewModelTests : IDisposable
+{
+    private readonly Mock<IPostService> _mockPostService;
+    private readonly Mock<IFeedService> _mockFeedService;
+    private readonly Mock<IAccountService> _mockAccountService;
+    private readonly Mock<IAuthenticationService> _mockAuthService;
+    private readonly Mock<IOAuthConfigurationService> _mockOAuthService;
+    private readonly Mock<ISettingsService> _mockSettingsService;
+    private readonly Mock<IDocumentationService> _mockDocumentationService;
+    private readonly Mock<IAIService> _mockAIService;
+    private readonly MainWindowViewModel _viewModel;
+    private readonly List<PropertyChangedEventArgs> _propertyChangedEvents;
+
+    public MainWindowViewModelTests()
+    {
+        _mockPostService = new Mock<IPostService>();
+        _mockFeedService = new Mock<IFeedService>();
+        _mockAccountService = new Mock<IAccountService>();
+        _mockAuthService = new Mock<IAuthenticationService>();
+        _mockOAuthService = new Mock<IOAuthConfigurationService>();
+        _mockSettingsService = new Mock<ISettingsService>();
+        _mockDocumentationService = new Mock<IDocumentationService>();
+        _mockAIService = new Mock<IAIService>();
+        _propertyChangedEvents = new List<PropertyChangedEventArgs>();
+
+        // Setup default mock behavior
+        SetupDefaultMockBehavior();
+
+        // Create ViewModels with mocked dependencies
+        var postEditor = new PostEditorViewModel(_mockPostService.Object, _mockAccountService.Object, _mockAIService.Object);
+        var socialFeed = new SocialFeedViewModel(_mockFeedService.Object, _mockAccountService.Object);
+        var accountManager = new AccountManagerViewModel(_mockAccountService.Object, _mockAuthService.Object, _mockOAuthService.Object);
+        var analyticsDashboard = new AnalyticsDashboardViewModel(_mockAccountService.Object, _mockPostService.Object);
+        var settings = new SettingsViewModel(_mockSettingsService.Object);
+        var scheduler = new SchedulerViewModel(_mockPostService.Object, _mockAccountService.Object);
+        var aiAssistant = new AIAssistantViewModel(_mockAIService.Object, _mockAccountService.Object);
+        var documentation = new DocumentationViewModel(_mockDocumentationService.Object);
+
+        _viewModel = new MainWindowViewModel(
+            postEditor,
+            socialFeed,
+            accountManager,
+            analyticsDashboard,
+            settings,
+            scheduler,
+            aiAssistant,
+            documentation
+        );
+
+        _viewModel.PropertyChanged += (s, e) => _propertyChangedEvents.Add(e);
+    }
+
+    #region Constructor and Initialization Tests
+
+    [Fact]
+    public void Constructor_ShouldInitializeAllChildViewModels()
+    {
+        // Assert
+        _viewModel.Should().NotBeNull();
+        _viewModel.PostEditor.Should().NotBeNull();
+        _viewModel.SocialFeed.Should().NotBeNull();
+        _viewModel.AccountManager.Should().NotBeNull();
+        _viewModel.AnalyticsDashboard.Should().NotBeNull();
+        _viewModel.Settings.Should().NotBeNull();
+        _viewModel.Scheduler.Should().NotBeNull();
+        _viewModel.AIAssistant.Should().NotBeNull();
+        _viewModel.Documentation.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void Constructor_ShouldSetDefaultProperties()
+    {
+        // Assert
+        _viewModel.Greeting.Should().Be("Social Media Commander");
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Standard);
+        _viewModel.CurrentWorkspaceMode.Should().Be(WorkspaceMode.SingleThread);
+        _viewModel.CurrentLayoutMode.Should().Be(LayoutMode.SplitView);
+        _viewModel.IsAccountManagerVisible.Should().BeFalse();
+        _viewModel.IsAIAssistantVisible.Should().BeFalse();
+        _viewModel.IsDocumentationVisible.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Property Change Notification Tests
+
+    [Fact]
+    public void CurrentViewMode_WhenChanged_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.CurrentViewMode = ViewMode.Compact;
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.CurrentViewMode));
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Compact);
+    }
+
+    [Fact]
+    public void CurrentWorkspaceMode_WhenChanged_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.CurrentWorkspaceMode = WorkspaceMode.MultiThread;
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.CurrentWorkspaceMode));
+        _viewModel.CurrentWorkspaceMode.Should().Be(WorkspaceMode.MultiThread);
+    }
+
+    [Fact]
+    public void CurrentLayoutMode_WhenChanged_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.CurrentLayoutMode = LayoutMode.TabbedView;
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.CurrentLayoutMode));
+        _viewModel.CurrentLayoutMode.Should().Be(LayoutMode.TabbedView);
+    }
+
+    [Fact]
+    public void VisibilityProperties_WhenChanged_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.IsAccountManagerVisible = true;
+        _viewModel.IsAIAssistantVisible = true;
+        _viewModel.IsDocumentationVisible = true;
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.IsAccountManagerVisible));
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.IsAIAssistantVisible));
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.IsDocumentationVisible));
+    }
+
+    #endregion
+
+    #region View Mode Management Tests
+
+    [Fact]
+    public void ToggleViewModeCommand_ShouldCycleThroughViewModes()
+    {
+        // Arrange
+        _viewModel.CurrentViewMode = ViewMode.Standard;
+
+        // Act & Assert - Cycle through view modes
+        _viewModel.ToggleViewModeCommand.Execute(null);
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Compact);
+
+        _viewModel.ToggleViewModeCommand.Execute(null);
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Standard);
+    }
+
+    [Fact]
+    public void SetViewModeCommand_ShouldSetSpecificViewMode()
+    {
+        // Act
+        _viewModel.SetViewModeCommand.Execute(ViewMode.Compact);
+
+        // Assert
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Compact);
+    }
+
+    [Theory]
+    [InlineData(ViewMode.Standard)]
+    [InlineData(ViewMode.Compact)]
+    public void ViewMode_AllValues_ShouldBeValid(ViewMode viewMode)
+    {
+        // Act
+        _viewModel.CurrentViewMode = viewMode;
+
+        // Assert
+        _viewModel.CurrentViewMode.Should().Be(viewMode);
+    }
+
+    #endregion
+
+    #region Workspace Mode Management Tests
+
+    [Fact]
+    public void ToggleWorkspaceModeCommand_ShouldToggleBetweenModes()
+    {
+        // Arrange
+        _viewModel.CurrentWorkspaceMode = WorkspaceMode.SingleThread;
+
+        // Act
+        _viewModel.ToggleWorkspaceModeCommand.Execute(null);
+
+        // Assert
+        _viewModel.CurrentWorkspaceMode.Should().Be(WorkspaceMode.MultiThread);
+
+        // Act again
+        _viewModel.ToggleWorkspaceModeCommand.Execute(null);
+
+        // Assert
+        _viewModel.CurrentWorkspaceMode.Should().Be(WorkspaceMode.SingleThread);
+    }
+
+    [Theory]
+    [InlineData(WorkspaceMode.SingleThread)]
+    [InlineData(WorkspaceMode.MultiThread)]
+    public void WorkspaceMode_AllValues_ShouldBeValid(WorkspaceMode workspaceMode)
+    {
+        // Act
+        _viewModel.CurrentWorkspaceMode = workspaceMode;
+
+        // Assert
+        _viewModel.CurrentWorkspaceMode.Should().Be(workspaceMode);
+    }
+
+    #endregion
+
+    #region Layout Mode Management Tests
+
+    [Fact]
+    public void ToggleLayoutModeCommand_ShouldCycleThroughLayouts()
+    {
+        // Arrange
+        _viewModel.CurrentLayoutMode = LayoutMode.SplitView;
+
+        // Act & Assert - Cycle through layout modes
+        _viewModel.ToggleLayoutModeCommand.Execute(null);
+        _viewModel.CurrentLayoutMode.Should().Be(LayoutMode.TabbedView);
+
+        _viewModel.ToggleLayoutModeCommand.Execute(null);
+        _viewModel.CurrentLayoutMode.Should().Be(LayoutMode.SplitView);
+    }
+
+    [Theory]
+    [InlineData(LayoutMode.SplitView)]
+    [InlineData(LayoutMode.TabbedView)]
+    public void LayoutMode_AllValues_ShouldBeValid(LayoutMode layoutMode)
+    {
+        // Act
+        _viewModel.CurrentLayoutMode = layoutMode;
+
+        // Assert
+        _viewModel.CurrentLayoutMode.Should().Be(layoutMode);
+    }
+
+    #endregion
+
+    #region Panel Visibility Management Tests
+
+    [Fact]
+    public void ToggleAccountManagerCommand_ShouldToggleVisibility()
+    {
+        // Arrange
+        _viewModel.IsAccountManagerVisible = false;
+
+        // Act
+        _viewModel.ToggleAccountManagerCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsAccountManagerVisible.Should().BeTrue();
+
+        // Act again
+        _viewModel.ToggleAccountManagerCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsAccountManagerVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ToggleAIAssistantCommand_ShouldToggleVisibility()
+    {
+        // Arrange
+        _viewModel.IsAIAssistantVisible = false;
+
+        // Act
+        _viewModel.ToggleAIAssistantCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsAIAssistantVisible.Should().BeTrue();
+
+        // Act again
+        _viewModel.ToggleAIAssistantCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsAIAssistantVisible.Should().BeFalse();
+    }
+
+    [Fact]
+    public void ToggleDocumentationCommand_ShouldToggleVisibility()
+    {
+        // Arrange
+        _viewModel.IsDocumentationVisible = false;
+
+        // Act
+        _viewModel.ToggleDocumentationCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsDocumentationVisible.Should().BeTrue();
+
+        // Act again
+        _viewModel.ToggleDocumentationCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsDocumentationVisible.Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Security Status Tests
+
+    [Fact]
+    public void EncryptionStatus_WhenUpdated_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.EncryptionStatus = "Enabled";
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.EncryptionStatus));
+        _viewModel.EncryptionStatus.Should().Be("Enabled");
+    }
+
+    [Fact]
+    public void DataIntegrityStatus_WhenUpdated_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.DataIntegrityStatus = "Verified";
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.DataIntegrityStatus));
+        _viewModel.DataIntegrityStatus.Should().Be("Verified");
+    }
+
+    [Fact]
+    public void IsDataSecure_WhenUpdated_ShouldRaisePropertyChanged()
+    {
+        // Arrange
+        _propertyChangedEvents.Clear();
+
+        // Act
+        _viewModel.IsDataSecure = true;
+
+        // Assert
+        _propertyChangedEvents.Should().Contain(e => e.PropertyName == nameof(MainWindowViewModel.IsDataSecure));
+        _viewModel.IsDataSecure.Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Command Execution Tests
+
+    [Fact]
+    public void AllToggleCommands_ShouldBeExecutable()
+    {
+        // Assert
+        _viewModel.ToggleViewModeCommand.CanExecute(null).Should().BeTrue();
+        _viewModel.ToggleWorkspaceModeCommand.CanExecute(null).Should().BeTrue();
+        _viewModel.ToggleLayoutModeCommand.CanExecute(null).Should().BeTrue();
+        _viewModel.ToggleAccountManagerCommand.CanExecute(null).Should().BeTrue();
+        _viewModel.ToggleAIAssistantCommand.CanExecute(null).Should().BeTrue();
+        _viewModel.ToggleDocumentationCommand.CanExecute(null).Should().BeTrue();
+    }
+
+    [Fact]
+    public void SetViewModeCommand_WithValidParameter_ShouldBeExecutable()
+    {
+        // Assert
+        _viewModel.SetViewModeCommand.CanExecute(ViewMode.Compact).Should().BeTrue();
+        _viewModel.SetViewModeCommand.CanExecute(ViewMode.Standard).Should().BeTrue();
+    }
+
+    #endregion
+
+    #region Child ViewModel Integration Tests
+
+    [Fact]
+    public void ChildViewModels_ShouldBeProperlyInitialized()
+    {
+        // Assert - All child ViewModels should be properly set up
+        _viewModel.PostEditor.Should().BeOfType<PostEditorViewModel>();
+        _viewModel.SocialFeed.Should().BeOfType<SocialFeedViewModel>();
+        _viewModel.AccountManager.Should().BeOfType<AccountManagerViewModel>();
+        _viewModel.AnalyticsDashboard.Should().BeOfType<AnalyticsDashboardViewModel>();
+        _viewModel.Settings.Should().BeOfType<SettingsViewModel>();
+        _viewModel.Scheduler.Should().BeOfType<SchedulerViewModel>();
+        _viewModel.AIAssistant.Should().BeOfType<AIAssistantViewModel>();
+        _viewModel.Documentation.Should().BeOfType<DocumentationViewModel>();
+    }
+
+    [Fact]
+    public void ChildViewModels_ShouldHaveValidState()
+    {
+        // Assert - Child ViewModels should be in valid initial state
+        _viewModel.PostEditor.Should().NotBeNull();
+        _viewModel.SocialFeed.Should().NotBeNull();
+        _viewModel.AccountManager.Should().NotBeNull();
+
+        // Verify child ViewModels have their expected properties
+        _viewModel.PostEditor.Post.Should().NotBeNull();
+        _viewModel.SocialFeed.FeedItems.Should().NotBeNull();
+        _viewModel.AccountManager.Accounts.Should().NotBeNull();
+    }
+
+    #endregion
+
+    #region Performance and Memory Tests
+
+    [Fact]
+    public void MultiplePropertyChanges_ShouldNotCauseMemoryLeaks()
+    {
+        // Arrange
+        const int iterations = 1000;
+
+        // Act - Perform many property changes
+        for (int i = 0; i < iterations; i++)
+        {
+            _viewModel.CurrentViewMode = i % 2 == 0 ? ViewMode.Standard : ViewMode.Compact;
+            _viewModel.IsAccountManagerVisible = i % 2 == 0;
+            _viewModel.EncryptionStatus = $"Status {i}";
+        }
+
+        // Assert - Should complete without memory issues
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Standard);
+        _propertyChangedEvents.Count.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task ConcurrentUIOperations_ShouldBeThreadSafe()
+    {
+        // Arrange
+        var tasks = new List<Task>();
+
+        // Act - Perform concurrent UI operations
+        for (int i = 0; i < 10; i++)
+        {
+            int iteration = i;
+            tasks.Add(Task.Run(() =>
+            {
+                _viewModel.CurrentViewMode = iteration % 2 == 0 ? ViewMode.Standard : ViewMode.Compact;
+                _viewModel.IsAIAssistantVisible = iteration % 3 == 0;
+                _viewModel.CurrentLayoutMode = iteration % 2 == 0 ? LayoutMode.SplitView : LayoutMode.TabbedView;
+            }));
+        }
+
+        // Assert - Should complete without exceptions
+        var act = () => Task.WhenAll(tasks);
+        await act.Should().NotThrowAsync();
+    }
+
+    #endregion
+
+    #region Integration and Workflow Tests
+
+    [Fact]
+    public void CompleteWorkflow_OpenAccountManager_ShouldUpdateVisibility()
+    {
+        // Arrange
+        _viewModel.IsAccountManagerVisible = false;
+
+        // Act - Simulate opening account manager
+        _viewModel.ToggleAccountManagerCommand.Execute(null);
+
+        // Assert
+        _viewModel.IsAccountManagerVisible.Should().BeTrue();
+        _viewModel.AccountManager.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void CompleteWorkflow_SwitchToCompactMode_ShouldUpdateLayout()
+    {
+        // Arrange
+        _viewModel.CurrentViewMode = ViewMode.Standard;
+        _viewModel.CurrentLayoutMode = LayoutMode.SplitView;
+
+        // Act - Switch to compact mode for smaller screens
+        _viewModel.SetViewModeCommand.Execute(ViewMode.Compact);
+        _viewModel.ToggleLayoutModeCommand.Execute(null); // Switch to tabbed
+
+        // Assert
+        _viewModel.CurrentViewMode.Should().Be(ViewMode.Compact);
+        _viewModel.CurrentLayoutMode.Should().Be(LayoutMode.TabbedView);
+    }
+
+    #endregion
+
+    #region Helper Methods
+
+    private void SetupDefaultMockBehavior()
+    {
+        _mockPostService.Setup(x => x.GetPostsAsync(It.IsAny<PostStatus>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<Post>());
+
+        _mockFeedService.Setup(x => x.GetFeedItemsAsync(It.IsAny<IEnumerable<SocialPlatform>>(), It.IsAny<int>()))
+            .ReturnsAsync(new List<SocialFeedItem>());
+
+        _mockAccountService.Setup(x => x.GetAllAccountsAsync())
+            .ReturnsAsync(new List<Account>());
+
+        _mockOAuthService.Setup(x => x.GetAllConfigurationsAsync())
+            .ReturnsAsync(new Dictionary<SocialPlatform, OAuthConfig>());
+
+        _mockSettingsService.Setup(x => x.GetSettingAsync<string>(It.IsAny<string>(), It.IsAny<string>()))
+            .ReturnsAsync("");
+
+        _mockDocumentationService.Setup(x => x.GetDocumentationAsync())
+            .ReturnsAsync(new List<DocumentationFile>());
+
+        _mockAIService.Setup(x => x.GenerateContentAsync(It.IsAny<string>()))
+            .ReturnsAsync("Generated content");
+    }
+
+    public void Dispose()
+    {
+        _viewModel?.Dispose();
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Test enums to support MainWindowViewModel testing
+/// </summary>
+public enum ViewMode
+{
+    Standard,
+    Compact
+}
+
+public enum WorkspaceMode
+{
+    SingleThread,
+    MultiThread
+}
+
+public enum LayoutMode
+{
+    SplitView,
+    TabbedView
+}

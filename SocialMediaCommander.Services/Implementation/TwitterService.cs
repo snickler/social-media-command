@@ -36,7 +36,10 @@ namespace SocialMediaCommander.Services.Implementation
                     return new PublishResult { Success = false, ErrorMessage = "Account is not authenticated" };
                 }
 
-                var tweetData = new { text = post.FormatForPlatform(Platform) };
+                var platform = Platform;
+                var formattedText = post.FormatForPlatform(platform);
+                var tweetData = new { text = formattedText };
+
                 var json = JsonSerializer.Serialize(tweetData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -52,7 +55,8 @@ namespace SocialMediaCommander.Services.Implementation
                     var data = document.RootElement.GetProperty("data");
                     var id = data.GetProperty("id").GetString();
 
-                    return new PublishResult { Success = true, PlatformPostId = id ?? string.Empty, PublishedAt = DateTime.UtcNow };
+                    DateTime publishedAt = GetSafeUtcNow();
+                    return new PublishResult { Success = true, PlatformPostId = id ?? string.Empty, PublishedAt = publishedAt };
                 }
 
                 return new PublishResult { Success = false, ErrorMessage = $"Twitter API error: {responseContent}" };
@@ -95,7 +99,10 @@ namespace SocialMediaCommander.Services.Implementation
                     var data = document.RootElement.GetProperty("data");
                     var id = data.GetProperty("id").GetString();
 
-                    results.Add(new PublishResult { Success = true, PlatformPostId = id ?? string.Empty, PublishedAt = DateTime.UtcNow });
+                    // Safe DateTime assignment to avoid overflow
+                    DateTime threadPublishedAt = GetSafeUtcNow();
+
+                    results.Add(new PublishResult { Success = true, PlatformPostId = id ?? string.Empty, PublishedAt = threadPublishedAt });
                     replyToId = id;
                 }
                 else
@@ -109,7 +116,10 @@ namespace SocialMediaCommander.Services.Implementation
             if (failedPosts.Any())
                 return new PublishResult { Success = false, ErrorMessage = $"Thread partially failed: {string.Join(", ", failedPosts.Select(f => f.ErrorMessage))}" };
 
-            return new PublishResult { Success = true, PlatformPostId = mainResult.PlatformPostId, PublishedAt = DateTime.UtcNow };
+            // Safe DateTime assignment to avoid overflow
+            DateTime finalPublishedAt = GetSafeUtcNow();
+
+            return new PublishResult { Success = true, PlatformPostId = mainResult.PlatformPostId, PublishedAt = finalPublishedAt };
         }
 
         public async Task<bool> DeletePostAsync(string postId, Account account)
@@ -314,13 +324,23 @@ namespace SocialMediaCommander.Services.Implementation
             try
             {
                 if (!account.IsAuthenticated)
-                    return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
+                    return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = GetSafeUtcNow() });
 
-                return Task.FromResult(new RateLimitInfo { Remaining = 75, Limit = 75, ResetTime = DateTime.UtcNow.AddMinutes(15) });
+                var resetTime = GetSafeUtcNow();
+                try
+                {
+                    resetTime = resetTime.AddMinutes(15);
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    // Handle case where DateTime + 15 minutes would overflow
+                    resetTime = DateTime.MaxValue.AddDays(-1);
+                }
+                return Task.FromResult(new RateLimitInfo { Remaining = 75, Limit = 75, ResetTime = resetTime });
             }
             catch
             {
-                return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = DateTime.UtcNow });
+                return Task.FromResult(new RateLimitInfo { Remaining = 0, Limit = 0, ResetTime = GetSafeUtcNow() });
             }
         }
 
@@ -341,7 +361,7 @@ namespace SocialMediaCommander.Services.Implementation
                         Content = tweet.GetProperty("text").GetString() ?? string.Empty,
                         AuthorUsername = account.Username,
                         AuthorName = account.DisplayName,
-                        PostedAt = DateTime.Parse(tweet.GetProperty("created_at").GetString() ?? DateTime.UtcNow.ToString()),
+                        PostedAt = ParseTwitterDateTime(tweet.GetProperty("created_at").GetString()),
                         Platform = Platform
                     });
                 }
@@ -384,7 +404,7 @@ namespace SocialMediaCommander.Services.Implementation
                         Content = tweet.GetProperty("text").GetString() ?? string.Empty,
                         AuthorUsername = author?.TryGetProperty("username", out var username) == true ? username.GetString() ?? string.Empty : string.Empty,
                         AuthorName = author?.TryGetProperty("name", out var name) == true ? name.GetString() ?? string.Empty : string.Empty,
-                        PostedAt = DateTime.Parse(tweet.GetProperty("created_at").GetString() ?? DateTime.UtcNow.ToString()),
+                        PostedAt = ParseTwitterDateTime(tweet.GetProperty("created_at").GetString()),
                         Platform = Platform
                     });
                 }
@@ -426,6 +446,36 @@ namespace SocialMediaCommander.Services.Implementation
             catch
             {
                 return Enumerable.Empty<string>();
+            }
+        }
+
+        private DateTime ParseTwitterDateTime(string? dateTimeString)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(dateTimeString))
+                {
+                    return GetSafeUtcNow();
+                }
+
+                return DateTime.Parse(dateTimeString);
+            }
+            catch
+            {
+                return GetSafeUtcNow();
+            }
+        }
+
+        private DateTime GetSafeUtcNow()
+        {
+            try
+            {
+                return DateTime.UtcNow;
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                // Fallback to a safe date if DateTime.UtcNow causes overflow
+                return new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
             }
         }
     }

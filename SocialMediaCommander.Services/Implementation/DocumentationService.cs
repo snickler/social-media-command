@@ -66,6 +66,20 @@ public class DocumentationService : IDocumentationService
         _documentationBasePath = FindDocumentationPath();
     }
 
+    /// <summary>
+    /// Constructor for testing with custom documentation path
+    /// </summary>
+    /// <param name="documentationPath">Custom path for documentation files</param>
+    internal DocumentationService(string documentationPath)
+    {
+        _logger = Log.ForContext<DocumentationService>();
+        _markdownPipeline = new MarkdownPipelineBuilder()
+            .UseAdvancedExtensions()
+            .Build();
+
+        _documentationBasePath = documentationPath;
+    }
+
     private string FindDocumentationPath()
     {
         // Try different possible locations for the docs folder
@@ -133,8 +147,7 @@ public class DocumentationService : IDocumentationService
 
     private string GenerateStyledHtml(string content)
     {
-        return $@"
-<!DOCTYPE html>
+        return $@"<!DOCTYPE html>
 <html>
 <head>
     <meta charset=""utf-8"">
@@ -234,5 +247,14 @@ public class DocumentationService : IDocumentationService
     <p>An error occurred while loading the documentation:</p>
     <code>{error}</code>
 </div>");
+    }
+
+    /// <summary>
+    /// Gets all documentation files
+    /// </summary>
+    /// <returns>All documentation files</returns>
+    public Task<IEnumerable<DocumentationFile>> GetDocumentationAsync()
+    {
+        return Task.FromResult((IEnumerable<DocumentationFile>)_files);
     }
 }

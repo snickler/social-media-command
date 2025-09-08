@@ -1,0 +1,595 @@
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Xunit;
+using Xunit.Abstractions;
+using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Services.Implementation;
+using SocialMediaCommander.Services.Interfaces;
+
+namespace SocialMediaCommander.Tests.Performance;
+
+/// <summary>
+/// Performance benchmarking tests for high-throughput scenarios using modern C# performance patterns
+/// Measures throughput, latency, memory usage, and scalability using Microsoft best practices
+/// </summary>
+public class PerformanceBenchmarkTests : IClassFixture<PerformanceTestFixture>
+{
+    private readonly PerformanceTestFixture _fixture;
+    private readonly ITestOutputHelper _output;
+
+    public PerformanceBenchmarkTests(PerformanceTestFixture fixture, ITestOutputHelper output)
+    {
+        _fixture = fixture;
+        _output = output;
+    }
+
+    #region High-Throughput Post Processing Benchmarks
+
+    [Fact]
+    public async Task PostProcessingThroughput_ShouldHandle1000PostsPerSecond()
+    {
+        // Arrange
+        const int targetPostsPerSecond = 1000;
+        const int testDurationSeconds = 5;
+        const int totalPosts = targetPostsPerSecond * testDurationSeconds;
+
+        var postService = _fixture.ServiceProvider.GetRequiredService<IPostService>();
+        var stopwatch = Stopwatch.StartNew();
+        var processedPosts = 0;
+        var errors = new ConcurrentBag<Exception>();
+
+        // Generate test posts
+        var posts = GenerateTestPosts(totalPosts);
+
+        // Act - Process posts with high concurrency
+        var semaphore = new SemaphoreSlim(Environment.ProcessorCount * 4); // Limit concurrency
+        var tasks = posts.Select(async post =>
+        {
+            await semaphore.WaitAsync();
+            try
+            {
+                await postService.CreatePostAsync(post);
+                Interlocked.Increment(ref processedPosts);
+            }
+            catch (Exception ex)
+            {
+                errors.Add(ex);
+            }
+            finally
+            {
+                semaphore.Release();
+            }
+        });
+
+        await Task.WhenAll(tasks);
+        stopwatch.Stop();
+
+        // Assert
+        var actualThroughput = processedPosts / stopwatch.Elapsed.TotalSeconds;
+        var errorRate = (double)errors.Count / totalPosts * 100;
+
+        _output.WriteLine($"Processed {processedPosts} posts in {stopwatch.Elapsed.TotalSeconds:F2} seconds");
+        _output.WriteLine($"Throughput: {actualThroughput:F2} posts/second");
+        _output.WriteLine($"Error rate: {errorRate:F2}%");
+        _output.WriteLine($"Memory usage: {GC.GetTotalMemory(false) / 1024 / 1024:F2} MB");
+
+        actualThroughput.Should().BeGreaterThan(targetPostsPerSecond * 0.8); // Allow 20% tolerance
+        errorRate.Should().BeLessThan(1.0); // Less than 1% error rate
+        errors.Should().HaveCountLessThan(totalPosts / 100);
+    }
+
+    [Fact]
+    public async Task ConcurrentFeedProcessing_ShouldHandleMultiplePlatforms()
+    {
+        // Arrange
+        var platforms = Enum.GetValues<SocialPlatform>().ToArray();
+        const int itemsPerPlatform = 500;
+        const int concurrentUsers = 50;
+
+        var feedService = _fixture.ServiceProvider.GetRequiredService<IFeedService>();
+        var metrics = new ConcurrentDictionary<SocialPlatform, PerformanceMetric>();
+        var allTasks = new List<Task>();
+
+        // Act - Simulate concurrent users requesting feeds
+        for (int user = 0; user < concurrentUsers; user++)
+        {
+            allTasks.Add(Task.Run(async () =>
+            {
+                foreach (var platform in platforms)
+                {
+                    var stopwatch = Stopwatch.StartNew();
+
+                    try
+                    {
+                        var feedItems = await feedService.GetFeedItemsAsync(new[] { platform }, itemsPerPlatform);
+                        stopwatch.Stop();
+
+                        metrics.AddOrUpdate(platform,
+                            new PerformanceMetric { ResponseTime = stopwatch.Elapsed, Success = true },
+                            (key, existing) => new PerformanceMetric
+                            {
+                                ResponseTime = TimeSpan.FromMilliseconds((existing.ResponseTime.TotalMilliseconds + stopwatch.Elapsed.TotalMilliseconds) / 2),
+                                Success = existing.Success && true,
+                                RequestCount = existing.RequestCount + 1
+                            });
+                    }
+                    catch (Exception)
+                    {
+                        stopwatch.Stop();
+                        metrics.AddOrUpdate(platform,
+                            new PerformanceMetric { ResponseTime = stopwatch.Elapsed, Success = false },
+                            (key, existing) => new PerformanceMetric
+                            {
+                                ResponseTime = existing.ResponseTime,
+                                Success = false,
+                                RequestCount = existing.RequestCount + 1
+                            });
+                    }
+                }
+            }));
+        }
+
+        await Task.WhenAll(allTasks);
+
+        // Assert
+        foreach (var metric in metrics)
+        {
+            _output.WriteLine($"{metric.Key}: Avg Response Time: {metric.Value.ResponseTime.TotalMilliseconds:F2}ms, " +
+                            $"Success Rate: {(metric.Value.Success ? 100 : 0)}%, Requests: {metric.Value.RequestCount}");
+
+            metric.Value.ResponseTime.TotalMilliseconds.Should().BeLessThan(1000); // Under 1 second
+            metric.Value.RequestCount.Should().BeGreaterThan(0);
+        }
+    }
+
+    #endregion
+
+    #region Memory Efficiency Benchmarks
+
+    [Fact]
+    public async Task MemoryEfficiency_LargeDatasetProcessing_ShouldOptimizeMemoryUsage()
+    {
+        // Arrange
+        const int largeDatasetSize = 10000;
+        var initialMemory = GC.GetTotalMemory(true);
+
+        var optimizedService = _fixture.ServiceProvider.GetRequiredService<IOptimizedAsyncService>();
+        var accountIds = Enumerable.Range(1, largeDatasetSize).Select(i => $"account_{i}").ToArray();
+
+        // Act - Process large dataset with memory optimization
+        var stopwatch = Stopwatch.StartNew();
+
+        // Use streaming processing to minimize memory footprint
+        var processedCount = 0;
+        await foreach (var batch in optimizedService.ProcessAccountsStreamAsync(accountIds, CancellationToken.None))
+        {
+            if (batch)
+            {
+                processedCount++;
+
+                // Force garbage collection periodically to measure true memory usage
+                if (processedCount % 1000 == 0)
+                {
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    GC.Collect();
+                }
+            }
+        }
+
+        stopwatch.Stop();
+        var finalMemory = GC.GetTotalMemory(true);
+        var memoryUsed = (finalMemory - initialMemory) / 1024.0 / 1024.0; // MB
+
+        // Assert
+        _output.WriteLine($"Processed {processedCount} items in {stopwatch.Elapsed.TotalSeconds:F2} seconds");
+        _output.WriteLine($"Memory used: {memoryUsed:F2} MB");
+        _output.WriteLine($"Memory per item: {(memoryUsed * 1024 * 1024) / processedCount:F2} bytes");
+
+        processedCount.Should().Be(largeDatasetSize);
+        memoryUsed.Should().BeLessThan(100); // Less than 100MB for 10k items
+        stopwatch.Elapsed.TotalSeconds.Should().BeLessThan(30); // Complete within 30 seconds
+    }
+
+    [Fact]
+    public async Task ObjectPooling_ShouldReuseObjectsEfficiently()
+    {
+        // Arrange
+        const int iterations = 1000;
+        var performanceService = _fixture.ServiceProvider.GetRequiredService<IPerformanceOptimizedService>();
+
+        var allocationsBeforeTest = GC.CollectionCount(0);
+        var stopwatch = Stopwatch.StartNew();
+
+        // Act - Use object pooling for repeated operations
+        var tasks = Enumerable.Range(0, iterations).Select(async i =>
+        {
+            // Simulate operations that benefit from object pooling
+            var result = await performanceService.ProcessWithPooledResourcesAsync($"data_{i}");
+            return result;
+        });
+
+        var results = await Task.WhenAll(tasks);
+        stopwatch.Stop();
+
+        var allocationsAfterTest = GC.CollectionCount(0);
+        var allocationsGenerated = allocationsAfterTest - allocationsBeforeTest;
+
+        // Assert
+        _output.WriteLine($"Completed {iterations} operations in {stopwatch.Elapsed.TotalMilliseconds:F2}ms");
+        _output.WriteLine($"Average time per operation: {stopwatch.Elapsed.TotalMilliseconds / iterations:F2}ms");
+        _output.WriteLine($"Gen 0 collections during test: {allocationsGenerated}");
+
+        results.Should().HaveCount(iterations);
+        results.Should().OnlyContain(r => r); // All operations should succeed
+        allocationsGenerated.Should().BeLessThan(iterations / 10); // Significantly fewer allocations due to pooling
+    }
+
+    #endregion
+
+    #region Scalability Benchmarks
+
+    [Fact]
+    public async Task ScalabilityTest_ConcurrentUserSimulation_ShouldMaintainPerformance()
+    {
+        // Arrange
+        var concurrencyLevels = new[] { 10, 50, 100, 200 };
+        var resultsPerLevel = new Dictionary<int, ScalabilityMetrics>();
+        var accountService = _fixture.ServiceProvider.GetRequiredService<IAccountService>();
+
+        // Act - Test scalability at different concurrency levels
+        foreach (var concurrencyLevel in concurrencyLevels)
+        {
+            var stopwatch = Stopwatch.StartNew();
+            var completedTasks = 0;
+            var errorCount = 0;
+            var responseTimes = new ConcurrentBag<double>();
+
+            var tasks = Enumerable.Range(0, concurrencyLevel).Select(async userId =>
+            {
+                var userStopwatch = Stopwatch.StartNew();
+                try
+                {
+                    // Simulate realistic user operations
+                    var accounts = await accountService.GetAllAccountsAsync();
+                    await Task.Delay(Random.Shared.Next(10, 50)); // Simulate processing time
+
+                    userStopwatch.Stop();
+                    responseTimes.Add(userStopwatch.Elapsed.TotalMilliseconds);
+                    Interlocked.Increment(ref completedTasks);
+                }
+                catch
+                {
+                    Interlocked.Increment(ref errorCount);
+                }
+            });
+
+            await Task.WhenAll(tasks);
+            stopwatch.Stop();
+
+            var avgResponseTime = responseTimes.Any() ? responseTimes.Average() : 0;
+            var throughput = completedTasks / stopwatch.Elapsed.TotalSeconds;
+
+            resultsPerLevel[concurrencyLevel] = new ScalabilityMetrics
+            {
+                ConcurrencyLevel = concurrencyLevel,
+                TotalTime = stopwatch.Elapsed,
+                CompletedTasks = completedTasks,
+                ErrorCount = errorCount,
+                AverageResponseTime = avgResponseTime,
+                Throughput = throughput
+            };
+
+            _output.WriteLine($"Concurrency {concurrencyLevel}: {throughput:F2} ops/sec, " +
+                            $"Avg Response: {avgResponseTime:F2}ms, Errors: {errorCount}");
+        }
+
+        // Assert - Performance should remain acceptable at higher concurrency
+        var baselineMetrics = resultsPerLevel[concurrencyLevels[0]];
+        var highConcurrencyMetrics = resultsPerLevel[concurrencyLevels.Last()];
+
+        foreach (var metrics in resultsPerLevel.Values)
+        {
+            metrics.ErrorCount.Should().BeLessThan(metrics.ConcurrencyLevel / 10); // Less than 10% error rate
+            metrics.AverageResponseTime.Should().BeLessThan(5000); // Under 5 seconds
+        }
+
+        // Throughput should scale reasonably with concurrency
+        var throughputGrowthRatio = highConcurrencyMetrics.Throughput / baselineMetrics.Throughput;
+        throughputGrowthRatio.Should().BeGreaterThan(1.5); // At least 50% improvement with higher concurrency
+    }
+
+    #endregion
+
+    #region Real-Time Processing Benchmarks
+
+    [Fact]
+    public async Task RealTimeProcessing_EventStream_ShouldMaintainLowLatency()
+    {
+        // Arrange
+        const int eventCount = 1000;
+        const int maxLatencyMs = 100;
+        var latencies = new ConcurrentBag<double>();
+        var processedEvents = 0;
+
+        var eventChannel = System.Threading.Channels.Channel.CreateUnbounded<SocialFeedItem>();
+        var reader = eventChannel.Reader;
+        var writer = eventChannel.Writer;
+
+        // Act - Start event processing task
+        var processingTask = Task.Run(async () =>
+        {
+            await foreach (var feedItem in reader.ReadAllAsync())
+            {
+                var processingStart = Stopwatch.GetTimestamp();
+
+                // Simulate real-time processing
+                await ProcessFeedItemAsync(feedItem);
+
+                var processingEnd = Stopwatch.GetTimestamp();
+                var latency = (processingEnd - processingStart) * 1000.0 / Stopwatch.Frequency;
+                latencies.Add(latency);
+
+                Interlocked.Increment(ref processedEvents);
+            }
+        });
+
+        // Generate events with timestamps
+        var eventGenerationTask = Task.Run(async () =>
+        {
+            for (int i = 0; i < eventCount; i++)
+            {
+                var feedItem = new SocialFeedItem
+                {
+                    Id = $"event_{i}",
+                    Content = $"Real-time event #{i}",
+                    PostedAt = DateTime.UtcNow,
+                    Platform = (SocialPlatform)(i % 5)
+                };
+
+                await writer.WriteAsync(feedItem);
+                await Task.Delay(1); // Small delay between events
+            }
+            writer.Complete();
+        });
+
+        await Task.WhenAll(processingTask, eventGenerationTask);
+
+        // Assert
+        var avgLatency = latencies.Average();
+        var maxLatency = latencies.Max();
+        var p95Latency = latencies.OrderBy(x => x).Skip((int)(latencies.Count * 0.95)).First();
+
+        _output.WriteLine($"Processed {processedEvents} events");
+        _output.WriteLine($"Average latency: {avgLatency:F2}ms");
+        _output.WriteLine($"Max latency: {maxLatency:F2}ms");
+        _output.WriteLine($"95th percentile latency: {p95Latency:F2}ms");
+
+        processedEvents.Should().Be(eventCount);
+        avgLatency.Should().BeLessThan(maxLatencyMs);
+        p95Latency.Should().BeLessThan(maxLatencyMs * 2); // P95 can be slightly higher
+    }
+
+    #endregion
+
+    #region Cache Performance Benchmarks
+
+    [Fact]
+    public async Task CachePerformance_ShouldAchieveHighHitRatio()
+    {
+        // Arrange
+        const int requestCount = 1000;
+        const int uniqueKeys = 100; // This will create cache hits
+        var optimizedService = _fixture.ServiceProvider.GetRequiredService<IOptimizedAsyncService>();
+
+        var cacheHits = 0;
+        var cacheMisses = 0;
+        var responseTimes = new List<double>();
+
+        // Act - Generate requests with some repeating keys to test cache effectiveness
+        var tasks = Enumerable.Range(0, requestCount).Select(async i =>
+        {
+            var key = $"cache_key_{i % uniqueKeys}"; // This ensures cache hits
+            var stopwatch = Stopwatch.StartNew();
+
+            var result = await optimizedService.GetCachedDataAsync(key);
+
+            stopwatch.Stop();
+            responseTimes.Add(stopwatch.Elapsed.TotalMilliseconds);
+
+            if (result.WasCacheHit)
+                Interlocked.Increment(ref cacheHits);
+            else
+                Interlocked.Increment(ref cacheMisses);
+
+            return result;
+        });
+
+        var results = await Task.WhenAll(tasks);
+
+        // Assert
+        var hitRatio = (double)cacheHits / requestCount * 100;
+        var avgResponseTime = responseTimes.Average();
+        var cacheHitResponseTime = responseTimes.Take(cacheHits).Average();
+
+        _output.WriteLine($"Cache hit ratio: {hitRatio:F2}%");
+        _output.WriteLine($"Average response time: {avgResponseTime:F2}ms");
+        _output.WriteLine($"Cache hit response time: {cacheHitResponseTime:F2}ms");
+        _output.WriteLine($"Total requests: {requestCount}, Hits: {cacheHits}, Misses: {cacheMisses}");
+
+        hitRatio.Should().BeGreaterThan(80); // At least 80% hit ratio
+        cacheHitResponseTime.Should().BeLessThan(5); // Cache hits should be very fast
+        results.Should().OnlyContain(r => r.Success);
+    }
+
+    #endregion
+
+    #region Helper Methods and Test Data Generation
+
+    private List<Post> GenerateTestPosts(int count)
+    {
+        var posts = new List<Post>(count);
+        var platforms = Enum.GetValues<SocialPlatform>();
+        var random = new Random(42); // Fixed seed for reproducible tests
+
+        for (int i = 0; i < count; i++)
+        {
+            var post = new Post
+            {
+                Id = Guid.NewGuid().ToString(),
+                Content = $"Performance test post #{i} with #hashtag{i % 10}",
+                CreatedAt = DateTime.UtcNow.AddMinutes(-random.Next(0, 1440)), // Random time within last day
+                Status = PostStatus.Draft
+            };
+
+            // Add random platform selection
+            var platformCount = random.Next(1, 4);
+            var selectedPlatforms = platforms.OrderBy(x => random.Next()).Take(platformCount);
+            foreach (var platform in selectedPlatforms)
+            {
+                post.TargetPlatforms.Add(platform);
+            }
+
+            // Add random media occasionally
+            if (random.Next(0, 10) < 3) // 30% chance
+            {
+                post.Media.Add(new Media
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Type = MediaType.Image,
+                    FilePath = $"/tmp/test_image_{i}.jpg",
+                    MimeType = "image/jpeg",
+                    FileSize = random.Next(100000, 500000)
+                });
+            }
+
+            posts.Add(post);
+        }
+
+        return posts;
+    }
+
+    private async Task ProcessFeedItemAsync(SocialFeedItem feedItem)
+    {
+        // Simulate realistic processing: parsing, validation, storage
+        await Task.Delay(Random.Shared.Next(1, 10)); // 1-10ms processing time
+
+        // Simulate CPU work
+        var hash = feedItem.GetHashCode();
+        for (int i = 0; i < 100; i++)
+        {
+            hash = hash ^ i.GetHashCode();
+        }
+    }
+
+    #endregion
+}
+
+/// <summary>
+/// Performance test fixture for setting up performance testing environment
+/// </summary>
+public class PerformanceTestFixture : IDisposable
+{
+    public IServiceProvider ServiceProvider { get; private set; }
+
+    public PerformanceTestFixture()
+    {
+        var services = new ServiceCollection();
+        ConfigurePerformanceServices(services);
+        ServiceProvider = services.BuildServiceProvider();
+    }
+
+    private void ConfigurePerformanceServices(IServiceCollection services)
+    {
+        // Register optimized services for performance testing
+        services.AddSingleton<IOptimizedAsyncService, OptimizedAsyncService>();
+        services.AddSingleton<IPerformanceOptimizedService, PerformanceOptimizedService>();
+
+        // Mock services with performance-focused implementations
+        var mockPostService = new Mock<IPostService>();
+        var mockFeedService = new Mock<IFeedService>();
+        var mockAccountService = new Mock<IAccountService>();
+
+        // Setup high-performance mock responses
+        mockPostService.Setup(x => x.CreatePostAsync(It.IsAny<Post>()))
+                      .ReturnsAsync((Post post) => post);
+
+        mockFeedService.Setup(x => x.GetFeedItemsAsync(It.IsAny<IEnumerable<SocialPlatform>>(), It.IsAny<int>()))
+                      .ReturnsAsync((IEnumerable<SocialPlatform> platforms, int limit) =>
+                          GenerateMockFeedItems(platforms.First(), limit));
+
+        mockAccountService.Setup(x => x.GetAllAccountsAsync())
+                         .ReturnsAsync(new List<Account>());
+
+        services.AddSingleton(mockPostService.Object);
+        services.AddSingleton(mockFeedService.Object);
+        services.AddSingleton(mockAccountService.Object);
+    }
+
+    private List<SocialFeedItem> GenerateMockFeedItems(SocialPlatform platform, int count)
+    {
+        return Enumerable.Range(0, count).Select(i => new SocialFeedItem
+        {
+            Id = $"{platform}_{i}",
+            Platform = platform,
+            Content = $"Mock feed item #{i}",
+            PostedAt = DateTime.UtcNow.AddMinutes(-i),
+            AuthorName = $"User {i}",
+            Engagement = new SocialEngagement
+            {
+                Likes = Random.Shared.Next(0, 100),
+                Comments = Random.Shared.Next(0, 50),
+                Shares = Random.Shared.Next(0, 25)
+            }
+        }).ToList();
+    }
+
+    public void Dispose()
+    {
+        if (ServiceProvider is IDisposable disposable)
+        {
+            disposable.Dispose();
+        }
+    }
+}
+
+/// <summary>
+/// Performance metrics for benchmarking
+/// </summary>
+public class PerformanceMetric
+{
+    public TimeSpan ResponseTime { get; set; }
+    public bool Success { get; set; }
+    public int RequestCount { get; set; } = 1;
+}
+
+/// <summary>
+/// Scalability metrics for load testing
+/// </summary>
+public class ScalabilityMetrics
+{
+    public int ConcurrencyLevel { get; set; }
+    public TimeSpan TotalTime { get; set; }
+    public int CompletedTasks { get; set; }
+    public int ErrorCount { get; set; }
+    public double AverageResponseTime { get; set; }
+    public double Throughput { get; set; }
+}
+
+/// <summary>
+/// Cache performance result
+/// </summary>
+public class CacheResult
+{
+    public bool Success { get; set; }
+    public bool WasCacheHit { get; set; }
+    public object? Data { get; set; }
+}

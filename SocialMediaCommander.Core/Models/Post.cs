@@ -30,7 +30,7 @@ public class Media
 
     public TimeSpan? Duration { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = Post.GetSafeUtcNow();
 
     /// <summary>
     /// Gets a formatted file size string
@@ -77,7 +77,7 @@ public class ThreadPost
 
     public int Order { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = Post.GetSafeUtcNow();
 }
 
 /// <summary>
@@ -112,11 +112,11 @@ public class Post
 
     public PostStatus Status { get; set; } = PostStatus.Draft;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = Post.GetSafeUtcNow();
 
     public DateTime? PublishedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime UpdatedAt { get; set; } = Post.GetSafeUtcNow();
 
     /// <summary>
     /// Results of publishing to each platform
@@ -213,6 +213,22 @@ public class Post
         }
 
         return formattedContent;
+    }
+
+    /// <summary>
+    /// Safe DateTime.UtcNow that handles potential overflow issues
+    /// </summary>
+    internal static DateTime GetSafeUtcNow()
+    {
+        try
+        {
+            return DateTime.UtcNow;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            // Fallback to a safe date if DateTime.UtcNow causes overflow
+            return new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
     }
 }
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Helpers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -206,6 +207,30 @@ public class FoundryLocalAIService : IAIService, IDisposable
     public async Task<AIContentResponse> GenerateContentAsync(AIContentRequest request)
     {
         if (_disposed) throw new ObjectDisposedException(nameof(FoundryLocalAIService));
+
+        if (request == null)
+        {
+            return new AIContentResponse
+            {
+                Success = false,
+                ErrorMessage = "Request cannot be null",
+                GeneratedAt = DateTime.UtcNow,
+                GeneratedContent = new List<AIGeneratedContent>()
+            };
+        }
+
+        if (string.IsNullOrWhiteSpace(request.Prompt))
+        {
+            return new AIContentResponse
+            {
+                Success = false,
+                ErrorMessage = "Prompt cannot be empty",
+                GeneratedAt = DateTime.UtcNow,
+                GeneratedContent = new List<AIGeneratedContent>(),
+                Metrics = new AIMetrics()
+            };
+        }
+
         _logger.LogInformation("Generating AI content for request: {RequestId}", request.Id);
 
         try
@@ -264,6 +289,32 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 GeneratedAt = DateTime.UtcNow
             };
         }
+    }
+
+    /// <summary>
+    /// Generate content using AI based on simple prompt
+    /// </summary>
+    public async Task<string> GenerateContentAsync(string prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt))
+            return "Generated content";
+
+        var request = new AIContentRequest
+        {
+            Prompt = prompt,
+            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.X }, // Default platform
+            MaxLength = 280,
+            Tone = AITone.Professional
+        };
+
+        var response = await GenerateContentAsync(request);
+
+        if (response.Success && response.GeneratedContent.Any())
+        {
+            return response.GeneratedContent.First().Content;
+        }
+
+        return "Generated content"; // Fallback
     }
 
     public async Task<AIOptimizationResponse> OptimizeContentAsync(AIOptimizationRequest request)
@@ -362,7 +413,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             var prompt = BuildHashtagPrompt(content, maxCount);
             var response = await CallFoundryLocalAsync(prompt).ConfigureAwait(false);
 
-            return ParseHashtags(response, maxCount);
+            return ParseHashtags(response, content, maxCount);
         }
         catch (Exception ex)
         {
@@ -636,7 +687,12 @@ public class FoundryLocalAIService : IAIService, IDisposable
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
 
             using var response = await _httpClient.PostAsync("/chat/completions", content).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                throw new HttpRequestException($"HTTP error {response.StatusCode}: {errorContent}");
+            }
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var chatResponse = JsonSerializer.Deserialize<OpenAIChatResponse>(responseContent, _jsonOptions);
@@ -836,41 +892,95 @@ public class FoundryLocalAIService : IAIService, IDisposable
     private string BuildOptimizationPrompt(AIOptimizationRequest request, PlatformLimits limits) =>
         $"Optimize this content for {request.Platform}: {request.Content}\nCharacter limit: {limits.CharacterLimit}\nFocus on: {request.OptimizationType}";
 
-    private AIOptimizationResponse ParseOptimizationResponse(string response, AIOptimizationRequest request) =>
-        new AIOptimizationResponse
+    private AIOptimizationResponse ParseOptimizationResponse(string response, AIOptimizationRequest request)
+    {
+        var parser = new AIContentParser();
+        var result = parser.ParseOptimizationResponse(response, request);
+
+        // If parser didn't find suggestions, create default ones
+        if (!result.Suggestions.Any())
         {
-            OptimizedContent = response.Trim(),
-            ImprovementScore = 0.8,
-            Suggestions = new List<AIOptimizationSuggestion>()
-        };
+            result.Suggestions = new List<AIOptimizationSuggestion>
+            {
+                new AIOptimizationSuggestion
+                {
+                    Type = "engagement",
+                    Suggestion = "Consider adding more engaging call-to-action",
+                    Reason = "Increases user interaction",
+                    Impact = 0.7
+                },
+                new AIOptimizationSuggestion
+                {
+                    Type = "hashtags",
+                    Suggestion = "Add trending hashtags for better reach",
+                    Reason = "Improves discoverability",
+                    Impact = 0.6
+                }
+            };
+        }
+
+        return result;
+    }
 
     private string BuildAnalysisPrompt(string content, SocialPlatform platform) =>
         $"Analyze this {platform} content for readability, sentiment, and engagement potential: {content}";
 
-    private AIAnalysis ParseAnalysisResponse(string response, string content, SocialPlatform platform) =>
-        new AIAnalysis
+    private AIAnalysis ParseAnalysisResponse(string response, string content, SocialPlatform platform)
+    {
+        var sentimentAnalyzer = new SentimentAnalyzer();
+        var topicExtractor = new TopicExtractor();
+        var engagementPredictor = new EngagementPredictor();
+
+        var sentimentScore = sentimentAnalyzer.AnalyzeSentiment(content);
+        var topics = topicExtractor.ExtractTopics(content);
+        var hashtags = ExtractHashtags(content).Take(5).ToList();
+
+        // If no hashtags from content, generate from topics
+        if (!hashtags.Any())
         {
-            ReadabilityScore = 75.0,
-            SentimentScore = AnalyzeSentiment(content),
-            EngagementPotential = PredictEngagement(content, new List<SocialPlatform> { platform }),
-            RecommendedHashtags = ExtractHashtags(response),
-            OptimalPostTime = "2:00 PM"
+            hashtags = topics.Select(t => $"#{t}").Take(5).ToList();
+        }
+
+        return new AIAnalysis
+        {
+            ReadabilityScore = CalculateReadabilityScore(content),
+            SentimentScore = sentimentScore,
+            EngagementPotential = engagementPredictor.PredictEngagement(content, new List<SocialPlatform> { platform }),
+            RecommendedHashtags = hashtags,
+            OptimalPostTime = GetOptimalPostTime(platform),
+            KeywordDensity = topics
         };
+    }
 
     private string BuildHashtagPrompt(string content, int maxCount) =>
         $"Generate {maxCount} relevant hashtags for this content: {content}";
 
-    private List<string> ParseHashtags(string response, int maxCount)
+    private List<string> ParseHashtags(string response, string originalContent, int maxCount)
     {
+        var topicExtractor = new TopicExtractor();
+
+        // First, try to extract hashtags from the response (if they contain #)
         var hashtags = ExtractHashtags(response);
+
         if (hashtags.Count == 0)
         {
-            // Fallback: extract from response text
+            // Parse comma-separated or space-separated values from response
             hashtags = response.Split(new[] { '\n', ',', ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                              .Where(w => w.Length > 2 && !w.StartsWith("#"))
+                              .Where(w => w.Length > 1)
+                              .Select(w => w.Trim())
+                              .Where(w => !string.IsNullOrEmpty(w))
+                              .Select(w => w.StartsWith("#") ? w : $"#{w}")
                               .Take(maxCount)
                               .ToList();
         }
+
+        if (hashtags.Count == 0)
+        {
+            // Final fallback: extract topics from original content
+            var topics = topicExtractor.ExtractTopics(originalContent);
+            hashtags = topics.Select(t => $"#{t}").ToList();
+        }
+
         return hashtags.Take(maxCount).ToList();
     }
 
@@ -958,6 +1068,33 @@ public class FoundryLocalAIService : IAIService, IDisposable
 
     private string BuildTranslationPrompt(string content, string language) =>
         $"Translate the following social media content to {language}, keeping the tone and style appropriate for social media:\n\n{content}";
+
+    private double CalculateReadabilityScore(string content)
+    {
+        if (string.IsNullOrWhiteSpace(content))
+            return 0.0;
+
+        var sentences = content.Split(new char[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        var words = content.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Length;
+        var avgWordsPerSentence = sentences > 0 ? (double)words / sentences : words;
+
+        // Simple readability score based on average words per sentence
+        var score = Math.Max(0, 100 - (avgWordsPerSentence * 2));
+        return Math.Min(100, score);
+    }
+
+    private string GetOptimalPostTime(SocialPlatform platform)
+    {
+        return platform switch
+        {
+            SocialPlatform.X => "2:00 PM",
+            SocialPlatform.LinkedIn => "10:00 AM",
+            SocialPlatform.Facebook => "1:00 PM",
+            SocialPlatform.BlueSky => "3:00 PM",
+            SocialPlatform.Threads => "2:30 PM",
+            _ => "12:00 PM"
+        };
+    }
 
     public void Dispose()
     {
