@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
@@ -21,6 +21,7 @@ public class SecureAccountService : IAccountService
     private readonly string _accountsFileName = "accounts.encrypted";
     private readonly ILogger _logger;
     private readonly object _lock = new();
+    private readonly SemaphoreSlim _fileSemaphore = new(1, 1);
     private Dictionary<string, Account> _accounts = new();
     private bool _isLoaded = false;
 
@@ -285,6 +286,7 @@ public class SecureAccountService : IAccountService
             return;
         }
 
+        await _fileSemaphore.WaitAsync();
         try
         {
             var encryptedData = await File.ReadAllBytesAsync(filePath);
@@ -309,12 +311,17 @@ public class SecureAccountService : IAccountService
                 _accounts = new Dictionary<string, Account>();
             }
         }
+        finally
+        {
+            _fileSemaphore.Release();
+        }
     }
 
     private async Task SaveAccountsAsync()
     {
         var filePath = Path.Combine(_dataDirectory, _accountsFileName);
 
+        await _fileSemaphore.WaitAsync();
         try
         {
             List<Account> accountsList;
@@ -338,6 +345,10 @@ public class SecureAccountService : IAccountService
         {
             _logger.Error(ex, "Failed to save accounts to encrypted storage");
             throw;
+        }
+        finally
+        {
+            _fileSemaphore.Release();
         }
     }
 }
