@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <Description>Core models and interfaces for Social Media Commander with AI, advanced auth, MCP, and Windows integration</Description>
+    
+    <!-- AOT Compatibility -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

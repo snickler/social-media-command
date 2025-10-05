@@ -7,6 +7,17 @@
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <Description>Enhanced Social Media Commander Desktop Application with AI, advanced auth, MCP, and Windows integration</Description>
     <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;osx-x64;osx-arm64</RuntimeIdentifiers>
+    
+    <!-- Native AOT Configuration -->
+    <PublishAot>true</PublishAot>
+    
+    <!-- Trimming Configuration - treat unavoidable framework warnings as warnings instead of errors -->
+    <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+    <TrimMode>full</TrimMode>
+    
+    <!-- AOT Analyzer warnings configuration -->
+    <WarningsAsErrors />
+    <WarningsNotAsErrors>IL2026;IL2057;IL3050</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

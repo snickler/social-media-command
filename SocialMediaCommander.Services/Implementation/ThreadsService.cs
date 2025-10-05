@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Serialization;
 using SocialMediaCommander.Services.Interfaces;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -45,14 +46,14 @@ public class ThreadsService : IThreadsService
                 };
             }
 
-            var postData = new
+            var postData = new ThreadsPostData
             {
-                media_type = "TEXT",
-                text = post.FormatForPlatform(Platform),
-                access_token = account.Tokens!.AccessToken
+                MediaType = "TEXT",
+                Text = post.FormatForPlatform(Platform),
+                AccessToken = account.Tokens!.AccessToken
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, SocialMediaCommanderJsonContext.Default.ThreadsPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/v1.0/{userProfile.Id}/threads");
@@ -67,13 +68,13 @@ public class ThreadsService : IThreadsService
                 var id = document.RootElement.GetProperty("id").GetString();
 
                 // Publish the created thread
-                var publishData = new
+                var publishData = new ThreadsPublishData
                 {
-                    creation_id = id,
-                    access_token = account.Tokens!.AccessToken
+                    CreationId = id ?? string.Empty,
+                    AccessToken = account.Tokens!.AccessToken
                 };
 
-                var publishJson = JsonSerializer.Serialize(publishData);
+                var publishJson = JsonSerializer.Serialize(publishData, SocialMediaCommanderJsonContext.Default.ThreadsPublishData);
                 var publishContent = new StringContent(publishJson, Encoding.UTF8, "application/json");
 
                 var publishRequest = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/v1.0/{userProfile.Id}/threads_publish");
@@ -292,8 +293,8 @@ public class ThreadsService : IThreadsService
             var request = new HttpRequestMessage(HttpMethod.Post,
                 $"{BaseUrl}/v1.0/{userProfile.Id}/threads_likes?access_token={account.Tokens!.AccessToken}");
 
-            var likeData = new { thread_id = postId };
-            var json = JsonSerializer.Serialize(likeData);
+            var likeData = new ThreadsLikeData { ThreadId = postId };
+            var json = JsonSerializer.Serialize(likeData, SocialMediaCommanderJsonContext.Default.ThreadsLikeData);
             request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.SendAsync(request);
@@ -315,15 +316,15 @@ public class ThreadsService : IThreadsService
             if (userProfile == null) return false;
 
             // Threads reposts are done by creating a new thread that quotes the original
-            var repostData = new
+            var repostData = new ThreadsRepostData
             {
-                media_type = "TEXT",
-                text = "",
-                quote_post_id = postId,
-                access_token = account.Tokens!.AccessToken
+                MediaType = "TEXT",
+                Text = "",
+                QuotePostId = postId,
+                AccessToken = account.Tokens!.AccessToken
             };
 
-            var json = JsonSerializer.Serialize(repostData);
+            var json = JsonSerializer.Serialize(repostData, SocialMediaCommanderJsonContext.Default.ThreadsRepostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/v1.0/{userProfile.Id}/threads");

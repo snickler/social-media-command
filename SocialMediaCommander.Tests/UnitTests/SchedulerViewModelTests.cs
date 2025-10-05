@@ -308,7 +308,8 @@ public class SchedulerViewModelTests
     public void NewPostScheduleTime_Set_ShouldRaisePropertyChanged()
     {
         // Arrange
-        var testTime = TimeSpan.FromHours(15);
+        var currentValue = _viewModel.NewPostScheduleTime;
+        var testTime = currentValue == TimeSpan.FromHours(15) ? TimeSpan.FromHours(10) : TimeSpan.FromHours(15);
         var eventRaised = false;
         _viewModel.PropertyChanged += (_, args) =>
         {

@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Web;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -296,7 +297,7 @@ public class OAuthAuthenticationService : IAuthenticationService
             }
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            var tokenData = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+            var tokenData = JsonSerializer.Deserialize(jsonResponse, ServicesJsonContext.Default.JsonElement);
 
             return new OAuthTokens
             {
@@ -336,7 +337,7 @@ public class OAuthAuthenticationService : IAuthenticationService
                 return null;
 
             var jsonResponse = await response.Content.ReadAsStringAsync();
-            var userData = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+            var userData = JsonSerializer.Deserialize(jsonResponse, ServicesJsonContext.Default.JsonElement);
 
             return new UserProfile
             {

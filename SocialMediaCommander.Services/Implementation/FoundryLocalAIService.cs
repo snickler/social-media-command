@@ -4,8 +4,10 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Serialization;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Services.Helpers;
+using SocialMediaCommander.Services.Serialization;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -663,17 +665,17 @@ public class FoundryLocalAIService : IAIService, IDisposable
     /// </summary>
     private async ValueTask<string> CallFoundryLocalAsync(string prompt)
     {
-        var requestBody = new
+        var requestBody = new OpenAIChatRequest
         {
-            model = _config.ModelName,
-            messages = new[]
+            Model = _config.ModelName,
+            Messages = new[]
             {
-                new { role = "system", content = _config.SystemPrompt },
-                new { role = "user", content = prompt }
+                new OpenAIMessage { Role = "system", Content = _config.SystemPrompt },
+                new OpenAIMessage { Role = "user", Content = prompt }
             },
-            temperature = _config.Temperature,
-            max_tokens = _config.MaxTokens,
-            stream = false
+            Temperature = _config.Temperature,
+            MaxTokens = _config.MaxTokens,
+            Stream = false
         };
 
         // Use ArrayPool for JSON serialization buffer
@@ -681,7 +683,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
         try
         {
             using var stream = new MemoryStream(buffer);
-            await JsonSerializer.SerializeAsync(stream, requestBody, _jsonOptions).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(stream, requestBody, ServicesJsonContext.Default.OpenAIChatRequest).ConfigureAwait(false);
 
             using var content = new ByteArrayContent(buffer, 0, (int)stream.Length);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
@@ -695,7 +697,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
             }
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var chatResponse = JsonSerializer.Deserialize<OpenAIChatResponse>(responseContent, _jsonOptions);
+            var chatResponse = JsonSerializer.Deserialize(responseContent, SocialMediaCommanderJsonContext.Default.OpenAIChatResponse);
 
             return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
         }

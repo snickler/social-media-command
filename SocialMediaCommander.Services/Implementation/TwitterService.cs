@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Serialization;
 using SocialMediaCommander.Services.Interfaces;
 
 namespace SocialMediaCommander.Services.Implementation
@@ -38,9 +39,9 @@ namespace SocialMediaCommander.Services.Implementation
 
                 var platform = Platform;
                 var formattedText = post.FormatForPlatform(platform);
-                var tweetData = new { text = formattedText };
+                var tweetData = new TweetData { Text = formattedText };
 
-                var json = JsonSerializer.Serialize(tweetData);
+                var json = JsonSerializer.Serialize(tweetData, SocialMediaCommanderJsonContext.Default.TweetData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/tweets") { Content = content };
@@ -83,8 +84,12 @@ namespace SocialMediaCommander.Services.Implementation
 
             foreach (var threadPost in post.ThreadPosts)
             {
-                var threadTweetData = new { text = threadPost.Content, reply = new { in_reply_to_tweet_id = replyToId } };
-                var tjson = JsonSerializer.Serialize(threadTweetData);
+                var threadTweetData = new ThreadTweetData
+                {
+                    Text = threadPost.Content,
+                    Reply = new ReplyInfo { InReplyToTweetId = replyToId ?? string.Empty }
+                };
+                var tjson = JsonSerializer.Serialize(threadTweetData, SocialMediaCommanderJsonContext.Default.ThreadTweetData);
                 var tcontent = new StringContent(tjson, Encoding.UTF8, "application/json");
 
                 var treq = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/tweets") { Content = tcontent };
@@ -278,8 +283,8 @@ namespace SocialMediaCommander.Services.Implementation
                 var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken).ConfigureAwait(false);
                 if (userProfile == null) return false;
 
-                var retweetData = new { tweet_id = postId };
-                var json = JsonSerializer.Serialize(retweetData);
+                var retweetData = new RetweetData { TweetId = postId };
+                var json = JsonSerializer.Serialize(retweetData, SocialMediaCommanderJsonContext.Default.RetweetData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/users/{userProfile.Id}/retweets") { Content = content };
@@ -303,8 +308,8 @@ namespace SocialMediaCommander.Services.Implementation
                 var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken).ConfigureAwait(false);
                 if (userProfile == null) return false;
 
-                var likeData = new { tweet_id = postId };
-                var json = JsonSerializer.Serialize(likeData);
+                var likeData = new LikeData { TweetId = postId };
+                var json = JsonSerializer.Serialize(likeData, SocialMediaCommanderJsonContext.Default.LikeData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/users/{userProfile.Id}/likes") { Content = content };

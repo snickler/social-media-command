@@ -71,6 +71,99 @@ If you see errors like "OAuth configuration has placeholder values":
 ## Installation
 
 1. Clone the repository
-2. Build the solution
-3. Configure OAuth settings (see guide above)
-4. Run the application
+   ```bash
+   git clone https://github.com/snickler/social-media-command.git
+   cd social-media-command
+   ```
+
+2. **Setup Git hooks (ONE-TIME, 5 minutes) - HIGHLY RECOMMENDED**:
+   
+   This configures your Git globally so ALL future repository clones will automatically have hooks configured!
+   
+   ```bash
+   # Windows (PowerShell)
+   .\scripts\setup-global-template.ps1
+   
+   # Linux/macOS
+   chmod +x scripts/setup-global-template.sh
+   ./scripts/setup-global-template.sh
+   ```
+   
+   **Alternative (per-repository only)**:
+   ```bash
+   .\setup-hooks.ps1  # Windows
+   ./setup-hooks.sh   # Linux/macOS
+   ```
+
+3. Build the solution
+   ```bash
+   dotnet build SocialMediaCommander.sln
+   ```
+
+4. Configure OAuth settings (see guide above)
+
+5. Run the application
+   ```bash
+   dotnet run --project SocialMediaCommander.Desktop
+   ```
+
+## Development
+
+### Git Hooks (Truly Automatic Setup)
+
+This project uses Git hooks to maintain code quality. We provide **multiple layers** to ensure hooks are always active:
+
+#### 🌟 Best Option: Global Template (One-Time Setup for All Repos)
+
+**Run once, benefits all future repository clones:**
+
+```bash
+# Windows
+.\scripts\setup-global-template.ps1
+
+# Linux/macOS
+chmod +x scripts/setup-global-template.sh
+./scripts/setup-global-template.sh
+```
+
+**What this does:**
+- Configures your Git globally to auto-setup hooks on ANY repository clone
+- Every future `git clone` of repos with `.githooks/` will work automatically
+- Never manually setup hooks again!
+- 5-minute investment, saves hours over time
+
+#### Alternative: Per-Repository Setup
+
+If you prefer not to configure globally:
+
+```bash
+.\setup-hooks.ps1       # Windows
+./setup-hooks.sh        # Linux/macOS
+```
+
+#### Automatic Fallback: MSBuild Target
+
+If you forget to run setup, hooks will auto-configure on first `dotnet build`!
+
+**Hook Features:**
+- **Pre-commit**: Blocks commits with secrets, build errors, or policy violations
+- **Post-commit**: Provides helpful reminders and next-step suggestions
+
+**📋 Quick Reference:** See [GIT_HOOKS_QUICK_REF.md](GIT_HOOKS_QUICK_REF.md) for a one-page cheat sheet
+
+**📚 Complete Documentation:**
+- [Setup Guide](HOOKS_SETUP_GUIDE.md) - Choose your installation method
+- [Truly Automatic Implementation](docs/development/truly-automatic-git-hooks.md) - Complete technical guide
+- [Troubleshooting](docs/development/git-hooks-troubleshooting.md) - Problem solving
+- [All Git Hooks Docs](docs/development/) - Complete reference library
+
+### Quality Standards
+
+All commits must pass:
+- ✅ No hardcoded secrets or credentials
+- ✅ Central Package Management compliance (no versions in .csproj)
+- ✅ Build verification (`dotnet build`)
+- ✅ Async/await best practices (ConfigureAwait in library code)
+- ✅ Code formatting (`dotnet format`)
+
+See [.github/copilot-instructions.md](.github/copilot-instructions.md) for complete guidelines.

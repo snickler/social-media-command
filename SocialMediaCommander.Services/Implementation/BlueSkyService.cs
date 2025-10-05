@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -45,19 +46,19 @@ public class BlueSkyService : IBlueSkyService
                 };
             }
 
-            var postData = new
+            var postData = new BlueSkyPostData
             {
-                repo = account.Username,
-                collection = "app.bsky.feed.post",
-                record = new
+                Repo = account.Username,
+                Collection = "app.bsky.feed.post",
+                Record = new BlueSkyPostRecord
                 {
-                    text = post.FormatForPlatform(Platform),
-                    createdAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    facets = ExtractFacets(post.Content)
+                    Text = post.FormatForPlatform(Platform),
+                    CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                    Facets = ExtractFacets(post.Content)
                 }
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.BlueSkyPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.createRecord");
@@ -177,14 +178,14 @@ public class BlueSkyService : IBlueSkyService
             var session = await CreateSessionAsync(account);
             if (!session) return false;
 
-            var deleteData = new
+            var deleteData = new BlueSkyDeleteData
             {
-                repo = account.Username,
-                collection = "app.bsky.feed.post",
-                rkey = ExtractRkeyFromUri(postId)
+                Repo = account.Username,
+                Collection = "app.bsky.feed.post",
+                Rkey = ExtractRkeyFromUri(postId)
             };
 
-            var json = JsonSerializer.Serialize(deleteData);
+            var json = JsonSerializer.Serialize(deleteData, ServicesJsonContext.Default.BlueSkyDeleteData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.deleteRecord");
@@ -347,13 +348,13 @@ public class BlueSkyService : IBlueSkyService
             }
 
             // For BlueSky, we need to create a session with the access token
-            var sessionData = new
+            var sessionData = new BlueSkySessionData
             {
-                identifier = account.Username,
-                password = account.Tokens.AccessToken // This would be the app password in real implementation
+                Identifier = account.Username,
+                Password = account.Tokens.AccessToken // This would be the app password in real implementation
             };
 
-            var json = JsonSerializer.Serialize(sessionData);
+            var json = JsonSerializer.Serialize(sessionData, ServicesJsonContext.Default.BlueSkySessionData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var response = await _httpClient.PostAsync($"{BaseUrl}/com.atproto.server.createSession", content);
@@ -403,23 +404,22 @@ public class BlueSkyService : IBlueSkyService
     {
         try
         {
-            var postData = new
+            var postData = new BlueSkyPostData
             {
-                repo = account.Username,
-                collection = "app.bsky.feed.post",
-                record = new
+                Repo = account.Username,
+                Collection = "app.bsky.feed.post",
+                Record = new BlueSkyPostRecord
                 {
-                    text = post.FormatForPlatform(Platform),
-                    createdAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    reply = new
+                    Text = post.FormatForPlatform(Platform),
+                    CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+                    Reply = new BlueSkyReply
                     {
-                        root = new { uri = replyToUri, cid = "" },
-                        parent = new { uri = replyToUri, cid = "" }
+                        Parent = new BlueSkyParent { Uri = replyToUri, Cid = "" }
                     }
                 }
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.BlueSkyPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.createRecord");

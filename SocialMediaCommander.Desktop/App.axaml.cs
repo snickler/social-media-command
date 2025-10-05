@@ -5,6 +5,7 @@ using Avalonia.Data.Core.Plugins;
 using System.Linq;
 using System.IO;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +71,7 @@ public partial class App : Application
         }
     }
 
+    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Avalonia UI binding plugins required for proper operation")]
     public override void OnFrameworkInitializationCompleted()
     {
         _logger?.Information("=== FRAMEWORK INITIALIZATION STARTED ===");
@@ -225,6 +227,8 @@ public partial class App : Application
         return builder.Build();
     }
 
+    [SuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Avalonia UI binding plugins required for proper operation")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Avalonia framework requires access to DataValidators for UI binding")]
     private void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove

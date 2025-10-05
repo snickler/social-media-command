@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 using Serilog;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -63,11 +65,7 @@ public class SettingsService : ISettingsService
                 _cachedSettings = settings;
             }
 
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var json = JsonSerializer.Serialize(settings, ServicesJsonContext.Default.AppSettings);
 
             var data = System.Text.Encoding.UTF8.GetBytes(json);
             var encryptedData = CrossPlatformEncryption.Protect(data, "SocialMediaCommander_Settings");
@@ -82,6 +80,8 @@ public class SettingsService : ISettingsService
         }
     }
 
+    [RequiresUnreferencedCode("Generic JSON deserialization may require types that cannot be statically analyzed")]
+    [RequiresDynamicCode("Generic JSON deserialization may require runtime code generation")]
     public async Task<T> GetSettingAsync<T>(string key, T defaultValue = default!)
     {
         var settings = await GetSettingsAsync();
@@ -94,7 +94,7 @@ public class SettingsService : ISettingsService
             {
                 if (value is JsonElement jsonElement)
                 {
-                    var deserialized = jsonElement.Deserialize<T>();
+                    var deserialized = JsonSerializer.Deserialize<T>(jsonElement, ServicesJsonContext.Default.Options);
                     return deserialized != null ? deserialized : defaultValue;
                 }
 
@@ -156,11 +156,7 @@ public class SettingsService : ISettingsService
         try
         {
             var settings = await GetSettingsAsync();
-            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var json = JsonSerializer.Serialize(settings, ServicesJsonContext.Default.AppSettings);
 
             await File.WriteAllTextAsync(filePath, json);
             _logger.Information("Settings exported to: {FilePath}", filePath);
@@ -184,10 +180,7 @@ public class SettingsService : ISettingsService
             }
 
             var json = await File.ReadAllTextAsync(filePath);
-            var importedSettings = JsonSerializer.Deserialize<AppSettings>(json, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var importedSettings = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.AppSettings);
 
             if (importedSettings != null)
             {
@@ -221,10 +214,7 @@ public class SettingsService : ISettingsService
             var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Settings");
             var json = System.Text.Encoding.UTF8.GetString(decryptedData);
 
-            var settings = JsonSerializer.Deserialize<AppSettings>(json, new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            });
+            var settings = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.AppSettings);
 
             if (settings != null)
             {

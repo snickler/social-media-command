@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -193,7 +194,7 @@ public class OptimizedAsyncService : IOptimizedAsyncService
         try
         {
             // For simple serialization, we can often complete synchronously
-            var json = JsonSerializer.Serialize(account);
+            var json = JsonSerializer.Serialize(account, ServicesJsonContext.Default.Account);
             return ValueTask.FromResult(json);
         }
         catch (Exception ex)
@@ -319,7 +320,7 @@ public class OptimizedAsyncService : IOptimizedAsyncService
         try
         {
             await using var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, 4096, useAsync: true);
-            await JsonSerializer.SerializeAsync(fileStream, accounts, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(fileStream, accounts, ServicesJsonContext.Default.IEnumerableAccount, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation("Successfully saved accounts to {FilePath}", filePath);
             return true;

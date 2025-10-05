@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using SocialMediaCommander.Services.Implementation;
 
@@ -27,6 +28,8 @@ public interface ISettingsService
     /// <param name="key">Setting key</param>
     /// <param name="defaultValue">Default value if setting not found</param>
     /// <returns>Setting value or default</returns>
+    [RequiresUnreferencedCode("Generic JSON deserialization may require types that cannot be statically analyzed")]
+    [RequiresDynamicCode("Generic JSON deserialization may require runtime code generation")]
     Task<T> GetSettingAsync<T>(string key, T defaultValue = default!);
 
     /// <summary>

@@ -1,6 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using SocialMediaCommander.Core.Models;
+using SocialMediaCommander.Core.Serialization;
 using SocialMediaCommander.Services.Interfaces;
 
 namespace SocialMediaCommander.Services.Implementation;
@@ -45,13 +46,13 @@ public class FacebookService : IFacebookService
                 };
             }
 
-            var postData = new
+            var postData = new FacebookPostData
             {
-                message = post.FormatForPlatform(Platform),
-                access_token = account.Tokens!.AccessToken
+                Message = post.FormatForPlatform(Platform),
+                AccessToken = account.Tokens!.AccessToken
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, SocialMediaCommanderJsonContext.Default.FacebookPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/{userProfile.Id}/feed");
@@ -305,13 +306,13 @@ public class FacebookService : IFacebookService
             var userProfile = await _authService.GetUserProfileAsync(Platform, account.Tokens!.AccessToken);
             if (userProfile == null) return false;
 
-            var shareData = new
+            var shareData = new FacebookShareData
             {
-                link = $"https://facebook.com/{postId}",
-                access_token = account.Tokens!.AccessToken
+                Link = $"https://facebook.com/{postId}",
+                AccessToken = account.Tokens!.AccessToken
             };
 
-            var json = JsonSerializer.Serialize(shareData);
+            var json = JsonSerializer.Serialize(shareData, SocialMediaCommanderJsonContext.Default.FacebookShareData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/{userProfile.Id}/feed");
@@ -339,13 +340,13 @@ public class FacebookService : IFacebookService
                 };
             }
 
-            var postData = new
+            var postData = new FacebookPostData
             {
-                message = post.FormatForPlatform(Platform),
-                access_token = account.Tokens!.AccessToken
+                Message = post.FormatForPlatform(Platform),
+                AccessToken = account.Tokens!.AccessToken
             };
 
-            var json = JsonSerializer.Serialize(postData);
+            var json = JsonSerializer.Serialize(postData, SocialMediaCommanderJsonContext.Default.FacebookPostData);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/{pageId}/feed");

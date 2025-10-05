@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -12,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Services.Serialization;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -154,6 +156,8 @@ public class PerformanceOptimizedService : IPerformanceOptimizedService
     /// <summary>
     /// High-performance JSON serialization with memory pooling
     /// </summary>
+    [RequiresUnreferencedCode("Generic JSON serialization may require types that cannot be statically analyzed")]
+    [RequiresDynamicCode("Generic JSON serialization may require runtime code generation")]
     public async ValueTask<string> SerializeToJsonAsync<T>(T data, CancellationToken cancellationToken = default)
         where T : class
     {
@@ -166,7 +170,7 @@ public class PerformanceOptimizedService : IPerformanceOptimizedService
         try
         {
             using var stream = new MemoryStream(buffer);
-            await JsonSerializer.SerializeAsync(stream, data, cancellationToken: cancellationToken).ConfigureAwait(false);
+            await JsonSerializer.SerializeAsync(stream, data, ServicesJsonContext.Default.Options, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             var jsonBytes = stream.ToArray();
             var result = Encoding.UTF8.GetString(jsonBytes);
