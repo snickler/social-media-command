@@ -12,8 +12,14 @@ on:
       - '**/*.csproj'
       - '**/*.props'
       - '**/*.targets'
+      - '.github/workflows/ci-cd.yml'
   release:
     types: [published]
+
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -60,6 +66,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
+      # Cache NuGet packages to speed up restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
         with:
@@ -67,10 +82,20 @@ jobs:
           # Ensure consistent NuGet behavior across platforms
           source-url: https://api.nuget.org/v3/index.json
 
+      # Cache Node modules for frontend
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Get version
         id: version
