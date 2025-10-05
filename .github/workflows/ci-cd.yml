@@ -120,21 +120,41 @@ jobs:
           echo "/usr/local/bin/dotnet-aot-wrapper" >> $GITHUB_PATH
 
       - name: Build
-        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
+        shell: bash
+        run: |
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries in Avalonia.Skia
+          # The runtime identifier in the publish step will handle architecture selection
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet build SocialMediaCommander.sln --no-restore --configuration Release
+          else
+            dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
+          fi
         timeout-minutes: 10
 
       - name: Test
         if: matrix.arch == 'x64'
         continue-on-error: true
+        shell: bash
         run: |
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+          else
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
+          fi
         timeout-minutes: 10
 
       - name: UI Tests
         if: matrix.arch == 'x64'
         continue-on-error: true
+        shell: bash
         run: |
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx"
+          else
             dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" /p:Platform=${{ matrix.arch}}
+          fi
         timeout-minutes: 5
 
       - name: Code Coverage Report

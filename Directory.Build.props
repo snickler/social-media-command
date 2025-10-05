@@ -54,7 +54,11 @@
              Condition="'$(CurrentHooksPath)' != '$(GitHooksPath)'" />
     
     <!-- Make hooks executable on Unix-like systems -->
-    <Exec Command="chmod +x $(GitHooksPath)/pre-commit $(GitHooksPath)/post-commit" 
+    <Exec Command="test -f $(GitHooksPath)/pre-commit &amp;&amp; chmod +x $(GitHooksPath)/pre-commit || echo 'pre-commit not found, skipping'" 
+          Condition="'$(OS)' != 'Windows_NT' AND '$(CurrentHooksPath)' != '$(GitHooksPath)'"
+          IgnoreExitCode="true"
+          ContinueOnError="true" />
+    <Exec Command="test -f $(GitHooksPath)/post-commit &amp;&amp; chmod +x $(GitHooksPath)/post-commit || echo 'post-commit not found, skipping'" 
           Condition="'$(OS)' != 'Windows_NT' AND '$(CurrentHooksPath)' != '$(GitHooksPath)'"
           IgnoreExitCode="true"
           ContinueOnError="true" />
