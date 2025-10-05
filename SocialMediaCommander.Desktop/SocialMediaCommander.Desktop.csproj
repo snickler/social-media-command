@@ -52,11 +52,11 @@
   </ItemGroup>
 
   <!-- WebViewControl packages - exclude on macOS as CEF doesn't work reliably on macOS -->
-  <ItemGroup Condition="'$(OS)' != 'OSX' And $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64'))">
+  <ItemGroup Condition="'$(Platform)' == 'arm64' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64'))">
     <PackageReference Include="WebViewControl-Avalonia-ARM64" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(OS)' != 'OSX' And ('$(Platform)' == '' Or $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64')) == 'False')">
+  <ItemGroup Condition="'$(Platform)' == 'x64' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('x64'))">
     <PackageReference Include="WebViewControl-Avalonia" />
   </ItemGroup>
 
