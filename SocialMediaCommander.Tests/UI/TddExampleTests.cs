@@ -87,10 +87,10 @@ public class TddExampleTests : RecordedTestBase
         // Assert
         AddSection("Verification Phase");
         RecordAssertion("View is not null", view != null);
-        RecordAssertion("DataContext is set", view.DataContext != null);
+        RecordAssertion("DataContext is set", view!.DataContext != null);
 
         view.Should().NotBeNull();
-        view.DataContext.Should().NotBeNull();
+        view!.DataContext.Should().NotBeNull();
 
         // Save recording
         var recordingPath = SaveRecording(nameof(PostEditorView_ShouldLoad_WithoutErrors));
