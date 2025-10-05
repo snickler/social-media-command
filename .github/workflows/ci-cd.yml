@@ -106,6 +106,8 @@ jobs:
           sudo apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
           echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
           echo "CXX=aarch64-linux-gnu-g++" >> $GITHUB_ENV
+          echo "OBJCOPY=aarch64-linux-gnu-objcopy" >> $GITHUB_ENV
+          echo "STRIP=aarch64-linux-gnu-strip" >> $GITHUB_ENV
 
       - name: Build
         run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
