@@ -1,0 +1,136 @@
+#!/bin/sh
+#
+# Post-commit hook for Social Media Commander
+# Performs quality checks and housekeeping after successful commits
+#
+
+echo ""
+echo "🎉 Commit successful!"
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Get commit hash
+COMMIT_HASH=$(git rev-parse --short HEAD)
+
+# Function to print info messages
+info() {
+    echo "${BLUE}ℹ️  $1${NC}"
+}
+
+# Function to print success messages
+success() {
+    echo "${GREEN}✅ $1${NC}"
+}
+
+# Function to print warning messages
+warning() {
+    echo "${YELLOW}⚠️  $1${NC}"
+}
+
+echo ""
+info "Post-commit tasks for commit: $COMMIT_HASH"
+echo ""
+
+# 1. Run tests if C# files were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "\.cs$" > /dev/null; then
+    echo "🧪 C# files modified. Consider running tests:"
+    echo "   ${GREEN}dotnet test SocialMediaCommander.sln${NC}"
+    echo ""
+fi
+
+# 2. Suggest running frontend dev server if frontend files were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "^src/.*\.(ts|tsx|css)$" > /dev/null; then
+    echo "🎨 Frontend files modified. Consider testing in dev server:"
+    echo "   ${GREEN}npm run dev${NC}"
+    echo ""
+fi
+
+# 3. Check if Directory.Packages.props was modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -q "Directory.Packages.props"; then
+    info "Directory.Packages.props modified. Consider:"
+    echo "   - Verifying all projects build: ${GREEN}dotnet build SocialMediaCommander.sln${NC}"
+    echo "   - Checking for dependency vulnerabilities: ${GREEN}dotnet list package --vulnerable${NC}"
+    echo ""
+fi
+
+# 4. Check if appsettings files were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "appsettings.*\.json$" > /dev/null; then
+    warning "Configuration files modified. Ensure:"
+    echo "   - No secrets were committed"
+    echo "   - Configuration is documented in README.md or ENHANCED_FEATURES_FINAL.md"
+    echo ""
+fi
+
+# 5. Check if ViewModels were modified (may need App.axaml.cs update)
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "ViewModels/.*ViewModel\.cs$" > /dev/null; then
+    warning "ViewModel(s) modified. If constructors changed:"
+    echo "   - Update manual composition in ${GREEN}App.axaml.cs${NC}"
+    echo "   - Verify DI registration in ${GREEN}ServiceCollectionExtensions.cs${NC}"
+    echo ""
+fi
+
+# 6. Check if service interfaces were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "Interfaces/I.*Service\.cs$" > /dev/null; then
+    info "Service interface(s) modified. Verify:"
+    echo "   - Implementation classes are updated"
+    echo "   - DI registrations in ${GREEN}ServiceCollectionExtensions.cs${NC}"
+    echo "   - Unit tests cover new/modified methods"
+    echo ""
+fi
+
+# 7. Suggest documentation update if significant files changed
+CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD | wc -l)
+if [ "$CHANGED_FILES" -gt 10 ]; then
+    info "Large commit detected ($CHANGED_FILES files). Consider:"
+    echo "   - Updating ${GREEN}CHANGELOG.md${NC}"
+    echo "   - Adding entry to ${GREEN}IMPLEMENTATION_SUMMARY.md${NC} if architecture changed"
+    echo ""
+fi
+
+# 8. Check if encryption/security files were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "(CrossPlatformEncryption|SecureAccountService|OAuthConfigurationService)\.cs$" > /dev/null; then
+    warning "Security-related files modified. Ensure:"
+    echo "   - Changes are documented in ${GREEN}SECURE_STORAGE_IMPLEMENTATION.md${NC}"
+    echo "   - Security tests are updated"
+    echo "   - Recovery procedures still work"
+    echo ""
+fi
+
+# 9. Check if performance-critical files were modified
+if git diff-tree --no-commit-id --name-only -r HEAD | grep -E "(OptimizedAsyncService|PerformanceOptimizedService)\.cs$" > /dev/null; then
+    info "Performance-critical files modified. Consider:"
+    echo "   - Running performance tests: ${GREEN}dotnet test --filter Category=Performance${NC}"
+    echo "   - Updating ${GREEN}PERFORMANCE_OPTIMIZATIONS.md${NC}"
+    echo ""
+fi
+
+# 10. Remind about PR checklist if on feature branch
+CURRENT_BRANCH=$(git branch --show-current)
+if [ "$CURRENT_BRANCH" != "main" ] && [ "$CURRENT_BRANCH" != "master" ]; then
+    echo "📋 Before creating PR, verify the checklist in ${GREEN}.github/copilot-instructions.md${NC}:"
+    echo "   ✓ dotnet build SocialMediaCommander.sln (no errors)"
+    echo "   ✓ dotnet test SocialMediaCommander.sln (all tests pass)"
+    echo "   ✓ No plaintext secrets"
+    echo "   ✓ ViewModel composition updated if needed"
+    echo "   ✓ Logging initialization order preserved"
+    echo "   ✓ Async patterns follow best practices"
+    echo "   ✓ Package versions only in Directory.Packages.props"
+    echo "   ✓ Desktop app runs without errors"
+    echo ""
+fi
+
+# 11. Show quick stats
+echo "📊 Commit Stats:"
+ADDITIONS=$(git diff HEAD~1 HEAD --numstat | awk '{add+=$1} END {print add}')
+DELETIONS=$(git diff HEAD~1 HEAD --numstat | awk '{del+=$2} END {print del}')
+echo "   Files changed: $CHANGED_FILES"
+echo "   Lines added: ${GREEN}+$ADDITIONS${NC}"
+echo "   Lines deleted: ${YELLOW}-$DELETIONS${NC}"
+
+echo ""
+success "Post-commit tasks complete!"
+echo ""

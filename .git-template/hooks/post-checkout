@@ -1,0 +1,61 @@
+#!/bin/sh
+#
+# Bootstrap Post-Checkout Hook
+# This hook automatically configures the repository's Git hooks on first checkout/clone
+# It then disables itself so it only runs once
+#
+
+# Only run on branch checkout (not file checkout)
+# $3 is a flag indicating branch checkout (1) vs file checkout (0)
+if [ "$3" != "1" ]; then
+    exit 0
+fi
+
+# Check if we're in a Git repository
+if ! git rev-parse --git-dir > /dev/null 2>&1; then
+    exit 0
+fi
+
+# Get the repository root
+REPO_ROOT=$(git rev-parse --show-toplevel)
+
+# Check if .githooks directory exists
+if [ ! -d "$REPO_ROOT/.githooks" ]; then
+    exit 0
+fi
+
+# Check if hooks are already configured
+CURRENT_HOOKS_PATH=$(git config --local core.hooksPath 2>/dev/null)
+
+if [ "$CURRENT_HOOKS_PATH" != ".githooks" ]; then
+    echo ""
+    echo "🔧 Configuring Git hooks automatically..."
+    
+    # Configure Git to use .githooks directory
+    git config --local core.hooksPath .githooks
+    
+    if [ $? -eq 0 ]; then
+        echo "✅ Git hooks configured: .githooks"
+        
+        # Make hooks executable on Unix-like systems
+        if [ -f "$REPO_ROOT/.githooks/pre-commit" ]; then
+            chmod +x "$REPO_ROOT/.githooks/pre-commit" 2>/dev/null || true
+        fi
+        if [ -f "$REPO_ROOT/.githooks/post-commit" ]; then
+            chmod +x "$REPO_ROOT/.githooks/post-commit" 2>/dev/null || true
+        fi
+        
+        echo ""
+        echo "📚 Git hooks are now active!"
+        echo "   - Pre-commit: Quality checks before commits"
+        echo "   - Post-commit: Helpful reminders after commits"
+        echo ""
+        echo "Documentation: docs/development/git-hooks.md"
+        echo ""
+    else
+        echo "⚠️  Failed to configure Git hooks. Run manually: ./setup-hooks.ps1"
+        echo ""
+    fi
+fi
+
+exit 0

@@ -24,5 +24,40 @@
     <WarningsAsErrors />
     <WarningsNotAsErrors />
   </PropertyGroup>
+
+  <!-- Automatic Git Hooks Setup Target -->
+  <!-- Runs on first build to configure hooks automatically -->
+  <Target Name="SetupGitHooks" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+    <PropertyGroup>
+      <GitHooksPath>.githooks</GitHooksPath>
+      <SetupScriptWindows>setup-hooks.ps1</SetupScriptWindows>
+      <SetupScriptUnix>setup-hooks.sh</SetupScriptUnix>
+    </PropertyGroup>
+    
+    <!-- Check if hooks are already configured -->
+    <Exec Command="git config core.hooksPath" 
+          ConsoleToMSBuild="true" 
+          IgnoreExitCode="true"
+          ContinueOnError="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="CurrentHooksPath" />
+      <Output TaskParameter="ExitCode" PropertyName="GitConfigExitCode" />
+    </Exec>
+    
+    <!-- Configure hooks if not already set up -->
+    <Exec Command="git config core.hooksPath $(GitHooksPath)" 
+          Condition="'$(CurrentHooksPath)' != '$(GitHooksPath)'"
+          IgnoreExitCode="false" />
+    
+    <!-- Log success message -->
+    <Message Text="✅ Git hooks configured automatically at: $(GitHooksPath)" 
+             Importance="high" 
+             Condition="'$(CurrentHooksPath)' != '$(GitHooksPath)'" />
+    
+    <!-- Make hooks executable on Unix-like systems -->
+    <Exec Command="chmod +x $(GitHooksPath)/pre-commit $(GitHooksPath)/post-commit" 
+          Condition="'$(OS)' != 'Windows_NT' AND '$(CurrentHooksPath)' != '$(GitHooksPath)'"
+          IgnoreExitCode="true"
+          ContinueOnError="true" />
+  </Target>
   
 </Project>
