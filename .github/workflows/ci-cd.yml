@@ -208,12 +208,27 @@ jobs:
           chmod +x linuxdeploy-${arch_suffix}.AppImage
 
           # For ARM64: Manually extract AppImage to avoid FUSE/format issues
-          # AppImages are self-extracting archives, but the extraction process itself
-          # may not trigger QEMU emulation properly
+          # AppImages are self-extracting archives, but executing them (even for extraction)
+          # fails because the binary format doesn't trigger QEMU handlers properly
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            echo "Manually extracting ARM64 AppImage for QEMU compatibility..."
-            ./linuxdeploy-${arch_suffix}.AppImage --appimage-extract
-            # The extracted contents are in squashfs-root/
+            echo "Extracting ARM64 AppImage using offset method for QEMU compatibility..."
+            
+            # Install squashfs-tools for manual extraction
+            sudo apt-get update -qq && sudo apt-get install -y -qq squashfs-tools >/dev/null 2>&1
+            
+            # AppImages have a magic offset value embedded that tells where the squashfs starts
+            # Try to get the offset, fallback to common default (188 bytes for type 2 AppImage)
+            offset=$(LANG=C grep -ao 'offset=[0-9]*' linuxdeploy-${arch_suffix}.AppImage 2>/dev/null | head -n1 | cut -d= -f2)
+            if [ -z "$offset" ]; then
+              offset=188  # Default offset for AppImage type 2
+            fi
+            echo "Using offset: $offset"
+            
+            # Extract the squashfs filesystem without executing the ARM64 binary
+            dd if=linuxdeploy-${arch_suffix}.AppImage bs=1 skip=$offset of=linuxdeploy.squashfs 2>/dev/null
+            
+            # Extract the squashfs filesystem
+            unsquashfs -q -d squashfs-root linuxdeploy.squashfs
             chmod +x squashfs-root/AppRun
             LINUXDEPLOY_CMD="squashfs-root/AppRun"
           else
