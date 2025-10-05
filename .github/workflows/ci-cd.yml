@@ -298,6 +298,14 @@ jobs:
               libfreetype6 \
               liblttng-ust1t64 \
               2>&1 | grep -v "^Get:" || true
+            
+            # Ubuntu 24.04 provides liblttng-ust.so.1, but .NET runtime needs liblttng-ust.so.0
+            # Create a compatibility symlink for backward compatibility
+            if [ -f "/usr/lib/x86_64-linux-gnu/liblttng-ust.so.1" ] && [ ! -f "/usr/lib/x86_64-linux-gnu/liblttng-ust.so.0" ]; then
+              sudo ln -s /usr/lib/x86_64-linux-gnu/liblttng-ust.so.1 /usr/lib/x86_64-linux-gnu/liblttng-ust.so.0
+              echo "Created compatibility symlink: liblttng-ust.so.0 -> liblttng-ust.so.1"
+            fi
+            
             LIB_ARCH_PATH="/usr/lib/x86_64-linux-gnu"
           fi
 
