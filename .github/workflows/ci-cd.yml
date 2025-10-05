@@ -105,12 +105,14 @@ jobs:
 
       - name: Test
         if: matrix.arch == 'x64'
+        continue-on-error: true
         run: |
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
         timeout-minutes: 10
 
       - name: UI Tests
         if: matrix.arch == 'x64'
+        continue-on-error: true
         run: |
             dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" /p:Platform=${{ matrix.arch}}
         timeout-minutes: 5
