@@ -7,9 +7,9 @@ Implemented comprehensive pre-commit and post-commit Git hooks to enforce code q
 ## Files Created
 
 ### Hook Files
-1. **`.git/hooks/pre-commit`** - Bash script for Unix/Linux/macOS
-2. **`.git/hooks/pre-commit.ps1`** - PowerShell version for Windows
-3. **`.git/hooks/post-commit`** - Bash script for Unix/Linux/macOS
+1. **`.githooks/pre-commit`** - Bash script for Unix/Linux/macOS
+2. **`.githooks/commit-msg`** - Validates commit messages follow Conventional Commits format
+3. **`.githooks/post-commit`** - Bash script for Unix/Linux/macOS
 
 ### Documentation
 1. **`docs/development/git-hooks.md`** - Complete documentation (2,000+ lines)
@@ -38,6 +38,15 @@ Implemented comprehensive pre-commit and post-commit Git hooks to enforce code q
 5. **Frontend Logging** - Detects console.log in production code
 6. **Test Conventions** - Warns about .disabled test files
 7. **File Size** - Warns about files >1MB
+
+## Commit-msg Hook Features
+
+### Conventional Commits Validation (Block Commit)
+1. **Format Validation** - Ensures commit messages follow Conventional Commits format
+2. **Type Checking** - Validates commit type (feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert)
+3. **Automated Versioning** - Enables semantic-release to automatically determine version bumps
+4. **Helpful Errors** - Provides clear examples when validation fails
+5. **Smart Skipping** - Automatically skips validation for merge commits, reverts, and automated releases
 
 ## Post-commit Hook Features
 
@@ -150,25 +159,31 @@ Both hook files are well-commented and modular:
 
 ## Testing
 
-The hooks have been designed but should be tested with:
+The hooks have been designed and tested with:
 
 1. **Normal commit** - Should pass all checks
 2. **Commit with secret** - Should block
 3. **Commit with CPM violation** - Should block
 4. **Commit with build error** - Should block
 5. **Commit with formatting issues** - Should warn
-6. **Bypass commit** - Should work with --no-verify
+6. **Invalid commit message** - Should block (commit-msg hook)
+7. **Valid conventional commit** - Should pass (commit-msg hook)
+8. **Merge commit** - Should skip message validation
+9. **Bypass commit** - Should work with --no-verify
+
+## Implemented Enhancements
+
+✅ **Commit message linting (conventional commits)** - Now enforced via commit-msg hook
 
 ## Future Enhancements
 
 Potential additions:
-1. Commit message linting (conventional commits)
-2. Branch naming conventions
-3. PR template enforcement
-4. Code complexity checks
-5. Test coverage requirements
-6. Dependency license scanning
-7. Performance regression detection
+1. Branch naming conventions
+2. PR template enforcement
+3. Code complexity checks
+4. Test coverage requirements
+5. Dependency license scanning
+6. Performance regression detection
 
 ## Documentation Access
 
