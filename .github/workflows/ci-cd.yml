@@ -28,6 +28,9 @@ env:
   # Disable telemetry to prevent network calls during build/test
   DOTNET_CLI_TELEMETRY_OPTOUT: '1'
   DOTNET_NOLOGO: '1'
+  VSTEST_TELEMETRY_OPTEDIN: '0'
+  # Disable DNS lookups and network access
+  DOTNET_SYSTEM_NET_DISABLEIPV6: '1'
 
 permissions:
   contents: read
@@ -178,9 +181,9 @@ jobs:
         run: |
           # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings SocialMediaCommander.Tests/test.runsettings
           else
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings SocialMediaCommander.Tests/test.runsettings -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
 
@@ -191,9 +194,9 @@ jobs:
         run: |
           # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx"
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" --settings SocialMediaCommander.Tests/test.runsettings
           else
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" -p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" --settings SocialMediaCommander.Tests/test.runsettings -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 5
 

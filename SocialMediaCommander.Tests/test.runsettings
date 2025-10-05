@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- Configuration for test execution -->
+  <RunConfiguration>
+    <!-- Disable data collection to prevent network calls -->
+    <DisableAppDomain>false</DisableAppDomain>
+    <DisableParallelization>false</DisableParallelization>
+    <TargetPlatform>x64</TargetPlatform>
+    <TargetFrameworkVersion>net9.0</TargetFrameworkVersion>
+    <TestSessionTimeout>600000</TestSessionTimeout>
+  </RunConfiguration>
+
+  <!-- Environment variables for test execution -->
+  <TestRunParameters>
+    <!-- Disable all telemetry -->
+    <Parameter name="DOTNET_CLI_TELEMETRY_OPTOUT" value="1" />
+    <Parameter name="DOTNET_NOLOGO" value="1" />
+    <Parameter name="VSTEST_TELEMETRY_OPTEDIN" value="0" />
+    <!-- Prevent DNS lookups and network access -->
+    <Parameter name="DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER" value="0" />
+  </TestRunParameters>
+
+  <!-- Data collection -->
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <!-- Disable all data collectors to prevent network calls -->
+    </DataCollectors>
+  </DataCollectionRunSettings>
+
+  <!-- Logger configuration -->
+  <LoggerRunSettings>
+    <Loggers>
+      <Logger friendlyName="console" enabled="True">
+        <Configuration>
+          <Verbosity>normal</Verbosity>
+        </Configuration>
+      </Logger>
+    </Loggers>
+  </LoggerRunSettings>
+</RunSettings>
