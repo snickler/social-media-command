@@ -183,3 +183,36 @@ All commits must pass:
 - ✅ Code formatting (`dotnet format`)
 
 See [.github/copilot-instructions.md](.github/copilot-instructions.md) for complete guidelines.
+
+### Test-Driven Development (TDD)
+
+This project follows TDD best practices with comprehensive testing infrastructure:
+
+- **949+ passing tests** across unit, integration, UI, and performance categories
+- **Screenshot testing** for visual regression detection
+- **Test interaction recording** for debugging complex scenarios
+- **CI/CD integration** with automated test runs and code coverage
+
+**Quick Start:**
+```bash
+# Run all tests
+dotnet test
+
+# Run UI tests with screenshot capture
+dotnet test --filter "FullyQualifiedName~UI"
+
+# Run TDD examples
+dotnet test --filter "FullyQualifiedName~TddExampleTests"
+```
+
+**📚 TDD Documentation:**
+- [TDD Workflow Guide](docs/development/tdd-workflow.md) - Red-Green-Refactor cycle and best practices
+- [Screenshot Testing Guide](docs/development/screenshot-testing.md) - Visual regression testing
+- [TDD Implementation Guide](TDD_IMPLEMENTATION_GUIDE.md) - Comprehensive assessment and capabilities
+- [TDD Implementation Summary](TDD_IMPLEMENTATION_SUMMARY.md) - Quick overview and results
+
+**Test Infrastructure:**
+- xUnit 2.9.3 - Test framework
+- FluentAssertions 8.6.0 - Readable assertions
+- Moq 4.20.72 - Mocking framework
+- Avalonia.Headless 11.3.6 - UI testing without display
