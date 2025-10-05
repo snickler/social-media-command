@@ -5,7 +5,7 @@
         x:Class="SocialMediaCommander.Desktop.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Social Media Management Hub"
+        Title="Social Media Commander"
         MinWidth="1280" MinHeight="800"
         Background="{DynamicResource SMC-Background}"
         ExtendClientAreaToDecorationsHint="True"
