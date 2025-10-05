@@ -428,8 +428,11 @@ private static Stopwatch StartActivity(string operationName)
 ```bash
 # Publish with Native AOT for different platforms
 dotnet publish SocialMediaCommander.Desktop -r win-x64 -c Release
+dotnet publish SocialMediaCommander.Desktop -r win-arm64 -c Release
 dotnet publish SocialMediaCommander.Desktop -r linux-x64 -c Release
+dotnet publish SocialMediaCommander.Desktop -r linux-arm64 -c Release
 dotnet publish SocialMediaCommander.Desktop -r osx-x64 -c Release
+dotnet publish SocialMediaCommander.Desktop -r osx-arm64 -c Release
 ```
 
 **Known Limitations**:
