@@ -21,6 +21,11 @@ This folder contains all documentation for the Social Media Commander project, o
 - [Enhanced Features](development/enhanced-features.md) - New and enhanced features
 - [Enhanced Features Final](development/enhanced-features-final.md) - Final feature implementation details
 - [OAuth Configuration Demo](development/oauth-config-demo.md) - OAuth setup and configuration guide
+- **Git Hooks Documentation**
+  - [Git Hooks Overview](development/git-hooks.md) - Complete guide to Git hooks (2,000+ lines)
+  - [Quick Reference](development/git-hooks-quick-reference.md) - One-page reference card
+  - [Workflow Diagram](development/git-hooks-workflow.md) - Visual workflow with Mermaid diagram
+  - [Examples](development/git-hooks-examples.md) - Real-world examples and troubleshooting
 
 ### Operations Documentation
 - [Log Analysis Fixes](operations/log-analysis-fixes.md) - Logging improvements and fixes

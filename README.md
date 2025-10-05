@@ -71,6 +71,46 @@ If you see errors like "OAuth configuration has placeholder values":
 ## Installation
 
 1. Clone the repository
-2. Build the solution
-3. Configure OAuth settings (see guide above)
-4. Run the application
+2. Install Git hooks (recommended):
+   ```bash
+   # Windows (PowerShell)
+   .\scripts\install-hooks.ps1
+   
+   # Linux/macOS
+   chmod +x scripts/install-hooks.sh
+   ./scripts/install-hooks.sh
+   ```
+3. Build the solution
+4. Configure OAuth settings (see guide above)
+5. Run the application
+
+## Development
+
+### Git Hooks
+
+This project uses Git hooks to maintain code quality. The hooks automatically:
+
+- **Pre-commit**: Checks for secrets, validates build, enforces coding standards
+- **Post-commit**: Provides helpful reminders and next-step suggestions
+
+See [docs/development/git-hooks.md](docs/development/git-hooks.md) for detailed information.
+
+To install hooks:
+```powershell
+# PowerShell
+.\scripts\install-hooks.ps1
+
+# Or force reinstall
+.\scripts\install-hooks.ps1 -Force
+```
+
+### Quality Standards
+
+All commits must pass:
+- ✅ No hardcoded secrets or credentials
+- ✅ Central Package Management compliance (no versions in .csproj)
+- ✅ Build verification (`dotnet build`)
+- ✅ Async/await best practices (ConfigureAwait in library code)
+- ✅ Code formatting (`dotnet format`)
+
+See [.github/copilot-instructions.md](.github/copilot-instructions.md) for complete guidelines.
