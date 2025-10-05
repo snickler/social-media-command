@@ -87,7 +87,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "macos" ]]; then
             dotnet restore SocialMediaCommander.sln --force
           else
-            dotnet restore SocialMediaCommander.sln --force /p:Platform=${{ matrix.arch }}
+            dotnet restore SocialMediaCommander.sln --force -p:Platform=${{ matrix.arch }}
           fi
 
       - name: Verify macOS dependencies (macOS only)
@@ -133,7 +133,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "macos" ]]; then
             dotnet build SocialMediaCommander.sln --no-restore --configuration Release
           else
-            dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
+            dotnet build SocialMediaCommander.sln --no-restore --configuration Release -p:Platform=${{ matrix.arch }}
           fi
         timeout-minutes: 10
 
@@ -146,7 +146,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "macos" ]]; then
             dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
           else
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
 
@@ -159,7 +159,7 @@ jobs:
           if [[ "${{ matrix.os }}" == "macos" ]]; then
             dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx"
           else
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" /p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 5
 
