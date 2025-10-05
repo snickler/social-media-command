@@ -184,9 +184,9 @@ jobs:
         if: matrix.os == 'linux'
         run: |
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            $arch_suffix="aarch64"
+            arch_suffix="aarch64"
           else
-            $arch_suffix="x86_64"
+            arch_suffix="x86_64"
           fi
 
           # Install AppImage tools
