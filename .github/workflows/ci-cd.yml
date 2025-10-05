@@ -296,6 +296,7 @@ jobs:
               libxinerama1 \
               libfontconfig1 \
               libfreetype6 \
+              liblttng-ust1 \
               >/dev/null 2>&1
             LIB_ARCH_PATH="/usr/lib/x86_64-linux-gnu"
           fi
@@ -348,7 +349,6 @@ jobs:
           touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
           
           # Create AppImage using the appropriate command
-          # The --library flag tells linuxdeploy to include the bundled libraries
           # Set ARCH environment variable for appimagetool
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
             export ARCH=aarch64
