@@ -207,6 +207,19 @@ jobs:
           wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${arch_suffix}.AppImage
           chmod +x linuxdeploy-${arch_suffix}.AppImage
 
+          # For ARM64: Manually extract AppImage to avoid FUSE/format issues
+          # AppImages are self-extracting archives, but the extraction process itself
+          # may not trigger QEMU emulation properly
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            echo "Manually extracting ARM64 AppImage for QEMU compatibility..."
+            ./linuxdeploy-${arch_suffix}.AppImage --appimage-extract
+            # The extracted contents are in squashfs-root/
+            chmod +x squashfs-root/AppRun
+            LINUXDEPLOY_CMD="squashfs-root/AppRun"
+          else
+            LINUXDEPLOY_CMD="./linuxdeploy-${arch_suffix}.AppImage"
+          fi
+
           # Create AppDir structure
           mkdir -p SocialMediaCommander.AppDir/usr/bin
           mkdir -p SocialMediaCommander.AppDir/usr/share/applications
@@ -229,13 +242,8 @@ jobs:
           echo "Creating placeholder icon..."
           touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
           
-          # Create AppImage
-          # For ARM64: Extract and run AppImage to bypass FUSE issues with QEMU
-          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
-            ./linuxdeploy-${arch_suffix}.AppImage --appimage-extract-and-run --appdir SocialMediaCommander.AppDir --output appimage
-          else
-            ./linuxdeploy-${arch_suffix}.AppImage --appdir SocialMediaCommander.AppDir --output appimage
-          fi
+          # Create AppImage using the appropriate command
+          $LINUXDEPLOY_CMD --appdir SocialMediaCommander.AppDir --output appimage
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
 
