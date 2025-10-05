@@ -31,6 +31,8 @@ env:
   VSTEST_TELEMETRY_OPTEDIN: '0'
   # Disable DNS lookups and network access
   DOTNET_SYSTEM_NET_DISABLEIPV6: '1'
+  # Disable Avalonia build analyzer to prevent network calls
+  AvaloniaEnableBuildAnalyzer: 'false'
 
 permissions:
   contents: read
