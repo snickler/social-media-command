@@ -25,6 +25,9 @@ env:
   DOTNET_VERSION: '9.0.x'
   NODE_VERSION: '22.x'
   NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  # Disable telemetry to prevent network calls during build/test
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
 
 permissions:
   contents: read
