@@ -157,10 +157,10 @@ public class MacOSPlatformTests
 
         // Assert
         appDataPath.Should().NotBeNullOrEmpty("ApplicationData folder path should be available on all platforms");
-        
+
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-            appDataPath.Should().Contain("/Library/Application Support", 
+            appDataPath.Should().Contain("/Library/Application Support",
                 "macOS ApplicationData should point to Library/Application Support or .config");
         }
     }
