@@ -81,10 +81,4 @@
       <Link>docs\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
-
-<ItemGroup Condition="'$(OS)' == 'OSX'">
-  <None Include="@(AvaloniaNativeLibraries->'%(FullPath)libGLESv2.dylib')" CopyToOutputDirectory="PreserveNewest" />
-  <None Include="@(AvaloniaNativeLibraries->'%(FullPath)libEGL.dylib')" CopyToOutputDirectory="PreserveNewest" />
-  <None Include="@(AvaloniaNativeLibraries->'%(FullPath)libvk_swiftshader.dylib')" CopyToOutputDirectory="PreserveNewest" />
-</ItemGroup>
 </Project>
