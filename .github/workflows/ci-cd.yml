@@ -296,8 +296,8 @@ jobs:
               libxinerama1 \
               libfontconfig1 \
               libfreetype6 \
-              liblttng-ust1 \
-              >/dev/null 2>&1
+              liblttng-ust1t64 \
+              2>&1 | grep -v "^Get:" || true
             LIB_ARCH_PATH="/usr/lib/x86_64-linux-gnu"
           fi
 
