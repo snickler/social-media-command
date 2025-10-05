@@ -227,21 +227,44 @@ jobs:
             LINUXDEPLOY_CMD="./linuxdeploy-${arch_suffix}.AppImage"
           fi
 
-          # Install required X11 libraries for Avalonia
+          # Install required X11 libraries for Avalonia (architecture-specific)
           echo "Installing X11 libraries required by Avalonia..."
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq \
-            libice6 \
-            libsm6 \
-            libx11-6 \
-            libxext6 \
-            libxrandr2 \
-            libxcursor1 \
-            libxi6 \
-            libxinerama1 \
-            libfontconfig1 \
-            libfreetype6 \
-            >/dev/null 2>&1
+          
+          # Determine the library architecture path
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            # Enable ARM64 architecture and install cross-compile libraries
+            sudo dpkg --add-architecture arm64
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq \
+              libice6:arm64 \
+              libsm6:arm64 \
+              libx11-6:arm64 \
+              libxext6:arm64 \
+              libxrandr2:arm64 \
+              libxcursor1:arm64 \
+              libxi6:arm64 \
+              libxinerama1:arm64 \
+              libfontconfig1:arm64 \
+              libfreetype6:arm64 \
+              >/dev/null 2>&1
+            LIB_ARCH_PATH="/usr/lib/aarch64-linux-gnu"
+          else
+            # Install native x64 libraries
+            sudo apt-get update -qq
+            sudo apt-get install -y -qq \
+              libice6 \
+              libsm6 \
+              libx11-6 \
+              libxext6 \
+              libxrandr2 \
+              libxcursor1 \
+              libxi6 \
+              libxinerama1 \
+              libfontconfig1 \
+              libfreetype6 \
+              >/dev/null 2>&1
+            LIB_ARCH_PATH="/usr/lib/x86_64-linux-gnu"
+          fi
 
           # Create AppDir structure
           mkdir -p SocialMediaCommander.AppDir/usr/bin
@@ -257,15 +280,15 @@ jobs:
           
           # Bundle required X11 libraries into the AppImage
           # These are needed by Avalonia for X11 support
-          echo "Bundling X11 libraries..."
+          echo "Bundling X11 libraries from $LIB_ARCH_PATH..."
           for lib in libICE.so.6 libSM.so.6 libX11.so.6 libXext.so.6 libXrandr.so.2 \
                      libXcursor.so.1 libXi.so.6 libXinerama.so.1 libfontconfig.so.1 libfreetype.so.6; do
-            if [ -f "/usr/lib/$(uname -m)-linux-gnu/$lib" ]; then
-              cp "/usr/lib/$(uname -m)-linux-gnu/$lib" SocialMediaCommander.AppDir/usr/lib/
-              echo "  Bundled: $lib"
+            if [ -f "$LIB_ARCH_PATH/$lib" ]; then
+              cp "$LIB_ARCH_PATH/$lib" SocialMediaCommander.AppDir/usr/lib/
+              echo "  Bundled: $lib (from $LIB_ARCH_PATH)"
             elif [ -f "/usr/lib/$lib" ]; then
               cp "/usr/lib/$lib" SocialMediaCommander.AppDir/usr/lib/
-              echo "  Bundled: $lib"
+              echo "  Bundled: $lib (from /usr/lib)"
             fi
           done
           
@@ -285,6 +308,13 @@ jobs:
           
           # Create AppImage using the appropriate command
           # The --library flag tells linuxdeploy to include the bundled libraries
+          # Set ARCH environment variable for appimagetool
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            export ARCH=aarch64
+          else
+            export ARCH=x86_64
+          fi
+          
           $LINUXDEPLOY_CMD --appdir SocialMediaCommander.AppDir --output appimage
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
