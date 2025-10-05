@@ -99,6 +99,14 @@ jobs:
         with:
           platforms: arm64
 
+      - name: Install ARM64 cross-compilation toolchain
+        if: matrix.os == 'linux' && matrix.arch == 'arm64'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
+          echo "CC=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+          echo "CXX=aarch64-linux-gnu-g++" >> $GITHUB_ENV
+
       - name: Build
         run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
         timeout-minutes: 10
@@ -141,12 +149,8 @@ jobs:
       - name: Publish Desktop App
         shell: bash
         run: |
-          # Disable Native AOT for linux-arm64 due to toolchain limitations
-          if [[ "${{ matrix.os }}-${{ matrix.arch }}" == "linux-arm64" ]]; then
-            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} -p:Version=${{ steps.version.outputs.version }} -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishAot=false
-          else
-            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} -p:Version=${{ steps.version.outputs.version }} -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
-          fi
+          # Native AOT is now enabled for all platforms including linux-arm64 with cross-compilation toolchain
+          dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} -p:Version=${{ steps.version.outputs.version }} -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
         timeout-minutes: 15
 
       - name: Create Windows Installer
