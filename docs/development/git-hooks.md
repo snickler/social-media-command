@@ -96,6 +96,93 @@ git commit --no-verify -m "Your message"
 
 Only use this for emergency fixes or when the hook gives false positives.
 
+## Commit-msg Hook
+
+The commit-msg hook runs **after** you write your commit message but **before** the commit is finalized. It validates that your commit message follows the [Conventional Commits](https://www.conventionalcommits.org/) format, which is required for automated semantic versioning and releases.
+
+### Why Conventional Commits?
+
+This project uses [semantic-release](https://github.com/semantic-release/semantic-release) to automatically:
+- Determine the next version number based on commit messages
+- Generate release notes
+- Create GitHub releases
+- Publish build artifacts
+
+For this automation to work, commit messages **must** follow the Conventional Commits format.
+
+### Validation Rules
+
+**Valid Format:**
+```
+type(optional-scope): description
+
+[optional body]
+
+[optional footer]
+```
+
+**Required Elements:**
+- **type**: One of the following
+  - `feat` - New features (triggers **minor** version bump, e.g., 1.0.0 → 1.1.0)
+  - `fix` - Bug fixes (triggers **patch** version bump, e.g., 1.0.0 → 1.0.1)
+  - `docs` - Documentation only changes
+  - `style` - Code style changes (formatting, no functionality change)
+  - `refactor` - Code refactoring
+  - `test` - Adding or modifying tests
+  - `chore` - Maintenance tasks
+  - `perf` - Performance improvements
+  - `ci` - CI/CD pipeline changes
+  - `build` - Build system changes
+  - `revert` - Reverting changes
+- **scope** (optional): Affected area (e.g., `auth`, `ui`, `deps`)
+- **description**: Brief summary of the change (must not be empty)
+
+**For Breaking Changes:**
+Add `BREAKING CHANGE:` in the commit footer to trigger a **major** version bump (e.g., 1.0.0 → 2.0.0)
+
+```bash
+feat: redesign authentication API
+
+BREAKING CHANGE: AuthService.Login() now returns Task<AuthResult> instead of bool
+```
+
+### Auto-Skipped Cases
+
+The hook automatically skips validation for:
+- Merge commits (e.g., "Merge branch 'main'")
+- Revert commits (e.g., "Revert 'feat: add feature'")
+- Automated release commits (e.g., "chore(release): 1.0.0")
+
+### Examples
+
+**✅ Valid commit messages:**
+```bash
+git commit -m "feat: add OAuth2 integration for Twitter"
+git commit -m "fix: resolve null reference in authentication service"
+git commit -m "docs: update API documentation"
+git commit -m "chore(deps): update Avalonia to 11.0.0"
+git commit -m "perf(query): optimize database queries"
+```
+
+**❌ Invalid commit messages (will be blocked):**
+```bash
+git commit -m "Add OAuth2 integration"          # Missing type
+git commit -m "Added new feature"               # Wrong format
+git commit -m "feat:"                           # Missing description
+git commit -m "feature: add something"          # Wrong type name (use 'feat')
+git commit -m "bug: fix issue"                  # Wrong type name (use 'fix')
+```
+
+### Bypassing Commit-msg Validation
+
+⚠️ **Not recommended**, but you can bypass using:
+
+```bash
+git commit --no-verify -m "Your message"
+```
+
+**Important:** Commits without conventional format will **not** trigger automated releases when merged to main!
+
 ## Post-commit Hook
 
 The post-commit hook runs **after** a commit is successfully created. It provides helpful reminders and suggestions based on what was changed.
