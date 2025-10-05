@@ -51,11 +51,12 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64'))">
+  <!-- WebViewControl packages - exclude on macOS as CEF doesn't work reliably on macOS -->
+  <ItemGroup Condition="'$(OS)' != 'OSX' And $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64'))">
     <PackageReference Include="WebViewControl-Avalonia-ARM64" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(Platform)' == '' Or $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64')) == 'False'">
+  <ItemGroup Condition="'$(OS)' != 'OSX' And ('$(Platform)' == '' Or $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64')) == 'False')">
     <PackageReference Include="WebViewControl-Avalonia" />
   </ItemGroup>
 
