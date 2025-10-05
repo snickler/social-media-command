@@ -108,6 +108,17 @@ jobs:
           echo "CXX=aarch64-linux-gnu-g++" >> $GITHUB_ENV
           echo "OBJCOPY=aarch64-linux-gnu-objcopy" >> $GITHUB_ENV
           echo "STRIP=aarch64-linux-gnu-strip" >> $GITHUB_ENV
+          
+          # Create wrapper scripts so .NET AOT can find ARM64 binutils
+          # The AOT compiler calls 'objcopy' and 'strip' directly, ignoring env vars
+          sudo mkdir -p /usr/local/bin/dotnet-aot-wrapper
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/dotnet-aot-wrapper/objcopy > /dev/null
+          echo 'exec aarch64-linux-gnu-objcopy "$@"' | sudo tee -a /usr/local/bin/dotnet-aot-wrapper/objcopy > /dev/null
+          echo '#!/bin/bash' | sudo tee /usr/local/bin/dotnet-aot-wrapper/strip > /dev/null
+          echo 'exec aarch64-linux-gnu-strip "$@"' | sudo tee -a /usr/local/bin/dotnet-aot-wrapper/strip > /dev/null
+          sudo chmod +x /usr/local/bin/dotnet-aot-wrapper/objcopy
+          sudo chmod +x /usr/local/bin/dotnet-aot-wrapper/strip
+          echo "/usr/local/bin/dotnet-aot-wrapper" >> $GITHUB_PATH
 
       - name: Build
         run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
