@@ -93,6 +93,12 @@ jobs:
           echo "Verifying Avalonia packages..."
           dotnet list SocialMediaCommander.Desktop package | grep -i avalonia || true
 
+      - name: Set up QEMU for ARM64 emulation
+        if: matrix.os == 'linux' && matrix.arch == 'arm64'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Build
         run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
         timeout-minutes: 10
@@ -187,11 +193,19 @@ jobs:
           EOF
 
       - name: Create Linux AppImage
-        if: matrix.os == 'linux' && matrix.arch == 'x64'
+        if: matrix.os == 'linux'
         run: |
-          # Install AppImage tools (x64 only - ARM64 binaries cannot run on x64 GitHub runners)
-          wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-          chmod +x linuxdeploy-x86_64.AppImage
+          # Determine architecture suffix for linuxdeploy
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            arch_suffix="aarch64"
+          else
+            arch_suffix="x86_64"
+          fi
+
+          # Install AppImage tools
+          # For ARM64: QEMU user-mode emulation allows running ARM64 binaries on x64 runners
+          wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-${arch_suffix}.AppImage
+          chmod +x linuxdeploy-${arch_suffix}.AppImage
 
           # Create AppDir structure
           mkdir -p SocialMediaCommander.AppDir/usr/bin
@@ -215,8 +229,8 @@ jobs:
           echo "Creating placeholder icon..."
           touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
           
-          # Create AppImage
-          ./linuxdeploy-x86_64.AppImage --appdir SocialMediaCommander.AppDir --output appimage
+          # Create AppImage (ARM64 binaries run via QEMU user-mode emulation)
+          ./linuxdeploy-${arch_suffix}.AppImage --appdir SocialMediaCommander.AppDir --output appimage
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
 
