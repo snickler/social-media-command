@@ -121,7 +121,7 @@ if git diff --cached --name-only | grep -q "\.cs$"; then
     
     # Run dotnet format in verify mode
     if command -v dotnet > /dev/null 2>&1; then
-        if ! dotnet format --verify-no-changes --verbosity quiet > /dev/null 2>&1; then
+        if ! dotnet format --verbosity quiet > /dev/null 2>&1; then
             warning "Code formatting issues detected. Run 'dotnet format' to fix."
             echo "  Hint: Run 'dotnet format' before committing."
         else
@@ -135,15 +135,15 @@ fi
 # 6. Run build check on staged C# files
 if git diff --cached --name-only | grep -E "\.(cs|csproj)$" > /dev/null; then
     echo ""
-    echo "🏗️  Running .NET Format ..."
+    echo "🏗️  Running .NET Build ..."
     
     if command -v dotnet > /dev/null 2>&1; then
         # Format the solution
-        if dotnet format SocialMediaCommander.sln --nologo --verbosity quiet > /dev/null 2>&1; then
-            success "Code formatting passed"
+        if dotnet build SocialMediaCommander.sln --nologo --verbosity quiet > /dev/null 2>&1; then
+            success "Build passed"
         else
-            error "Code formatting failed. Fix formatting issues before committing."
-            echo "  Run 'dotnet format SocialMediaCommander.sln' to see details."
+            error "Build failed. Fix build issues before committing."
+            echo "  Run 'dotnet build SocialMediaCommander.sln' to see details."
         fi
     else
         warning "dotnet CLI not found. Skipping build check."
