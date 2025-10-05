@@ -68,6 +68,21 @@ If you see errors like "OAuth configuration has placeholder values":
 3. The app will show specific setup instructions
 4. Follow the platform-specific guide above
 
+## Supported Platforms
+
+Social Media Commander is a cross-platform desktop application with full support for:
+
+- ✅ **Windows** (x64, ARM64) - Native AOT compilation supported
+- ✅ **Linux** (x64, ARM64) - Native AOT compilation supported  
+- ✅ **macOS** (x64, ARM64/Apple Silicon) - Native AOT compilation supported
+
+**Platform-Specific Features:**
+- **Windows**: DPAPI encryption for secure credential storage
+- **Linux/macOS**: AES-256 encryption with machine/user-specific key derivation
+- **All platforms**: Full OAuth support, multi-account management, AI features
+
+📖 **[Complete macOS Documentation](docs/platforms/macos-support.md)** - Installation, troubleshooting, and platform-specific features
+
 ## Installation
 
 1. Clone the repository

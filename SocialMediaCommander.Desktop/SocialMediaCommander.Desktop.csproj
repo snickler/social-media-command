@@ -40,8 +40,7 @@
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Sinks.File" />
-    <PackageReference Include="WebViewControl-Avalonia" />
+  <PackageReference Include="Serilog.Sinks.File" />
     
     <!-- Enhanced Dependencies -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -50,6 +49,15 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
+  <!-- WebViewControl packages - exclude on macOS as CEF doesn't work reliably on macOS -->
+  <ItemGroup Condition="'$(Platform)' == 'arm64' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64'))">
+    <PackageReference Include="WebViewControl-Avalonia-ARM64" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Platform)' == 'x64' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('x64'))">
+    <PackageReference Include="WebViewControl-Avalonia" />
   </ItemGroup>
 
   <ItemGroup>
@@ -74,5 +82,4 @@
       <Link>docs\%(RecursiveDir)%(Filename)%(Extension)</Link>
     </None>
   </ItemGroup>
-
 </Project>

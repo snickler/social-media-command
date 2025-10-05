@@ -6,8 +6,20 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main, develop]
+    paths:
+      - '**/*.sln'
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.props'
+      - '**/*.targets'
+      - '.github/workflows/ci-cd.yml'
   release:
     types: [published]
+
+# Cancel in-progress runs for the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   DOTNET_VERSION: '9.0.x'
@@ -41,19 +53,27 @@ jobs:
             arch: arm64
             runner: ubuntu-latest
             rid: linux-arm64
-          #- os: macos
-          #  arch: x64
-          #  runner: macos-latest
-          #  rid: osx-x64
-          # Temporarily disabled due to missing SwiftShader libraries for ARM64 macOS
-          # - os: macos
-          #   arch: arm64
-          #   runner: macos-latest
-          #   rid: osx-arm64
+          - os: macos
+            arch: x64
+            runner: macos-13
+            rid: osx-x64
+          - os: macos
+            arch: arm64
+            runner: macos-latest
+            rid: osx-arm64
 
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
+      # Cache NuGet packages to speed up restore
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/Directory.Packages.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v5
@@ -62,10 +82,20 @@ jobs:
           # Ensure consistent NuGet behavior across platforms
           source-url: https://api.nuget.org/v3/index.json
 
+      # Cache Node modules for frontend
+      - name: Cache Node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
 
       - name: Get version
         id: version
@@ -81,9 +111,15 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Restore dependencies
+        shell: bash
         run: |
           dotnet clean SocialMediaCommander.sln
-          dotnet restore SocialMediaCommander.sln --force /p:Platform=${{ matrix.arch }}
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet restore SocialMediaCommander.sln --force
+          else
+            dotnet restore SocialMediaCommander.sln --force -p:Platform=${{ matrix.arch }}
+          fi
 
       - name: Verify macOS dependencies (macOS only)
         if: matrix.os == 'macos'
@@ -121,21 +157,41 @@ jobs:
           echo "/usr/local/bin/dotnet-aot-wrapper" >> $GITHUB_PATH
 
       - name: Build
-        run: dotnet build SocialMediaCommander.sln --no-restore --configuration Release /p:Platform=${{ matrix.arch }}
+        shell: bash
+        run: |
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries in Avalonia.Skia
+          # The runtime identifier in the publish step will handle architecture selection
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet build SocialMediaCommander.sln --no-restore --configuration Release
+          else
+            dotnet build SocialMediaCommander.sln --no-restore --configuration Release -p:Platform=${{ matrix.arch }}
+          fi
         timeout-minutes: 10
 
       - name: Test
         if: matrix.arch == 'x64'
         continue-on-error: true
+        shell: bash
         run: |
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage /p:Platform=${{ matrix.arch}}
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+          else
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -p:Platform=${{ matrix.arch}}
+          fi
         timeout-minutes: 10
 
       - name: UI Tests
         if: matrix.arch == 'x64'
         continue-on-error: true
+        shell: bash
         run: |
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" /p:Platform=${{ matrix.arch}}
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx"
+          else
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" -p:Platform=${{ matrix.arch}}
+          fi
         timeout-minutes: 5
 
       - name: Code Coverage Report
