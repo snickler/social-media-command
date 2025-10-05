@@ -225,13 +225,47 @@ jobs:
             LINUXDEPLOY_CMD="./linuxdeploy-${arch_suffix}.AppImage"
           fi
 
+          # Install required X11 libraries for Avalonia
+          echo "Installing X11 libraries required by Avalonia..."
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq \
+            libice6 \
+            libsm6 \
+            libx11-6 \
+            libxext6 \
+            libxrandr2 \
+            libxcursor1 \
+            libxi6 \
+            libxinerama1 \
+            libfontconfig1 \
+            libfreetype6 \
+            >/dev/null 2>&1
+
           # Create AppDir structure
           mkdir -p SocialMediaCommander.AppDir/usr/bin
+          mkdir -p SocialMediaCommander.AppDir/usr/lib
           mkdir -p SocialMediaCommander.AppDir/usr/share/applications
           mkdir -p SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps
           
           # Copy executable
           cp ./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander.Desktop SocialMediaCommander.AppDir/usr/bin/
+          
+          # Copy all published dependencies
+          cp -r ./publish/${{ matrix.os }}-${{ matrix.arch }}/* SocialMediaCommander.AppDir/usr/bin/ 2>/dev/null || true
+          
+          # Bundle required X11 libraries into the AppImage
+          # These are needed by Avalonia for X11 support
+          echo "Bundling X11 libraries..."
+          for lib in libICE.so.6 libSM.so.6 libX11.so.6 libXext.so.6 libXrandr.so.2 \
+                     libXcursor.so.1 libXi.so.6 libXinerama.so.1 libfontconfig.so.1 libfreetype.so.6; do
+            if [ -f "/usr/lib/$(uname -m)-linux-gnu/$lib" ]; then
+              cp "/usr/lib/$(uname -m)-linux-gnu/$lib" SocialMediaCommander.AppDir/usr/lib/
+              echo "  Bundled: $lib"
+            elif [ -f "/usr/lib/$lib" ]; then
+              cp "/usr/lib/$lib" SocialMediaCommander.AppDir/usr/lib/
+              echo "  Bundled: $lib"
+            fi
+          done
           
           # Create desktop file
           cat > SocialMediaCommander.AppDir/usr/share/applications/socialmediacommander.desktop << EOF
@@ -248,6 +282,7 @@ jobs:
           touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
           
           # Create AppImage using the appropriate command
+          # The --library flag tells linuxdeploy to include the bundled libraries
           $LINUXDEPLOY_CMD --appdir SocialMediaCommander.AppDir --output appimage
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
