@@ -229,8 +229,13 @@ jobs:
           echo "Creating placeholder icon..."
           touch SocialMediaCommander.AppDir/usr/share/icons/hicolor/256x256/apps/socialmediacommander.png
           
-          # Create AppImage (ARM64 binaries run via QEMU user-mode emulation)
-          ./linuxdeploy-${arch_suffix}.AppImage --appdir SocialMediaCommander.AppDir --output appimage
+          # Create AppImage
+          # For ARM64: Extract and run AppImage to bypass FUSE issues with QEMU
+          if [[ "${{ matrix.arch }}" == "arm64" ]]; then
+            ./linuxdeploy-${arch_suffix}.AppImage --appimage-extract-and-run --appdir SocialMediaCommander.AppDir --output appimage
+          else
+            ./linuxdeploy-${arch_suffix}.AppImage --appdir SocialMediaCommander.AppDir --output appimage
+          fi
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
 
