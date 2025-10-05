@@ -80,9 +80,15 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Restore dependencies
+        shell: bash
         run: |
           dotnet clean SocialMediaCommander.sln
-          dotnet restore SocialMediaCommander.sln --force /p:Platform=${{ matrix.arch }}
+          # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
+          if [[ "${{ matrix.os }}" == "macos" ]]; then
+            dotnet restore SocialMediaCommander.sln --force
+          else
+            dotnet restore SocialMediaCommander.sln --force /p:Platform=${{ matrix.arch }}
+          fi
 
       - name: Verify macOS dependencies (macOS only)
         if: matrix.os == 'macos'
