@@ -50,7 +50,7 @@
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
         "d3": "^7.9.0",
-        "date-fns": "^3.6.0",
+        "date-fns": "^4.1.0",
         "embla-carousel-react": "^8.6.0",
         "framer-motion": "^12.18.1",
         "input-otp": "^1.4.2",
@@ -58,13 +58,13 @@
         "marked": "^15.0.7",
         "next-themes": "^0.4.6",
         "octokit": "^5.0.3",
-        "react": "^19.0.0",
+        "react": "^19.1.1",
         "react-day-picker": "^9.6.7",
         "react-dom": "^19.0.0",
         "react-hook-form": "^7.62.0",
         "react-resizable-panels": "^2.1.9",
         "recharts": "^2.15.3",
-        "sonner": "^2.0.5",
+        "sonner": "^2.0.7",
         "tailwind-merge": "^3.3.1",
         "three": "^0.175.0",
         "tw-animate-css": "^1.2.4",
@@ -75,9 +75,9 @@
     "devDependencies": {
         "@eslint/js": "^9.34.0",
         "@tailwindcss/postcss": "^4.1.8",
-        "@types/react": "^19.0.10",
+        "@types/react": "^19.1.12",
         "@types/react-dom": "^19.0.4",
-        "@vitejs/plugin-react": "^4.3.4",
+        "@vitejs/plugin-react": "^5.0.3",
         "@vitejs/plugin-react-swc": "^3.10.1",
         "eslint": "^9.35.0",
         "eslint-plugin-react-hooks": "^5.2.0",
@@ -86,7 +86,7 @@
         "tailwindcss": "^4.0.17",
         "typescript": "~5.7.2",
         "typescript-eslint": "^8.25.0",
-        "vite": "^6.3.5"
+        "vite": "^7.1.7"
     },
     "workspaces": {
         "packages": [
