@@ -176,6 +176,7 @@ Before proposing changes, **MUST** complete:
 6. ✅ Async patterns follow best practices: `ConfigureAwait(false)` in library code, `ValueTask` where appropriate
 7. ✅ Package versions added only to `Directory.Packages.props`, never in `.csproj` files
 8. ✅ If UI changes: run desktop app locally and check logs for binding/runtime errors
+9. ✅ **Commit messages follow Conventional Commits format** (enforced by commit-msg hook) — use `feat:`, `fix:`, `docs:`, `chore:`, etc.
 
 ---
 

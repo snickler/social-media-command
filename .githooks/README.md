@@ -56,6 +56,7 @@ git commit -m "Test commit"
 ## Hooks Included
 
 - **pre-commit** - Quality checks before commit (blocks on errors)
+- **commit-msg** - Validates commit messages follow Conventional Commits format (blocks on errors)
 - **post-commit** - Helpful reminders after commit (informational)
 
 ## Documentation

@@ -11,6 +11,13 @@ Prevents commits with:
 - ⚠️ Code formatting issues
 - ⚠️ console.log in production code
 
+### Commit-msg Hook (Validates commit message)
+Ensures commit messages:
+- ✅ Follow Conventional Commits format (feat, fix, docs, etc.)
+- ✅ Enable automated semantic versioning
+- ✅ Trigger automated releases when merged to main
+- 📝 Provide helpful examples when validation fails
+
 ### Post-commit Hook (Runs AFTER commit)
 Provides reminders about:
 - 🧪 Running tests if C# changed
@@ -54,11 +61,36 @@ dotnet test SocialMediaCommander.sln
 | Secrets detection | ERROR | ✅ Yes |
 | CPM compliance | ERROR | ✅ Yes |
 | Build verification | ERROR | ✅ Yes |
+| **Commit message format** | **ERROR** | **✅ Yes** |
 | ConfigureAwait | WARNING | ❌ No |
 | Code formatting | WARNING | ❌ No |
 | Code markers (TODO/FIXME) | WARNING | ❌ No |
 | console.log usage | WARNING | ❌ No |
 | Large files (>1MB) | WARNING | ❌ No |
+
+## 📝 Commit Message Format
+
+**Required Format:** `type(optional-scope): description`
+
+**Valid Types:**
+- `feat` - New features (triggers minor version bump)
+- `fix` - Bug fixes (triggers patch version bump)
+- `docs` - Documentation only changes
+- `style` - Code style changes (formatting, no functionality change)
+- `refactor` - Code refactoring
+- `test` - Adding or modifying tests
+- `chore` - Maintenance tasks
+- `perf` - Performance improvements
+- `ci` - CI/CD changes
+- `build` - Build system changes
+
+**Examples:**
+```bash
+git commit -m "feat: add OAuth2 integration for Twitter"
+git commit -m "fix: resolve null reference in authentication service"
+git commit -m "docs: update API documentation"
+git commit -m "chore(deps): update Avalonia to 11.0.0"
+```
 
 ## 🛠️ Troubleshooting
 

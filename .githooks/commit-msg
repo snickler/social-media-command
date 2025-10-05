@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+# Commit-msg hook for Social Media Commander
+# Validates commit messages follow Conventional Commits format for automated versioning
+#
+# See: https://www.conventionalcommits.org/
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Get the commit message file
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+# Function to print error messages
+error() {
+    echo "${RED}❌ ERROR: $1${NC}"
+}
+
+# Function to print success messages
+success() {
+    echo "${GREEN}✅ $1${NC}"
+}
+
+# Function to print info messages
+info() {
+    echo "${BLUE}ℹ️  $1${NC}"
+}
+
+echo ""
+echo "📝 Validating commit message format..."
+
+# Skip validation for merge commits
+if echo "$COMMIT_MSG" | grep -qE "^Merge (branch|pull request)"; then
+    success "Merge commit detected - skipping validation"
+    exit 0
+fi
+
+# Skip validation for revert commits
+if echo "$COMMIT_MSG" | grep -qE "^Revert "; then
+    success "Revert commit detected - skipping validation"
+    exit 0
+fi
+
+# Skip validation for commits created by semantic-release or other automated tools
+if echo "$COMMIT_MSG" | grep -qE "^chore\(release\):"; then
+    success "Automated release commit - skipping validation"
+    exit 0
+fi
+
+# Conventional Commits pattern
+# Format: type(scope): description
+# Or: type: description
+# Types: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert
+PATTERN="^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\([a-zA-Z0-9_\-\.]+\))?: .{1,}"
+
+# Check if commit message matches the pattern
+if echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+    success "Commit message follows Conventional Commits format"
+    exit 0
+else
+    error "Commit message does NOT follow Conventional Commits format"
+    echo ""
+    echo "Your commit message:"
+    echo "  ${YELLOW}${COMMIT_MSG}${NC}"
+    echo ""
+    echo "Expected format:"
+    echo "  ${GREEN}type(optional-scope): description${NC}"
+    echo ""
+    echo "Valid types:"
+    echo "  ${BLUE}feat${NC}     - New features (triggers minor version bump)"
+    echo "  ${BLUE}fix${NC}      - Bug fixes (triggers patch version bump)"
+    echo "  ${BLUE}docs${NC}     - Documentation changes"
+    echo "  ${BLUE}style${NC}    - Code style changes (formatting, no functionality change)"
+    echo "  ${BLUE}refactor${NC} - Code refactoring"
+    echo "  ${BLUE}test${NC}     - Adding or modifying tests"
+    echo "  ${BLUE}chore${NC}    - Maintenance tasks"
+    echo "  ${BLUE}perf${NC}     - Performance improvements"
+    echo "  ${BLUE}ci${NC}       - CI/CD pipeline changes"
+    echo "  ${BLUE}build${NC}    - Build system changes"
+    echo "  ${BLUE}revert${NC}   - Reverting changes"
+    echo ""
+    echo "Examples:"
+    echo "  ${GREEN}feat: add OAuth2 integration for Twitter${NC}"
+    echo "  ${GREEN}fix: resolve null reference in authentication service${NC}"
+    echo "  ${GREEN}docs: update API documentation${NC}"
+    echo "  ${GREEN}chore(deps): update Avalonia to 11.0.0${NC}"
+    echo ""
+    echo "For breaking changes, add 'BREAKING CHANGE:' in the commit body:"
+    echo "  ${GREEN}feat: redesign authentication API${NC}"
+    echo "  ${GREEN}${NC}"
+    echo "  ${GREEN}BREAKING CHANGE: AuthService.Login() now returns Task<AuthResult>${NC}"
+    echo ""
+    info "To bypass this check (not recommended): git commit --no-verify"
+    echo ""
+    exit 1
+fi
