@@ -143,9 +143,9 @@ jobs:
         run: |
           # Disable Native AOT for linux-arm64 due to toolchain limitations
           if [[ "${{ matrix.os }}-${{ matrix.arch }}" == "linux-arm64" ]]; then
-            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} /p:Version=${{ steps.version.outputs.version }} /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true /p:PublishAot=false
+            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} -p:Version=${{ steps.version.outputs.version }} -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:PublishAot=false
           else
-            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} /p:Version=${{ steps.version.outputs.version }} /p:PublishSingleFile=true /p:IncludeNativeLibrariesForSelfExtract=true
+            dotnet publish SocialMediaCommander.Desktop/SocialMediaCommander.Desktop.csproj --configuration Release --runtime ${{ matrix.rid }} --self-contained true --output ./publish/${{ matrix.os }}-${{ matrix.arch }} -p:Version=${{ steps.version.outputs.version }} -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true
           fi
         timeout-minutes: 15
 
