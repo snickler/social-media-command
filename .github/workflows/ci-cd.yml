@@ -208,7 +208,7 @@ jobs:
           chmod +x linuxdeploy-${arch_suffix}.AppImage
 
           # For ARM64: Manually extract AppImage to avoid FUSE/format issues
-          # AppImages are self-extracting archives, but executing them (even for extraction)
+          # AppImages are self-extracting archives, but executing ARM64 binaries
           # fails because the binary format doesn't trigger QEMU handlers properly
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
             echo "Extracting ARM64 AppImage using offset method for QEMU compatibility..."
@@ -216,16 +216,35 @@ jobs:
             # Install squashfs-tools for manual extraction
             sudo apt-get update -qq && sudo apt-get install -y -qq squashfs-tools >/dev/null 2>&1
             
-            # AppImages have a magic offset value embedded that tells where the squashfs starts
-            # Try to get the offset, fallback to common default (188 bytes for type 2 AppImage)
-            offset=$(LANG=C grep -ao 'offset=[0-9]*' linuxdeploy-${arch_suffix}.AppImage 2>/dev/null | head -n1 | cut -d= -f2)
+            # Download the x64 version to get the correct offset
+            # (x64 can run natively and will tell us the offset)
+            echo "Getting offset information from x64 version..."
+            wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+            chmod +x linuxdeploy-x86_64.AppImage
+            offset=$(./linuxdeploy-x86_64.AppImage --appimage-offset 2>/dev/null || echo "")
+            
             if [ -z "$offset" ]; then
-              offset=188  # Default offset for AppImage type 2
+              # Fallback: use the standard offset for AppImage type 2 format
+              # Most linuxdeploy AppImages use offset 188 (old) or newer dynamic offset
+              # We'll try to find the magic bytes for squashfs (hsqs) 
+              echo "Finding squashfs offset by magic bytes..."
+              offset=$(LANG=C grep -aboP '\x68\x73\x71\x73' linuxdeploy-${arch_suffix}.AppImage 2>/dev/null | head -n1 | cut -d: -f1)
+              if [ -z "$offset" ]; then
+                echo "ERROR: Could not determine AppImage offset"
+                exit 1
+              fi
             fi
             echo "Using offset: $offset"
             
             # Extract the squashfs filesystem without executing the ARM64 binary
             dd if=linuxdeploy-${arch_suffix}.AppImage bs=1 skip=$offset of=linuxdeploy.squashfs 2>/dev/null
+            
+            # Verify we got a valid squashfs
+            if ! file linuxdeploy.squashfs | grep -q squashfs; then
+              echo "ERROR: Extracted file is not a valid squashfs filesystem"
+              file linuxdeploy.squashfs
+              exit 1
+            fi
             
             # Extract the squashfs filesystem
             unsquashfs -q -d squashfs-root linuxdeploy.squashfs
