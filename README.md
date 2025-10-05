@@ -162,6 +162,7 @@ If you forget to run setup, hooks will auto-configure on first `dotnet build`!
 
 **Hook Features:**
 - **Pre-commit**: Blocks commits with secrets, build errors, or policy violations
+- **Commit-msg**: Validates commit messages follow Conventional Commits format (enables automated releases)
 - **Post-commit**: Provides helpful reminders and next-step suggestions
 
 **📋 Quick Reference:** See [GIT_HOOKS_QUICK_REF.md](GIT_HOOKS_QUICK_REF.md) for a one-page cheat sheet
