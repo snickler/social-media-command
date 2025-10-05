@@ -23,7 +23,7 @@ public static class ServiceCollectionExtensions
         {
             var config = new AIModelConfig();
             var section = configuration.GetSection("AI");
-            
+
             // Manual property binding to avoid reflection
             if (section.Exists())
             {
@@ -36,7 +36,7 @@ public static class ServiceCollectionExtensions
                     config.MaxTokens = maxTokens;
                 config.SystemPrompt = section["SystemPrompt"] ?? config.SystemPrompt;
             }
-            
+
             return Microsoft.Extensions.Options.Options.Create(config);
         });
 

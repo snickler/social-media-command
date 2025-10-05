@@ -28,7 +28,7 @@ public class ViewLocator : IDataTemplate
             return null;
 
         var paramType = param.GetType();
-        
+
         if (_viewMappings.TryGetValue(paramType, out var factory))
         {
             return factory();
