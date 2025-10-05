@@ -51,11 +51,11 @@
     <PackageReference Include="Microsoft.Extensions.Http" />
   </ItemGroup>
 
-  <ItemGroup Condition="$([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64'))">
+  <ItemGroup Condition="$([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64'))">
     <PackageReference Include="WebViewControl-Avalonia-ARM64" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64')) == 'False'">
+  <ItemGroup Condition="'$(Platform)' == '' Or $([System.String]::Copy('$(Platform)').ToLowerInvariant().Contains('arm64')) == 'False'">
     <PackageReference Include="WebViewControl-Avalonia" />
   </ItemGroup>
 
