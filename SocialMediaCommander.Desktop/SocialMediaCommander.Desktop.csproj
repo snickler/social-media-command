@@ -40,8 +40,7 @@
     <PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Sinks.File" />
-    <PackageReference Include="WebViewControl-Avalonia" />
+  <PackageReference Include="Serilog.Sinks.File" />
     
     <!-- Enhanced Dependencies -->
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
@@ -50,6 +49,14 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
     <PackageReference Include="Microsoft.Extensions.Http" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64'))">
+    <PackageReference Include="WebViewControl-Avalonia-ARM64" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == '' Or $([System.String]::Copy('$(RuntimeIdentifier)').ToLowerInvariant().Contains('arm64')) == 'False'">
+    <PackageReference Include="WebViewControl-Avalonia" />
   </ItemGroup>
 
   <ItemGroup>
