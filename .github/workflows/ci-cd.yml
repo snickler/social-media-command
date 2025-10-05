@@ -312,6 +312,13 @@ jobs:
           # Copy all published dependencies
           cp -r ./publish/${{ matrix.os }}-${{ matrix.arch }}/* SocialMediaCommander.AppDir/usr/bin/ 2>/dev/null || true
           
+          # Bundle native libraries from the publish output (SkiaSharp, Avalonia, etc.)
+          echo "Bundling native libraries from publish output..."
+          find ./publish/${{ matrix.os }}-${{ matrix.arch }} -name "*.so*" -type f | while read lib; do
+            cp "$lib" SocialMediaCommander.AppDir/usr/lib/
+            echo "  Bundled: $(basename $lib)"
+          done
+          
           # Bundle required X11 libraries into the AppImage
           # These are needed by Avalonia for X11 support
           echo "Bundling X11 libraries from $LIB_ARCH_PATH..."
