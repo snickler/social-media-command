@@ -6,6 +6,12 @@ on:
     tags: ['v*']
   pull_request:
     branches: [main, develop]
+    paths:
+      - '**/*.sln'
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.props'
+      - '**/*.targets'
   release:
     types: [published]
 
