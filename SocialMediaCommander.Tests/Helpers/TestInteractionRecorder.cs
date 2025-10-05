@@ -30,11 +30,11 @@ public class TestInteractionRecorder
     {
         var elapsed = DateTime.UtcNow - _startTime;
         var timestamp = $"{elapsed.TotalSeconds:F3}s";
-        
-        var entry = details != null 
+
+        var entry = details != null
             ? $"[{timestamp}] {action}: {details}"
             : $"[{timestamp}] {action}";
-            
+
         _interactions.Add(entry);
     }
 
@@ -174,7 +174,7 @@ public class TestInteractionRecorder
     {
         var invalid = Path.GetInvalidFileNameChars();
         var sanitized = fileName;
-        
+
         foreach (var c in invalid)
         {
             sanitized = sanitized.Replace(c, '_');
@@ -208,7 +208,7 @@ public abstract class RecordedTestBase
     /// <summary>
     /// Records an interaction.
     /// </summary>
-    protected void Record(string action, string? details = null) 
+    protected void Record(string action, string? details = null)
         => Recorder.Record(action, details);
 
     /// <summary>

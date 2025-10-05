@@ -42,7 +42,7 @@ public class TddExampleTests : RecordedTestBase
         );
 
         Record("Screenshot captured", $"Path: {testPath}");
-        
+
         if (baselineExists)
         {
             Record("Baseline comparison", $"Matches: {matchesBaseline}");
@@ -125,7 +125,7 @@ public class TddExampleTests : RecordedTestBase
     public async Task SocialFeedView_VisualRegression_Example()
     {
         // This test demonstrates visual regression testing workflow
-        
+
         // Arrange
         Record("Setting up visual regression test");
         var view = new SocialFeedView();
@@ -165,7 +165,7 @@ public class TddExampleTests : RecordedTestBase
     public void TestInteractionRecorder_ShouldCapture_AllActions()
     {
         // This test demonstrates the recorder capabilities
-        
+
         // Arrange
         AddSection("Test Recorder Demonstration");
         Record("Starting recorder demo");
