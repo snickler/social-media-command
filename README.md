@@ -81,6 +81,8 @@ Social Media Commander is a cross-platform desktop application with full support
 - **Linux/macOS**: AES-256 encryption with machine/user-specific key derivation
 - **All platforms**: Full OAuth support, multi-account management, AI features
 
+📖 **[Complete macOS Documentation](docs/platforms/macos-support.md)** - Installation, troubleshooting, and platform-specific features
+
 ## Installation
 
 1. Clone the repository
