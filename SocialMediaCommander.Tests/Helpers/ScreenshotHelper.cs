@@ -59,7 +59,7 @@ public static class ScreenshotHelper
             // Find parent window
             var visual = control.GetVisualRoot();
             window = visual as Window;
-            
+
             if (window == null)
             {
                 // Create a temporary window to host the control
@@ -76,7 +76,7 @@ public static class ScreenshotHelper
         // Ensure the control is measured and arranged
         control.Measure(new Size(width, height));
         control.Arrange(new Rect(0, 0, width, height));
-        
+
         // Force render timer tick to ensure rendering is complete
         AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
@@ -86,7 +86,7 @@ public static class ScreenshotHelper
         {
             throw new InvalidOperationException("Failed to capture rendered frame. Ensure Skia renderer is enabled in test configuration.");
         }
-        
+
         return frame;
     }
 

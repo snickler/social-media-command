@@ -31,7 +31,7 @@ public class ScreenshotHelperTests
         };
 
         await Dispatcher.UIThread.InvokeAsync(() => window.Show());
-        
+
         // Allow window to render with Skia backend
         await Task.Delay(100);
 
@@ -55,12 +55,12 @@ public class ScreenshotHelperTests
             // With Skia backend enabled, screenshots should contain actual pixel data
             var fileSize = new FileInfo(filePath).Length;
             fileSize.Should().BeGreaterThan(0, "screenshot should contain PNG data");
-            
+
             // Verify it's a valid PNG file by checking the header
             using (var fs = File.OpenRead(filePath))
             {
                 var header = new byte[8];
-                fs.Read(header, 0, 8);
+                fs.ReadExactly(header, 0, 8);
                 // PNG header: 137 80 78 71 13 10 26 10
                 header[0].Should().Be(137, "PNG header byte 0");
                 header[1].Should().Be(80, "PNG header byte 1");
