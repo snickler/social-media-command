@@ -114,21 +114,31 @@ if [ $NULLABLE_VIOLATIONS -eq 0 ]; then
     success "Nullable reference type patterns look good"
 fi
 
-# 5. Verify dotnet format (if staged files include C# files)
+# 5. Auto-format and re-stage C# files
 if git diff --cached --name-only | grep -q "\.cs$"; then
     echo ""
-    echo "🎨 Running dotnet format check..."
+    echo "🎨 Auto-formatting C# files..."
     
-    # Run dotnet format in verify mode
     if command -v dotnet > /dev/null 2>&1; then
-        if ! dotnet format --verbosity quiet > /dev/null 2>&1; then
-            warning "Code formatting issues detected. Run 'dotnet format' to fix."
-            echo "  Hint: Run 'dotnet format' before committing."
+        # Get list of staged C# files
+        STAGED_CS_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep "\.cs$")
+        
+        # Run dotnet format (will modify files)
+        dotnet format --verbosity quiet > /dev/null 2>&1
+        
+        # Re-stage any modified files
+        if [ -n "$STAGED_CS_FILES" ]; then
+            for file in $STAGED_CS_FILES; do
+                if [ -f "$file" ]; then
+                    git add "$file"
+                fi
+            done
+            success "Code formatted and re-staged"
         else
-            success "Code formatting verified"
+            success "No C# files to format"
         fi
     else
-        warning "dotnet CLI not found. Skipping format check."
+        warning "dotnet CLI not found. Skipping format."
     fi
 fi
 
