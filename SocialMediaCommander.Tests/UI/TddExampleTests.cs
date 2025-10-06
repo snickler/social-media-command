@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Headless.XUnit;
+using Avalonia.Threading;
 using FluentAssertions;
 using SocialMediaCommander.Desktop.Views;
 using SocialMediaCommander.Tests.Helpers;
@@ -31,17 +32,20 @@ public class TddExampleTests : RecordedTestBase
         var window = new Window { Content = view, Width = 800, Height = 600 };
 
         Record("Showing window");
-        window.Show();
+        await Dispatcher.UIThread.InvokeAsync(() => window.Show());
         await Task.Delay(100); // Allow rendering
 
         // Act - Capture screenshot
         Record("Capturing screenshot");
-        var (testPath, baselineExists, matchesBaseline) = ScreenshotHelper.CaptureAndCompare(
-            view,
-            nameof(AccountManagerView_ShouldRender_WithScreenshot)
-        );
+        var (testPath, baselineExists, matchesBaseline) = await ScreenshotHelper
+            .CaptureAndCompare(
+                view,
+                nameof(AccountManagerView_ShouldRender_WithScreenshot))
+            .ConfigureAwait(false);
 
         Record("Screenshot captured", $"Path: {testPath}");
+
+        await Dispatcher.UIThread.InvokeAsync(() => window.Close());
 
         if (baselineExists)
         {
@@ -61,8 +65,7 @@ public class TddExampleTests : RecordedTestBase
         _output.WriteLine($"Test recording saved to: {recordingPath}");
         _output.WriteLine($"Screenshot saved to: {testPath}");
 
-        // Cleanup
-        window.Close();
+        // Cleanup handled via dispatcher
     }
 
     [AvaloniaFact]
@@ -134,7 +137,7 @@ public class TddExampleTests : RecordedTestBase
         Record("Initializing view with test data");
         view.DataContext = new { Feed = "Test Feed Data" };
 
-        window.Show();
+        await Dispatcher.UIThread.InvokeAsync(() => window.Show());
         await Task.Delay(150);
 
         // Act - Capture and compare
@@ -142,7 +145,7 @@ public class TddExampleTests : RecordedTestBase
         var screenshot = ScreenshotHelper.Capture(view, 1000, 800);
 
         var testPath = $"Screenshots/TestRun/{nameof(SocialFeedView_VisualRegression_Example)}.png";
-        ScreenshotHelper.Save(screenshot, testPath);
+        await ScreenshotHelper.Save(screenshot, testPath).ConfigureAwait(false);
 
         Record("Screenshot saved", testPath);
 
@@ -155,7 +158,7 @@ public class TddExampleTests : RecordedTestBase
         _output.WriteLine("To create baseline, manually copy test screenshot to baseline directory after visual inspection");
 
         // Cleanup
-        window.Close();
+        await Dispatcher.UIThread.InvokeAsync(() => window.Close());
 
         // Save interaction recording
         SaveRecording(nameof(SocialFeedView_VisualRegression_Example));

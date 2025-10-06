@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Threading;
 
 namespace SocialMediaCommander.Tests.Helpers;
 
@@ -33,15 +34,29 @@ public static class ScreenshotHelper
     /// <returns>Bitmap containing the screenshot</returns>
     public static RenderTargetBitmap Capture(Control control, int width = 800, int height = 600)
     {
+        if (control is null)
+        {
+            throw new ArgumentNullException(nameof(control));
+        }
+
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            return CaptureInternal(control, width, height);
+        }
+
+        return Dispatcher.UIThread.InvokeAsync(() => CaptureInternal(control, width, height)).GetAwaiter().GetResult();
+    }
+
+    private static RenderTargetBitmap CaptureInternal(Control control, int width, int height)
+    {
         var pixelSize = new PixelSize(width, height);
         var dpiVector = new Vector(96, 96);
         var renderTarget = new RenderTargetBitmap(pixelSize, dpiVector);
 
-        // Ensure control has valid bounds for rendering
         control.Measure(new Size(width, height));
         control.Arrange(new Rect(0, 0, width, height));
+        control.InvalidateVisual();
 
-        // Render the control to the bitmap
         renderTarget.Render(control);
 
         return renderTarget;
@@ -55,13 +70,12 @@ public static class ScreenshotHelper
     /// <param name="width">Width of the render target</param>
     /// <param name="height">Height of the render target</param>
     /// <returns>Path to the saved screenshot</returns>
-    public static string CaptureAndSave(Control control, string fileName, int width = 800, int height = 600)
+    public static async ValueTask<string> CaptureAndSave(Control control, string fileName, int width = 800, int height = 600)
     {
         var bitmap = Capture(control, width, height);
         var filePath = Path.Combine(TestRunDir, $"{fileName}.png");
 
-        using var stream = File.Create(filePath);
-        bitmap.Save(stream);
+        await Save(bitmap, filePath).ConfigureAwait(false);
 
         return filePath;
     }
@@ -71,16 +85,41 @@ public static class ScreenshotHelper
     /// </summary>
     /// <param name="bitmap">Bitmap to save</param>
     /// <param name="filePath">Full path to save location</param>
-    public static void Save(RenderTargetBitmap bitmap, string filePath)
+    public static async ValueTask Save(RenderTargetBitmap bitmap, string filePath)
     {
-        var directory = Path.GetDirectoryName(filePath);
+        if (bitmap is null)
+        {
+            throw new ArgumentNullException(nameof(bitmap));
+        }
+
+        var normalizedPath = Path.GetFullPath(filePath);
+        var directory = Path.GetDirectoryName(normalizedPath);
         if (!string.IsNullOrEmpty(directory))
         {
             Directory.CreateDirectory(directory);
         }
 
-        using var stream = File.Create(filePath);
-        bitmap.Save(stream);
+        if (Dispatcher.UIThread.CheckAccess())
+        {
+            SaveInternal(bitmap, normalizedPath);
+            return;
+        }
+
+        await Dispatcher.UIThread.InvokeAsync(
+            () => SaveInternal(bitmap, normalizedPath),
+            DispatcherPriority.Render);
+    }
+
+    private static void SaveInternal(RenderTargetBitmap bitmap, string filePath)
+    {
+        // Use synchronous file I/O to ensure the save completes before returning
+        using var memoryStream = new MemoryStream();
+        bitmap.Save(memoryStream);
+
+        memoryStream.Position = 0;
+        using var fileStream = File.Create(filePath);
+        memoryStream.CopyTo(fileStream);
+        fileStream.Flush();
     }
 
     /// <summary>
@@ -152,12 +191,12 @@ public static class ScreenshotHelper
     /// <param name="width">Width of render target</param>
     /// <param name="height">Height of render target</param>
     /// <returns>Path to the baseline screenshot</returns>
-    public static string CreateBaseline(Control control, string fileName, int width = 800, int height = 600)
+    public static async ValueTask<string> CreateBaseline(Control control, string fileName, int width = 800, int height = 600)
     {
         var bitmap = Capture(control, width, height);
         var filePath = Path.Combine(BaselineDir, $"{fileName}.png");
 
-        Save(bitmap, filePath);
+        await Save(bitmap, filePath).ConfigureAwait(false);
 
         return filePath;
     }
@@ -171,7 +210,7 @@ public static class ScreenshotHelper
     /// <param name="height">Height of render target</param>
     /// <param name="tolerance">Tolerance for comparison</param>
     /// <returns>Tuple of (test screenshot path, baseline exists, matches baseline)</returns>
-    public static (string testPath, bool baselineExists, bool? matchesBaseline) CaptureAndCompare(
+    public static async ValueTask<(string testPath, bool baselineExists, bool? matchesBaseline)> CaptureAndCompare(
         Control control,
         string testName,
         int width = 800,
@@ -179,7 +218,7 @@ public static class ScreenshotHelper
         double tolerance = 0.01)
     {
         // Capture current test
-        var testPath = CaptureAndSave(control, testName, width, height);
+        var testPath = await CaptureAndSave(control, testName, width, height).ConfigureAwait(false);
 
         // Check for baseline
         var baselinePath = Path.Combine(BaselineDir, $"{testName}.png");

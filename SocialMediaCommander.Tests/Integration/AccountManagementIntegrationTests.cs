@@ -1,3 +1,4 @@
+using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.DependencyInjection;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Implementation;
@@ -275,19 +276,21 @@ public class AccountManagementIntegrationTests : IDisposable
         // Arrange
         var platform = SocialPlatform.BlueSky;
         var initialAccountCount = _viewModel.Accounts.Count;
+        var command = _viewModel.ConnectAccountCommand;
+
+        command.Should().NotBeNull();
+        command.CanExecute(platform).Should().BeTrue();
+
+        command.Should().BeAssignableTo<IAsyncRelayCommand<SocialPlatform>>();
+        var asyncCommand = (IAsyncRelayCommand<SocialPlatform>)command;
 
         // Act
-        if (_viewModel.ConnectAccountCommand.CanExecute(platform))
-        {
-            _viewModel.ConnectAccountCommand.Execute(platform);
-        }
-
-        // Give some time for async operations
-        await Task.Delay(100);
+        await asyncCommand.ExecuteAsync(platform);
 
         // Assert
-        // The command should have been executed (we can't test actual OAuth flow without real credentials)
-        _viewModel.ConnectAccountCommand.CanExecute(platform).Should().BeTrue();
+        _viewModel.Accounts.Count.Should().BeGreaterThan(initialAccountCount);
+        _viewModel.Accounts.Should().Contain(a => a.PlatformId == platform);
+        command.CanExecute(platform).Should().BeTrue();
     }
 
     [Fact]
@@ -391,7 +394,7 @@ public class AccountManagementIntegrationTests : IDisposable
 
         var nonRefreshableTokens = new OAuthTokens
         {
-            AccessToken = "non_refreshable_token",
+            AccessToken = "PLACEHOLDER",
             ExpiresAt = DateTime.UtcNow.AddMinutes(-30)
             // No refresh token
         };
