@@ -1,0 +1,202 @@
+name: Visual Regression Testing
+
+on:
+  pull_request:
+    paths:
+      - 'SocialMediaCommander.Desktop/Views/**'
+      - 'SocialMediaCommander.Desktop/Styles/**'
+      - 'SocialMediaCommander.Tests/UI/**'
+      - '.github/workflows/visual-regression.yml'
+  workflow_dispatch:
+    inputs:
+      update_baselines:
+        description: 'Update baseline screenshots'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  visual-regression-tests:
+    name: Visual Regression Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore SocialMediaCommander.sln
+
+      - name: Build solution
+        run: dotnet build SocialMediaCommander.sln --configuration Release --no-restore
+
+      - name: Run visual regression tests
+        run: |
+          dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj \
+            --configuration Release \
+            --no-build \
+            --filter "FullyQualifiedName~VisualRegressionTests" \
+            --logger "console;verbosity=detailed" \
+            --logger "trx;LogFileName=visual-regression-results.trx" \
+            -- NUnit.ConsoleOut=0
+        continue-on-error: true
+
+      - name: Upload test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: |
+            SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/TestRun/
+            SocialMediaCommander.Tests/Screenshots/TestRun/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload baseline screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: baseline-screenshots
+          path: |
+            SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/Baselines/
+            SocialMediaCommander.Tests/Screenshots/Baselines/
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-test-results
+          path: |
+            **/TestResults/**/*.trx
+            **/TestResults/**/*.xml
+          retention-days: 30
+          if-no-files-found: warn
+
+      - name: Generate visual regression report
+        if: always()
+        run: |
+          echo "# Visual Regression Test Report" > visual-regression-report.md
+          echo "" >> visual-regression-report.md
+          echo "## Test Run Summary" >> visual-regression-report.md
+          echo "" >> visual-regression-report.md
+          echo "- **Branch:** ${{ github.head_ref || github.ref_name }}" >> visual-regression-report.md
+          echo "- **Commit:** ${{ github.sha }}" >> visual-regression-report.md
+          echo "- **Timestamp:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> visual-regression-report.md
+          echo "" >> visual-regression-report.md
+          
+          # Find screenshots
+          echo "## Generated Screenshots" >> visual-regression-report.md
+          echo "" >> visual-regression-report.md
+          
+          if [ -d "SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/TestRun" ]; then
+            SCREENSHOT_DIR="SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/TestRun"
+          elif [ -d "SocialMediaCommander.Tests/Screenshots/TestRun" ]; then
+            SCREENSHOT_DIR="SocialMediaCommander.Tests/Screenshots/TestRun"
+          else
+            echo "No screenshots found" >> visual-regression-report.md
+            SCREENSHOT_DIR=""
+          fi
+          
+          if [ -n "$SCREENSHOT_DIR" ] && [ -d "$SCREENSHOT_DIR" ]; then
+            SCREENSHOT_COUNT=$(find "$SCREENSHOT_DIR" -name "*.png" | wc -l)
+            echo "Found $SCREENSHOT_COUNT screenshots in $SCREENSHOT_DIR" >> visual-regression-report.md
+            echo "" >> visual-regression-report.md
+            
+            for screenshot in "$SCREENSHOT_DIR"/*.png; do
+              if [ -f "$screenshot" ]; then
+                filename=$(basename "$screenshot")
+                filesize=$(stat -f%z "$screenshot" 2>/dev/null || stat -c%s "$screenshot" 2>/dev/null || echo "unknown")
+                echo "- ✓ $filename (${filesize} bytes)" >> visual-regression-report.md
+              fi
+            done
+          else
+            echo "No screenshots directory found" >> visual-regression-report.md
+          fi
+          
+          echo "" >> visual-regression-report.md
+          echo "## Next Steps" >> visual-regression-report.md
+          echo "" >> visual-regression-report.md
+          echo "1. Download the test-screenshots artifact" >> visual-regression-report.md
+          echo "2. Manually review each screenshot for visual correctness" >> visual-regression-report.md
+          echo "3. If approved, copy screenshots to Screenshots/Baselines/ directory" >> visual-regression-report.md
+          echo "4. Commit baseline updates to establish new visual baselines" >> visual-regression-report.md
+
+      - name: Upload visual regression report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-report
+          path: visual-regression-report.md
+          retention-days: 30
+
+      - name: Comment on PR with visual regression results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let reportContent = '## 📸 Visual Regression Test Results\n\n';
+            
+            try {
+              const report = fs.readFileSync('visual-regression-report.md', 'utf8');
+              reportContent += report;
+            } catch (error) {
+              reportContent += '⚠️ Could not read visual regression report\n';
+            }
+            
+            reportContent += '\n\n---\n';
+            reportContent += '**Artifacts:** Download screenshots from the workflow run artifacts to review visual changes.\n';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: reportContent
+            });
+
+      - name: Update baselines (manual workflow only)
+        if: github.event_name == 'workflow_dispatch' && inputs.update_baselines == true
+        run: |
+          # Copy test screenshots to baselines
+          if [ -d "SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/TestRun" ]; then
+            mkdir -p SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/Baselines
+            cp -r SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/TestRun/*.png \
+                  SocialMediaCommander.Tests/bin/Release/net9.0/Screenshots/Baselines/ 2>/dev/null || true
+          fi
+          
+          if [ -d "SocialMediaCommander.Tests/Screenshots/TestRun" ]; then
+            mkdir -p SocialMediaCommander.Tests/Screenshots/Baselines
+            cp -r SocialMediaCommander.Tests/Screenshots/TestRun/*.png \
+                  SocialMediaCommander.Tests/Screenshots/Baselines/ 2>/dev/null || true
+          fi
+          
+          echo "Baselines updated from test run screenshots"
+
+      - name: Commit baseline updates
+        if: github.event_name == 'workflow_dispatch' && inputs.update_baselines == true
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          git add SocialMediaCommander.Tests/Screenshots/Baselines/*.png || true
+          
+          if git diff --staged --quiet; then
+            echo "No baseline changes to commit"
+          else
+            git commit -m "chore: update visual regression baselines [skip ci]"
+            git push
+          fi
