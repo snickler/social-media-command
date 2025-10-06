@@ -19,7 +19,7 @@ public class ScreenshotHelperTests
         var control = new Border
         {
             Width = 120,
-            Height = 80,
+            Height = 90,
             Background = Brushes.Blue
         };
 
@@ -29,6 +29,8 @@ public class ScreenshotHelperTests
             Width = 160,
             Height = 120
         };
+
+
 
         await Dispatcher.UIThread.InvokeAsync(() => window.Show());
 
