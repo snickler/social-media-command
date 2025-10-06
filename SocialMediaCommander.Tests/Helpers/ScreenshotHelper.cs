@@ -3,9 +3,11 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Headless;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 
 namespace SocialMediaCommander.Tests.Helpers;
 
@@ -26,13 +28,14 @@ public static class ScreenshotHelper
     }
 
     /// <summary>
-    /// Captures a screenshot of the specified control.
+    /// Captures a screenshot of the specified control using Avalonia's headless rendering.
+    /// The control must be hosted in a Window for proper rendering with Skia backend.
     /// </summary>
-    /// <param name="control">The control to capture</param>
+    /// <param name="control">The control to capture (must be in a Window's visual tree)</param>
     /// <param name="width">Width of the render target</param>
     /// <param name="height">Height of the render target</param>
-    /// <returns>Bitmap containing the screenshot</returns>
-    public static RenderTargetBitmap Capture(Control control, int width = 800, int height = 600)
+    /// <returns>WriteableBitmap containing the screenshot</returns>
+    public static WriteableBitmap Capture(Control control, int width = 800, int height = 600)
     {
         if (control is null)
         {
@@ -47,19 +50,44 @@ public static class ScreenshotHelper
         return Dispatcher.UIThread.InvokeAsync(() => CaptureInternal(control, width, height)).GetAwaiter().GetResult();
     }
 
-    private static RenderTargetBitmap CaptureInternal(Control control, int width, int height)
+    private static WriteableBitmap CaptureInternal(Control control, int width, int height)
     {
-        var pixelSize = new PixelSize(width, height);
-        var dpiVector = new Vector(96, 96);
-        var renderTarget = new RenderTargetBitmap(pixelSize, dpiVector);
+        // Find or create a window for the control
+        var window = control as Window;
+        if (window == null)
+        {
+            // Find parent window
+            var visual = control.GetVisualRoot();
+            window = visual as Window;
+            
+            if (window == null)
+            {
+                // Create a temporary window to host the control
+                window = new Window
+                {
+                    Content = control,
+                    Width = width,
+                    Height = height
+                };
+                window.Show();
+            }
+        }
 
+        // Ensure the control is measured and arranged
         control.Measure(new Size(width, height));
         control.Arrange(new Rect(0, 0, width, height));
-        control.InvalidateVisual();
+        
+        // Force render timer tick to ensure rendering is complete
+        AvaloniaHeadlessPlatform.ForceRenderTimerTick();
 
-        renderTarget.Render(control);
-
-        return renderTarget;
+        // Capture the rendered frame using Avalonia's headless platform method
+        var frame = window.CaptureRenderedFrame();
+        if (frame == null)
+        {
+            throw new InvalidOperationException("Failed to capture rendered frame. Ensure Skia renderer is enabled in test configuration.");
+        }
+        
+        return frame;
     }
 
     /// <summary>
@@ -83,9 +111,9 @@ public static class ScreenshotHelper
     /// <summary>
     /// Saves a bitmap to the specified path.
     /// </summary>
-    /// <param name="bitmap">Bitmap to save</param>
+    /// <param name="bitmap">Bitmap to save (WriteableBitmap from CaptureRenderedFrame)</param>
     /// <param name="filePath">Full path to save location</param>
-    public static async ValueTask Save(RenderTargetBitmap bitmap, string filePath)
+    public static async ValueTask Save(WriteableBitmap bitmap, string filePath)
     {
         if (bitmap is null)
         {
@@ -110,16 +138,10 @@ public static class ScreenshotHelper
             DispatcherPriority.Render);
     }
 
-    private static void SaveInternal(RenderTargetBitmap bitmap, string filePath)
+    private static void SaveInternal(WriteableBitmap bitmap, string filePath)
     {
-        // Use synchronous file I/O to ensure the save completes before returning
-        using var memoryStream = new MemoryStream();
-        bitmap.Save(memoryStream);
-
-        memoryStream.Position = 0;
-        using var fileStream = File.Create(filePath);
-        memoryStream.CopyTo(fileStream);
-        fileStream.Flush();
+        // WriteableBitmap.Save() works correctly with Skia backend enabled
+        bitmap.Save(filePath);
     }
 
     /// <summary>
