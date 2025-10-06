@@ -1,5 +1,13 @@
 name: Release
 
+# This workflow uses semantic-release to analyze commits and create GitHub releases.
+# It does NOT commit back to main (due to branch protection).
+# Instead, it:
+#   1. Analyzes commits to determine the next version
+#   2. Generates release notes
+#   3. Creates a GitHub release with a tag (e.g., v1.2.3)
+#   4. Triggers the Build and Release workflow to build and attach artifacts
+
 on:
   push:
     branches: [main]
@@ -58,7 +66,19 @@ jobs:
         run: |
           cat > .releaserc.json << 'EOF'
           {
-            "branches": ["main"],
+            "branches": [
+              "main",
+              {
+                "name": "develop",
+                "prerelease": "beta",
+                "channel": "beta"
+              },
+              {
+                "name": "rc/*",
+                "prerelease": "rc",
+                "channel": "rc"
+              }
+            ],
             "plugins": [
               "@semantic-release/commit-analyzer",
               "@semantic-release/release-notes-generator",
@@ -71,14 +91,7 @@ jobs:
               [
                 "@semantic-release/exec",
                 {
-                  "prepareCmd": "dotnet restore && dotnet build --configuration Release /p:Version=${nextRelease.version}"
-                }
-              ],
-              [
-                "@semantic-release/git",
-                {
-                  "assets": ["CHANGELOG.md", "Directory.Build.props"],
-                  "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
+                  "prepareCmd": "echo 'Version: ${nextRelease.version}'"
                 }
               ],
               "@semantic-release/github"
@@ -86,14 +99,6 @@ jobs:
           }
           EOF
           npx semantic-release
-
-      - name: Update Directory.Build.props
-        if: steps.semantic.outputs.new_release_published == 'true'
-        run: |
-          VERSION=${{ steps.semantic.outputs.new_release_version }}
-          sed -i "s/<Version>.*<\/Version>/<Version>$VERSION<\/Version>/" Directory.Build.props
-          sed -i "s/<AssemblyVersion>.*<\/AssemblyVersion>/<AssemblyVersion>$VERSION.0<\/AssemblyVersion>/" Directory.Build.props
-          sed -i "s/<FileVersion>.*<\/FileVersion>/<FileVersion>$VERSION.0<\/FileVersion>/" Directory.Build.props
 
   trigger-build:
     name: Trigger Build and Publish

@@ -23,6 +23,13 @@
     <TreatWarningsAsErrors Condition="'$(Configuration)' == 'Release'">true</TreatWarningsAsErrors>
     <WarningsAsErrors />
     <WarningsNotAsErrors />
+    
+    <!-- Disable Avalonia telemetry to prevent network calls during build/test -->
+    <AvaloniaUseTelemetry>false</AvaloniaUseTelemetry>
+    <DOTNET_CLI_TELEMETRY_OPTOUT>1</DOTNET_CLI_TELEMETRY_OPTOUT>
+    
+    <!-- Disable Avalonia BuildServices collector to prevent network calls during build -->
+    <AvaloniaEnableBuildAnalyzer>false</AvaloniaEnableBuildAnalyzer>
   </PropertyGroup>
 
   <!-- Automatic Git Hooks Setup Target -->

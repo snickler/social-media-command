@@ -117,6 +117,33 @@ npm run dev
 
 **Test framework**: xUnit with FluentAssertions and Moq. All tests are in `SocialMediaCommander.Tests/`.
 
+**Test infrastructure**:
+- **Headless UI Testing**: Avalonia.Headless with Skia rendering enabled for screenshot capture
+- **Screenshot Testing**: `ScreenshotHelper.cs` — captures, saves, and compares UI screenshots using `Window.CaptureRenderedFrame()`
+- **Visual Regression Testing**: `VisualRegressionTests.cs` — comprehensive screenshot tests for all views (see `.github/VISUAL_REGRESSION_TESTING.md`)
+- **Test Recording**: `RecordedTestBase.cs` — records test interactions for debugging and documentation
+- **Test App Configuration**: `TestAppBuilder.cs` — configures headless platform with Skia backend (`UseHeadlessDrawing = false`)
+
+**Screenshot Testing Requirements**:
+- Tests must host controls in a `Window` for proper rendering
+- Use `ScreenshotHelper.Capture(control, width, height)` to capture `WriteableBitmap`
+- Screenshots saved to `Screenshots/TestRun/` (test runs) and `Screenshots/Baselines/` (approved baselines)
+- Force render with `AvaloniaHeadlessPlatform.ForceRenderTimerTick()` before capture
+- Baseline screenshots committed to repo; test run screenshots gitignored
+- **Visual regression workflow**: Run tests → Review screenshots → Approve baselines → Commit baselines
+
+**Visual Regression Testing Workflow** (see `.github/VISUAL_REGRESSION_TESTING.md` for complete guide):
+1. Run tests: `dotnet test --filter "FullyQualifiedName~VisualRegressionTests"`
+2. Review screenshots in `Screenshots/TestRun/`
+3. If approved, copy to `Screenshots/Baselines/`
+4. Commit baselines with PR
+5. CI automatically runs visual regression on PRs modifying views
+
+**Known Test Limitations**:
+- Some UI controls (ToggleSwitch) not fully supported in headless mode — tests skipped with documented reasons
+- Screenshots produce actual PNG data with Skia enabled (not zero-byte files)
+- Platform-specific font rendering may cause minor pixel differences between Windows/Linux/macOS
+
 ---
 
 ## Project-Specific Conventions
@@ -158,10 +185,30 @@ npm run dev
 
 ## CI/CD & Release
 
-- `.github/workflows/publish.yml` builds and deploys
-- Requires `RELEASE_GITHUB_PAT` secret
-- Build script: `build/build-release.sh`
-- **Do not rely on CI for local testing** — run `dotnet build` and `dotnet test` locally
+**Complete workflow documentation**: See `.github/WORKFLOWS_OVERVIEW.md` for visual diagrams and navigation.
+
+### Workflows
+- **`release.yml`** — Creates stable releases from `main` using semantic-release (no commits to main)
+- **`pre-release.yml`** — Creates alpha/beta/rc pre-releases from `develop`, `rc/*`, or feature branches
+- **`ci-cd.yml`** — Builds and tests all platforms; triggered by commits, PRs, and tags
+- **`code-quality.yml`** — Runs linting, formatting checks on PRs
+- **`visual-regression.yml`** — Runs visual regression tests on PRs; captures screenshots for manual review
+
+### Release Process
+- **Stable releases**: Push to `main` with conventional commits → auto-creates tag → builds artifacts
+- **Pre-releases**: Push to `develop` (beta) or `rc/*` (rc) → auto-creates pre-release tag → builds artifacts
+- **Manual releases**: Actions → Release/Pre-Release workflow → Run workflow
+
+**Key Documentation**:
+- `.github/RELEASE_WORKFLOW.md` — Stable release process
+- `.github/PRE_RELEASE_GUIDE.md` — Complete pre-release documentation
+- `.github/PRE_RELEASE_QUICK_REF.md` — Quick commands for developers
+- `.github/RELEASE_CHECKLIST.md` — Step-by-step checklists for release managers
+- `.github/VISUAL_REGRESSION_TESTING.md` — Visual regression testing guide and workflow
+
+**Branch Protection**: Main branch is protected; workflows create tags/releases without committing to main.
+
+**Do not rely on CI for local testing** — run `dotnet build` and `dotnet test` locally.
 
 ---
 
@@ -169,14 +216,17 @@ npm run dev
 
 Before proposing changes, **MUST** complete:
 1. ✅ `dotnet build SocialMediaCommander.sln` — no errors, warnings reviewed
-2. ✅ `dotnet test SocialMediaCommander.sln` — all tests pass (184+ tests expected)
+2. ✅ `dotnet test SocialMediaCommander.sln` — all tests pass (970+ tests expected)
 3. ✅ Search for plaintext secrets: `ClientSecret`, `YOUR_CLIENT_ID_HERE` — ensure none committed
 4. ✅ If ViewModel constructors changed: update manual composition in `App.axaml.cs`
 5. ✅ Preserve logging initialization order: never call `LoggingService.ForContext<T>()` before `LoggingService.Initialize()`
 6. ✅ Async patterns follow best practices: `ConfigureAwait(false)` in library code, `ValueTask` where appropriate
 7. ✅ Package versions added only to `Directory.Packages.props`, never in `.csproj` files
 8. ✅ If UI changes: run desktop app locally and check logs for binding/runtime errors
-9. ✅ **Commit messages follow Conventional Commits format** (enforced by commit-msg hook) — use `feat:`, `fix:`, `docs:`, `chore:`, etc.
+9. ✅ **If view/style changes**: Run visual regression tests, review screenshots, update baselines if intentional changes (see `.github/VISUAL_REGRESSION_TESTING.md`)
+10. ✅ **Commit messages follow Conventional Commits format** (enforced by commit-msg hook) — use `feat:`, `fix:`, `docs:`, `chore:`, etc.
+11. ✅ **Pre-commit hooks**: Auto-formats code with `dotnet format` and re-stages changed files (configured in `.githooks/pre-commit`)
+12. ✅ **After feature implementation**: Check if copilot instructions need updating; update `.github/copilot-instructions.md` if architecture, workflows, or critical patterns changed
 
 ---
 
@@ -186,7 +236,13 @@ Before proposing changes, **MUST** complete:
 - **Security**: `CrossPlatformEncryption.cs`, `SecureAccountService.cs`, `OAuthConfigurationService.cs`
 - **Performance**: `OptimizedAsyncService.cs`, `PerformanceOptimizedService.cs`, `AdvancedLoggingService.cs`
 - **OAuth Demo**: `OAuthConfigDemo.cs` (shows how to get defaults, save custom configs, validate)
-- **Documentation**: `PERFORMANCE_OPTIMIZATIONS.md`, `SECURE_STORAGE_IMPLEMENTATION.md`, `ENHANCED_FEATURES_FINAL.md`
+- **Testing Infrastructure**: `TestAppBuilder.cs`, `ScreenshotHelper.cs`, `RecordedTestBase.cs`, `VisualRegressionTests.cs`
+- **Documentation**: 
+  - Performance: `PERFORMANCE_OPTIMIZATIONS.md`
+  - Security: `SECURE_STORAGE_IMPLEMENTATION.md`
+  - Features: `ENHANCED_FEATURES_FINAL.md`
+  - Workflows: `.github/WORKFLOWS_OVERVIEW.md`, `.github/RELEASE_WORKFLOW.md`, `.github/PRE_RELEASE_GUIDE.md`
+  - Testing: `.github/VISUAL_REGRESSION_TESTING.md`
 
 ---
 

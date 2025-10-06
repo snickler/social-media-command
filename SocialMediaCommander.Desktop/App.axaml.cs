@@ -53,12 +53,21 @@ public partial class App : Application
 
             // Attach Developer Tools for debugging with enhanced logging
 #if DEBUG
-            this.AttachDeveloperTools(options =>
+            try
             {
-                // Add Microsoft Extensions Logging integration
-                options.AddMicrosoftLoggerObservable(_loggerFactory);
-            });
-            _logger.Information("Developer Tools attached with enhanced diagnostics");
+                this.AttachDeveloperTools(options =>
+                {
+                    // Add Microsoft Extensions Logging integration
+                    options.AddMicrosoftLoggerObservable(_loggerFactory);
+                });
+                _logger.Information("Developer Tools attached with enhanced diagnostics");
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("DeveloperTools was already set"))
+            {
+                // In test scenarios, the app may be initialized multiple times
+                // Silently ignore if dev tools are already attached
+                _logger.Information("Developer Tools already attached (expected in test scenarios)");
+            }
 #endif
 
             _logger.Information("=== APP.INITIALIZE COMPLETED ===");

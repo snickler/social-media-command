@@ -504,3 +504,8 @@ dist/
 
 # Git hooks are version-controlled in .githooks/ directory
 # DO NOT ignore .githooks/ - it contains tracked hook templates
+
+# Test artifacts
+SocialMediaCommander.Tests/Screenshots/TestRun/
+SocialMediaCommander.Tests/test-recordings/
+*.trx

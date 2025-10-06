@@ -1,0 +1,177 @@
+name: Pre-Release
+
+# This workflow creates pre-release versions for testing before stable releases.
+# Pre-releases can be created from:
+#   - develop branch (automatic on push)
+#   - feature branches (manual dispatch)
+#   - release candidate branches (rc/*)
+# 
+# Pre-release versions follow semantic versioning with identifiers:
+#   - develop → 1.2.3-beta.1, 1.2.3-beta.2, etc.
+#   - rc/* → 1.2.3-rc.1, 1.2.3-rc.2, etc.
+#   - feature/* → 1.2.3-alpha.1, 1.2.3-alpha.2, etc.
+
+on:
+  push:
+    branches:
+      - develop
+      - 'rc/**'
+      - 'release/**'
+  workflow_dispatch:
+    inputs:
+      prerelease_type:
+        description: 'Pre-release type'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - alpha
+          - beta
+          - rc
+      branch:
+        description: 'Branch to release from (leave empty for current branch)'
+        required: false
+        type: string
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  pre-release:
+    name: Create Pre-Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      released: ${{ steps.semantic.outputs.new_release_published }}
+    steps:
+      - name: Determine branch and pre-release type
+        id: branch-config
+        run: |
+          BRANCH="${{ github.event.inputs.branch || github.ref_name }}"
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          
+          # Determine pre-release type based on branch
+          if [[ "${{ github.event.inputs.prerelease_type }}" != "" ]]; then
+            PRERELEASE_TYPE="${{ github.event.inputs.prerelease_type }}"
+          elif [[ "$BRANCH" == "develop" ]]; then
+            PRERELEASE_TYPE="beta"
+          elif [[ "$BRANCH" =~ ^rc/ ]] || [[ "$BRANCH" =~ ^release/ ]]; then
+            PRERELEASE_TYPE="rc"
+          else
+            PRERELEASE_TYPE="alpha"
+          fi
+          echo "prerelease_type=$PRERELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "Pre-release type: $PRERELEASE_TYPE for branch: $BRANCH"
+
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.branch-config.outputs.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Install semantic-release
+        run: |
+          npm install -g semantic-release @semantic-release/changelog @semantic-release/exec
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Semantic Pre-Release
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PRERELEASE_TYPE="${{ steps.branch-config.outputs.prerelease_type }}"
+          BRANCH="${{ steps.branch-config.outputs.branch }}"
+          
+          cat > .releaserc.json << EOF
+          {
+            "branches": [
+              "main",
+              {
+                "name": "develop",
+                "prerelease": "beta"
+              },
+              {
+                "name": "rc/*",
+                "prerelease": "rc"
+              },
+              {
+                "name": "release/*",
+                "prerelease": "rc"
+              },
+              {
+                "name": "*",
+                "prerelease": "$PRERELEASE_TYPE"
+              }
+            ],
+            "plugins": [
+              "@semantic-release/commit-analyzer",
+              "@semantic-release/release-notes-generator",
+              [
+                "@semantic-release/changelog",
+                {
+                  "changelogFile": "CHANGELOG.md"
+                }
+              ],
+              [
+                "@semantic-release/exec",
+                {
+                  "prepareCmd": "echo 'Pre-release Version: \${nextRelease.version}'"
+                }
+              ],
+              [
+                "@semantic-release/github",
+                {
+                  "successComment": false,
+                  "releasedLabels": ["released"]
+                }
+              ]
+            ]
+          }
+          EOF
+          
+          npx semantic-release
+
+      - name: Output release info
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "### 🎉 Pre-Release Created!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.semantic.outputs.new_release_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Type:** ${{ steps.branch-config.outputs.prerelease_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ steps.branch-config.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Artifacts will be built and attached automatically." >> $GITHUB_STEP_SUMMARY
+
+  trigger-build:
+    name: Trigger Pre-Release Build
+    needs: pre-release
+    if: needs.pre-release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for tag to propagate
+        run: sleep 5
+
+      - name: Trigger CI/CD workflow
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const tag = 'v${{ needs.pre-release.outputs.version }}';
+            console.log(`Triggering build for tag: ${tag}`);
+            
+            // The ci-cd.yml workflow is already configured to trigger on tags matching v*
+            // The tag creation by semantic-release will automatically trigger it
+            console.log('Build will be triggered automatically by tag creation');

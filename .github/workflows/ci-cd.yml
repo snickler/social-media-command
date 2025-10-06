@@ -1,5 +1,12 @@
 name: Build and Release
 
+# This workflow:
+#   - Builds and tests on all commits/PRs
+#   - When a tag is pushed (e.g., v1.2.3 from semantic-release), it:
+#     * Builds artifacts for all platforms
+#     * Creates a GitHub release
+#     * Attaches built artifacts to the release
+
 on:
   push:
     branches: [main, develop]
@@ -25,6 +32,14 @@ env:
   DOTNET_VERSION: '9.0.x'
   NODE_VERSION: '22.x'
   NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  # Disable telemetry to prevent network calls during build/test
+  DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+  DOTNET_NOLOGO: '1'
+  VSTEST_TELEMETRY_OPTEDIN: '0'
+  # Disable DNS lookups and network access
+  DOTNET_SYSTEM_NET_DISABLEIPV6: '1'
+  # Disable Avalonia build analyzer to prevent network calls
+  AvaloniaEnableBuildAnalyzer: 'false'
 
 permissions:
   contents: read
@@ -175,9 +190,9 @@ jobs:
         run: |
           # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings SocialMediaCommander.Tests/test.runsettings
           else
-            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage -p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.sln --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage --settings SocialMediaCommander.Tests/test.runsettings -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 10
 
@@ -188,11 +203,22 @@ jobs:
         run: |
           # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries
           if [[ "${{ matrix.os }}" == "macos" ]]; then
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx"
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" --settings SocialMediaCommander.Tests/test.runsettings
           else
-            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" -p:Platform=${{ matrix.arch}}
+            dotnet test SocialMediaCommander.Tests/SocialMediaCommander.Tests.csproj --no-build --configuration Release --filter "FullyQualifiedName~SocialMediaCommander.Tests.UI" --verbosity normal --logger "trx;LogFileName=ui-tests.trx" --settings SocialMediaCommander.Tests/test.runsettings -p:Platform=${{ matrix.arch}}
           fi
         timeout-minutes: 5
+
+      - name: Upload UI Screenshots
+        if: matrix.arch == 'x64' && (success() || failure())
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-screenshots-${{ matrix.os }}-${{ matrix.arch }}
+          path: |
+            **/Screenshots/TestRun/*.png
+            **/test-recordings/*.log
+          retention-days: 30
+          if-no-files-found: ignore
 
       - name: Code Coverage Report
         if: matrix.os == 'linux' && matrix.arch == 'x64'
@@ -446,7 +472,7 @@ jobs:
     name: Create Release
     runs-on: ubuntu-latest
     needs: [build-and-test]
-    if: github.event_name == 'release' && github.event.action == 'published'
+    if: startsWith(github.ref, 'refs/tags/v')
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -459,10 +485,12 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -la ./artifacts/
 
-      - name: Upload release assets
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: ./artifacts/**/*
           generate_release_notes: true
+          draft: false
+          prerelease: ${{ contains(github.ref, 'alpha') || contains(github.ref, 'beta') || contains(github.ref, 'rc') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
