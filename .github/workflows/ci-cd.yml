@@ -2,7 +2,7 @@ name: Build and Release
 
 # This workflow:
 #   - Builds and tests on all commits/PRs
-#   - For Dependabot PRs: Only runs linux-x64 builds/tests (skips publishing) to save CI time
+#   - For Dependabot PRs: Only runs linux-x64 builds/tests (skips publishing) to save CI time (~90% faster, ~3 min instead of ~30 min)
 #   - For regular PRs/commits: Runs full platform matrix with builds and tests
 #   - When a tag is pushed (e.g., v1.2.3 from semantic-release), it:
 #     * Builds artifacts for all platforms
@@ -42,11 +42,11 @@ env:
   DOTNET_SYSTEM_NET_DISABLEIPV6: '1'
   # Disable Avalonia build analyzer to prevent network calls
   AvaloniaEnableBuildAnalyzer: 'false'
+  DEPENDABOT_RUNNER: 'linux-x64'
 
 permissions:
   contents: read
   pull-requests: write
-
 jobs:
   build-and-test:
     name: Build & Test ${{ matrix.os }}-${{ matrix.arch }}
@@ -85,20 +85,19 @@ jobs:
         shell: bash
         run: |
           # For Dependabot PRs, only run linux-x64 to save CI time
+          # We check both github.actor and github.event.pull_request.user.login for robustness:
+          # - github.actor is set to dependabot[bot] for PRs created by Dependabot
+          # - github.event.pull_request.user.login is set to dependabot[bot] for PR events
           IS_DEPENDABOT="false"
-          if [[ "${{ github.actor }}" == "dependabot[bot]" ]] || [[ "${{ github.event.pull_request.user.login }}" == "dependabot[bot]" ]]; then
+          IS_DEPENDABOT="false"
             IS_DEPENDABOT="true"
-          fi
-          
-          SHOULD_SKIP="false"
-          if [[ "$IS_DEPENDABOT" == "true" ]] && [[ "${{ matrix.os }}-${{ matrix.arch }}" != "linux-x64" ]]; then
+          if [[ "$IS_DEPENDABOT" == "true" ]] && [[ "${{ matrix.os }}-${{ matrix.arch }}" != "${DEPENDABOT_RUNNER}" ]]; then
             SHOULD_SKIP="true"
             echo "Skipping ${{ matrix.os }}-${{ matrix.arch }} for Dependabot PR"
           fi
           
           echo "skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
           echo "is_dependabot=$IS_DEPENDABOT" >> $GITHUB_OUTPUT
-      
       - name: Checkout
         if: steps.should_skip.outputs.skip != 'true'
         uses: actions/checkout@v5
@@ -269,7 +268,6 @@ jobs:
         with:
           recreate: true
           path: code-coverage-results.md
-
       - name: Publish Desktop App
         if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
         shell: bash
@@ -479,7 +477,6 @@ jobs:
           $LINUXDEPLOY_CMD --appdir SocialMediaCommander.AppDir --output appimage
           mv Social_Media_Commander-*.AppImage "./publish/${{ matrix.os }}-${{ matrix.arch }}/SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.arch }}.AppImage" || true
           
-
       - name: Archive artifacts
         if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
         shell: bash
