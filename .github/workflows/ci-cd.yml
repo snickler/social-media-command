@@ -2,6 +2,8 @@ name: Build and Release
 
 # This workflow:
 #   - Builds and tests on all commits/PRs
+#   - For Dependabot PRs: Only runs linux-x64 builds/tests (skips publishing) to save CI time
+#   - For regular PRs/commits: Runs full platform matrix with builds and tests
 #   - When a tag is pushed (e.g., v1.2.3 from semantic-release), it:
 #     * Builds artifacts for all platforms
 #     * Creates a GitHub release
@@ -78,11 +80,32 @@ jobs:
             rid: osx-arm64
 
     steps:
+      - name: Check if should skip this platform for Dependabot
+        id: should_skip
+        shell: bash
+        run: |
+          # For Dependabot PRs, only run linux-x64 to save CI time
+          IS_DEPENDABOT="false"
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]] || [[ "${{ github.event.pull_request.user.login }}" == "dependabot[bot]" ]]; then
+            IS_DEPENDABOT="true"
+          fi
+          
+          SHOULD_SKIP="false"
+          if [[ "$IS_DEPENDABOT" == "true" ]] && [[ "${{ matrix.os }}-${{ matrix.arch }}" != "linux-x64" ]]; then
+            SHOULD_SKIP="true"
+            echo "Skipping ${{ matrix.os }}-${{ matrix.arch }} for Dependabot PR"
+          fi
+          
+          echo "skip=$SHOULD_SKIP" >> $GITHUB_OUTPUT
+          echo "is_dependabot=$IS_DEPENDABOT" >> $GITHUB_OUTPUT
+      
       - name: Checkout
+        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/checkout@v5
 
       # Cache NuGet packages to speed up restore
       - name: Cache NuGet packages
+        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
@@ -91,6 +114,7 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Setup .NET
+        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
@@ -99,6 +123,7 @@ jobs:
 
       # Cache Node modules for frontend
       - name: Cache Node modules
+        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -107,12 +132,14 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Setup Node.js
+        if: steps.should_skip.outputs.skip != 'true'
         uses: actions/setup-node@v5
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
 
       - name: Get version
+        if: steps.should_skip.outputs.skip != 'true'
         id: version
         shell: bash
         run: |
@@ -126,6 +153,7 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Restore dependencies
+        if: steps.should_skip.outputs.skip != 'true'
         shell: bash
         run: |
           dotnet clean SocialMediaCommander.sln
@@ -137,7 +165,7 @@ jobs:
           fi
 
       - name: Verify macOS dependencies (macOS only)
-        if: matrix.os == 'macos'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.os == 'macos'
         run: |
           echo "Checking for Avalonia native libraries..."
           find ~/.nuget/packages -name "*.dylib" | head -10 || true
@@ -145,13 +173,13 @@ jobs:
           dotnet list SocialMediaCommander.Desktop package | grep -i avalonia || true
 
       - name: Set up QEMU for ARM64 emulation
-        if: matrix.os == 'linux' && matrix.arch == 'arm64'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.os == 'linux' && matrix.arch == 'arm64'
         uses: docker/setup-qemu-action@v3
         with:
           platforms: arm64
 
       - name: Install ARM64 cross-compilation toolchain
-        if: matrix.os == 'linux' && matrix.arch == 'arm64'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.os == 'linux' && matrix.arch == 'arm64'
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq gcc-aarch64-linux-gnu g++-aarch64-linux-gnu
@@ -172,6 +200,7 @@ jobs:
           echo "/usr/local/bin/dotnet-aot-wrapper" >> $GITHUB_PATH
 
       - name: Build
+        if: steps.should_skip.outputs.skip != 'true'
         shell: bash
         run: |
           # macOS: Don't pass Platform property due to missing ARM64 SwiftShader libraries in Avalonia.Skia
@@ -184,7 +213,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Test
-        if: matrix.arch == 'x64'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.arch == 'x64'
         continue-on-error: true
         shell: bash
         run: |
@@ -197,7 +226,7 @@ jobs:
         timeout-minutes: 10
 
       - name: UI Tests
-        if: matrix.arch == 'x64'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.arch == 'x64'
         continue-on-error: true
         shell: bash
         run: |
@@ -210,7 +239,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Upload UI Screenshots
-        if: matrix.arch == 'x64' && (success() || failure())
+        if: steps.should_skip.outputs.skip != 'true' && matrix.arch == 'x64' && (success() || failure())
         uses: actions/upload-artifact@v4
         with:
           name: ui-screenshots-${{ matrix.os }}-${{ matrix.arch }}
@@ -221,7 +250,7 @@ jobs:
           if-no-files-found: ignore
 
       - name: Code Coverage Report
-        if: matrix.os == 'linux' && matrix.arch == 'x64'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.os == 'linux' && matrix.arch == 'x64'
         uses: irongut/CodeCoverageSummary@v1.3.0
         with:
           filename: coverage/**/coverage.cobertura.xml
@@ -235,13 +264,14 @@ jobs:
           thresholds: '60 80'
 
       - name: Add Coverage PR Comment
-        if: matrix.os == 'linux' && matrix.arch == 'x64' && github.event_name == 'pull_request'
+        if: steps.should_skip.outputs.skip != 'true' && matrix.os == 'linux' && matrix.arch == 'x64' && github.event_name == 'pull_request'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           recreate: true
           path: code-coverage-results.md
 
       - name: Publish Desktop App
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
         shell: bash
         run: |
           # Native AOT is now enabled for all platforms including linux-arm64 with cross-compilation toolchain
@@ -249,7 +279,7 @@ jobs:
         timeout-minutes: 15
 
       - name: Create Windows Installer
-        if: matrix.os == 'windows'
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true' && matrix.os == 'windows'
         shell: pwsh
         run: |
           # Create a simple batch file for Windows
@@ -261,7 +291,7 @@ jobs:
           $batchContent | Out-File -FilePath "./publish/${{ matrix.os }}-${{ matrix.arch }}/start.bat" -Encoding ASCII
 
       - name: Create macOS App Bundle
-        if: matrix.os == 'macos'
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true' && matrix.os == 'macos'
         run: |
           APP_NAME="Social Media Commander"
           APP_DIR="./publish/${{ matrix.os }}-${{ matrix.arch }}/$APP_NAME.app"
@@ -294,7 +324,7 @@ jobs:
           EOF
 
       - name: Create Linux AppImage
-        if: matrix.os == 'linux'
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true' && matrix.os == 'linux'
         run: |
           # Determine architecture suffix for linuxdeploy
           if [[ "${{ matrix.arch }}" == "arm64" ]]; then
@@ -451,6 +481,7 @@ jobs:
           
 
       - name: Archive artifacts
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
         shell: bash
         run: |
           cd ./publish/${{ matrix.os }}-${{ matrix.arch }}
@@ -461,6 +492,7 @@ jobs:
           fi
 
       - name: Upload artifacts
+        if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
