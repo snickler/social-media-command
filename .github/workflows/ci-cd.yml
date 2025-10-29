@@ -239,7 +239,7 @@ jobs:
 
       - name: Upload UI Screenshots
         if: steps.should_skip.outputs.skip != 'true' && matrix.arch == 'x64' && (success() || failure())
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ui-screenshots-${{ matrix.os }}-${{ matrix.arch }}
           path: |
@@ -490,7 +490,7 @@ jobs:
 
       - name: Upload artifacts
         if: steps.should_skip.outputs.skip != 'true' && steps.should_skip.outputs.is_dependabot != 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: SocialMediaCommander-${{ steps.version.outputs.version }}-${{ matrix.os }}-${{ matrix.arch }}
           path: |
