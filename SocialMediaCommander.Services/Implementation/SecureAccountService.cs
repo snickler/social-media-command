@@ -56,7 +56,21 @@ public class SecureAccountService : IAccountService
         await EnsureLoadedAsync();
         lock (_lock)
         {
-            return _accounts.Values.ToList();
+            var accounts = _accounts.Values.ToList();
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] GetAllAccountsAsync called - Returning {accounts.Count} accounts");
+            foreach (var acc in accounts)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecureAccountService]   - {acc.PlatformId}: {acc.Username} (IsAuthenticated: {acc.IsAuthenticated}, AuthStatus: {acc.AuthStatus})");
+                if (acc.Tokens != null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SecureAccountService]     Tokens: AccessToken={!string.IsNullOrEmpty(acc.Tokens.AccessToken)}, Expired={acc.Tokens.IsExpired}");
+                }
+                if (!string.IsNullOrEmpty(acc.AppPassword))
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SecureAccountService]     Has AppPassword: Yes");
+                }
+            }
+            return accounts;
         }
     }
 
@@ -158,23 +172,23 @@ public class SecureAccountService : IAccountService
             if (!_accounts.TryGetValue(id, out var account))
                 return false;
 
-            // Don't allow deleting the last account for a platform
-            var otherAccountsForPlatform = _accounts.Values.Where(a => a.PlatformId == account.PlatformId && a.Id != id);
-            if (!otherAccountsForPlatform.Any())
-                throw new InvalidOperationException($"Cannot delete the last account for platform {account.PlatformId}");
+            // Check if other accounts exist for this platform
+            var otherAccountsForPlatform = _accounts.Values.Where(a => a.PlatformId == account.PlatformId && a.Id != id).ToList();
 
-            // If we're deleting the default account, make another one default
+            // If we're deleting the default account and others exist, make another one default
             if (account.IsDefault && otherAccountsForPlatform.Any())
             {
                 var newDefault = otherAccountsForPlatform.First();
                 newDefault.IsDefault = true;
+                _logger.Information("Setting new default account {AccountId} for platform {Platform}", newDefault.Id, newDefault.PlatformId);
             }
 
             _accounts.Remove(id);
+            _logger.Information("Deleted account {AccountId} for platform {Platform}. {RemainingCount} accounts remain for this platform.",
+                id, account.PlatformId, otherAccountsForPlatform.Count);
         }
 
         await SaveAccountsAsync();
-        _logger.Information("Deleted account {AccountId}", id);
         return true;
     }
 
@@ -281,9 +295,13 @@ public class SecureAccountService : IAccountService
     {
         var filePath = Path.Combine(_dataDirectory, _accountsFileName);
 
+        System.Diagnostics.Debug.WriteLine($"[SecureAccountService] LoadAccountsAsync - File path: {filePath}");
+        System.Diagnostics.Debug.WriteLine($"[SecureAccountService] File exists: {File.Exists(filePath)}");
+
         if (!File.Exists(filePath))
         {
             _logger.Information("No existing accounts file found, starting with empty accounts");
+            System.Diagnostics.Debug.WriteLine("[SecureAccountService] No accounts file found - initializing with empty collection");
             return;
         }
 
@@ -291,8 +309,13 @@ public class SecureAccountService : IAccountService
         try
         {
             var encryptedData = await File.ReadAllBytesAsync(filePath);
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] Read {encryptedData.Length} bytes of encrypted data");
+
             var decryptedData = CrossPlatformEncryption.Unprotect(encryptedData, "SocialMediaCommander_Accounts");
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] Decrypted {decryptedData.Length} bytes");
+
             var json = Encoding.UTF8.GetString(decryptedData);
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] JSON length: {json.Length} characters");
 
             var accounts = JsonSerializer.Deserialize(json, ServicesJsonContext.Default.ListAccount) ?? new List<Account>();
 
@@ -302,10 +325,17 @@ public class SecureAccountService : IAccountService
             }
 
             _logger.Information("Loaded {AccountCount} accounts from encrypted storage", accounts.Count);
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] Successfully loaded {accounts.Count} accounts");
+            foreach (var acc in accounts)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecureAccountService]   Loaded: {acc.PlatformId} - {acc.Username}");
+            }
         }
         catch (Exception ex)
         {
             _logger.Error(ex, "Failed to load accounts from encrypted storage");
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] ERROR loading accounts: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SecureAccountService] Stack trace: {ex.StackTrace}");
             // Continue with empty accounts rather than failing
             lock (_lock)
             {
