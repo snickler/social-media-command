@@ -60,7 +60,7 @@ public partial class AccountManagerViewModel : ObservableObject
     private string _oAuthClientSecret = string.Empty;
 
     [ObservableProperty]
-    private string _oAuthRedirectUri = "http://localhost:8080/callback";
+    private string _oAuthRedirectUri = "http://localhost:8080/oauth/callback";
 
     // App Password Properties
     [ObservableProperty]
@@ -492,7 +492,7 @@ public partial class AccountManagerViewModel : ObservableObject
             {
                 OAuthClientId = account.OAuthConfiguration.ClientId ?? string.Empty;
                 OAuthClientSecret = account.OAuthConfiguration.ClientSecret ?? string.Empty;
-                OAuthRedirectUri = account.OAuthConfiguration.RedirectUri ?? "http://localhost:8080/callback";
+                OAuthRedirectUri = account.OAuthConfiguration.RedirectUri ?? "http://localhost:8080/oauth/callback";
             }
             else
             {
@@ -975,7 +975,7 @@ public partial class AccountManagerViewModel : ObservableObject
         NewAccountAvatar = string.Empty;
         OAuthClientId = string.Empty;
         OAuthClientSecret = string.Empty;
-        OAuthRedirectUri = "http://localhost:8080/callback";
+        OAuthRedirectUri = "http://localhost:8080/oauth/callback";
         AppPassword = string.Empty;
         SelectedAuthMethod = AuthenticationMethod.OAuth;
     }
@@ -1234,7 +1234,7 @@ public partial class AccountManagerViewModel : ObservableObject
             // Load configuration values
             OAuthClientId = config.ClientId ?? string.Empty;
             OAuthClientSecret = config.ClientSecret ?? string.Empty;
-            OAuthRedirectUri = config.RedirectUri ?? "http://localhost:8080/callback";
+            OAuthRedirectUri = config.RedirectUri ?? "http://localhost:8080/oauth/callback";
         }
         catch (Exception ex)
         {
@@ -1242,7 +1242,7 @@ public partial class AccountManagerViewModel : ObservableObject
             // Set sensible defaults
             OAuthClientId = string.Empty;
             OAuthClientSecret = string.Empty;
-            OAuthRedirectUri = "http://localhost:8080/callback";
+            OAuthRedirectUri = "http://localhost:8080/oauth/callback";
         }
     }
 
