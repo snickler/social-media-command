@@ -41,7 +41,7 @@
     <PackageVersion Include="Microsoft.Extensions.Caching.Abstractions" Version="9.0.8" />
     
     <!-- Core .NET -->
-    <PackageVersion Include="System.Text.Json" Version="9.0.8" />
+    <PackageVersion Include="System.Text.Json" Version="9.0.9" />
     <PackageVersion Include="System.Net.Http.Json" Version="9.0.8" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
     <PackageVersion Include="System.Reactive" Version="6.0.2" />
@@ -102,6 +102,9 @@
     
     <!-- Markdown Processing -->
     <PackageVersion Include="Markdig.Signed" Version="0.41.3" />
+    
+    <!-- BlueSky AT Protocol -->
+    <PackageVersion Include="idunno.Bluesky" Version="1.1.0" />
     
     <!-- Security -->
     <PackageVersion Include="Microsoft.AspNetCore.DataProtection" Version="9.0.8" />
