@@ -25,6 +25,14 @@ public class SocialFeedItem
 
     public bool IsThread { get; set; }
 
+    public bool IsRepost { get; set; }
+
+    public int LikeCount { get; set; }
+
+    public int RepostCount { get; set; }
+
+    public int ReplyCount { get; set; }
+
     public List<string> Hashtags { get; set; } = new();
 
     public string? PlatformPostId { get; set; }
@@ -172,6 +180,10 @@ public static class MockFeedData
                     Views = _random.Next(100, 1000)
                 },
                 IsThread = _random.Next(0, 10) == 0, // 10% chance of being a thread
+                IsRepost = _random.Next(0, 10) == 0, // 10% chance of being a repost
+                LikeCount = _random.Next(0, 100),
+                RepostCount = _random.Next(0, 50),
+                ReplyCount = _random.Next(0, 25),
                 Hashtags = ExtractHashtags(content),
                 PlatformPostId = $"{platform.ToString().ToLower()}-{Guid.NewGuid().ToString()[..8]}",
                 PlatformUrl = $"https://{platform.ToString().ToLower()}.com/post/{Guid.NewGuid().ToString()[..8]}"

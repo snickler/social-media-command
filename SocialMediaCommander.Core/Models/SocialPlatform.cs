@@ -47,7 +47,7 @@ public static class PlatformConfigurations
                 ThreadSupport = true,
                 IconPath = "avares://SocialMediaCommander.Desktop/Assets/Icons/bluesky.png"
             }
-        },
+        }/*
         {
             SocialPlatform.X,
             new SocialPlatformConfig
@@ -103,7 +103,7 @@ public static class PlatformConfigurations
                 ThreadSupport = false,
                 IconPath = "avares://SocialMediaCommander.Desktop/Assets/Icons/facebook.png"
             }
-        }
+        }*/
     };
 
     public static SocialPlatformConfig GetPlatformConfig(SocialPlatform platform)
