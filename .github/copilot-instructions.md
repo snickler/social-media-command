@@ -146,6 +146,59 @@ npm run dev
 
 ---
 
+## UI/UX Patterns & Style System
+
+**Avalonia UI style system** with consistent design language and animations (see `docs/UI_UX_IMPROVEMENTS.md` for complete guide):
+
+### Button Variants
+- **Primary**: Indigo background (#4338CA), white text — primary actions (Post, Save, Submit)
+- **Secondary**: Light indigo background (#EBEAFB), indigo text — secondary actions
+- **Outline**: Transparent with indigo border — tertiary actions
+- **Ghost**: Light gray background (#f1f2f6) with border — utility actions
+- **Destructive**: Red background (#f04141) — delete/cancel actions
+
+**Button states** (all variants):
+- Hover: `scale(1.02)`, slight darkening
+- Press: `scale(0.98)`
+- Focus-visible: 2-3px border (keyboard navigation)
+- Disabled: 50% opacity, no cursor
+
+### Animation System
+`SocialMediaCommander.Desktop/Styles/AnimationsAndTransitions.axaml` provides reusable animations:
+- **FadeIn**: 300ms opacity 0→1
+- **SlideInBottom**: 400ms translateY(20px)→0
+- **Pulse**: 1.5s infinite scale heartbeat
+- **Spin**: 2s infinite rotation (loading indicators)
+- **SkeletonLoader**: 1.5s infinite gradient shimmer
+- **SuccessCheckmark**: 600ms scale + opacity (success feedback)
+- **ShakeError**: 500ms horizontal shake (error feedback)
+
+**Animation guidelines**:
+- Use GPU-accelerated properties: `opacity`, `transform` (translateX/Y/Z, scale, rotate)
+- Avoid animating: `width`, `height`, `margin`, `padding` (forces layout recalculation)
+- Standard durations: 150-200ms (micro), 300-400ms (standard), 600ms+ (emphasis)
+- Easing: `QuadraticEaseOut` (most animations), `CubicEaseInOut` (smooth transitions)
+
+### Accessibility
+- **WCAG AA compliant**: Minimum 4.5:1 contrast ratio for text
+- **Focus-visible states**: All interactive elements have visible focus indicators
+- **Keyboard navigation**: Tab order matches visual layout
+- **Tooltips**: Descriptive tooltips on icon-only buttons
+
+### Style Files
+- `SocialMediaCommander.Desktop/App.axaml` — Global button styles, colors, typography
+- `SocialMediaCommander.Desktop/Styles/AnimationsAndTransitions.axaml` — Animation library
+- Include animations via: `<StyleInclude Source="/Styles/AnimationsAndTransitions.axaml"/>`
+
+**When modifying UI**:
+1. Use existing button styles via `Classes="PrimaryButton"`, `Classes="SecondaryButton"`, etc.
+2. Apply animations via `Classes="FadeIn SlideInBottom"` or similar
+3. Maintain consistent spacing (8px/16px/24px increments)
+4. Test keyboard navigation and focus states
+5. Run visual regression tests (see "Test infrastructure" section)
+
+---
+
 ## Project-Specific Conventions
 
 ### Configuration

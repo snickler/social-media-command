@@ -368,10 +368,10 @@ public class BlueSkyService : IBlueSkyService
             return feedResponse.Result.Select(feedView => new SocialFeedItem
             {
                 Id = feedView.Post.Uri.ToString(),
-                Content = feedView.Post.Record.Text,
-                AuthorUsername = feedView.Post.Author.Handle,
-                AuthorName = feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle,
-                AuthorAvatar = feedView.Post.Author.Avatar?.ToString(),
+                Content = feedView.Post.Record.Text ?? string.Empty,
+                AuthorUsername = (feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorName = (feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = feedView.Post.Author.Avatar?.ToString() ?? string.Empty,
                 PostedAt = feedView.Post.Record.CreatedAt.DateTime,
                 Platform = Platform,
                 LikeCount = feedView.Post.LikeCount,
@@ -405,10 +405,10 @@ public class BlueSkyService : IBlueSkyService
             return timelineResponse.Result.Select(feedView => new SocialFeedItem
             {
                 Id = feedView.Post.Uri.ToString(),
-                Content = feedView.Post.Record.Text,
-                AuthorUsername = feedView.Post.Author.Handle,
-                AuthorName = feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle,
-                AuthorAvatar = feedView.Post.Author.Avatar?.ToString(),
+                Content = feedView.Post.Record.Text ?? string.Empty,
+                AuthorUsername = (feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorName = (feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = feedView.Post.Author.Avatar?.ToString() ?? string.Empty,
                 PostedAt = feedView.Post.Record.CreatedAt.DateTime,
                 Platform = Platform,
                 LikeCount = feedView.Post.LikeCount,
@@ -443,10 +443,10 @@ public class BlueSkyService : IBlueSkyService
             return searchResponse.Result.Select(post => new SocialFeedItem
             {
                 Id = post.Uri.ToString(),
-                Content = post.Record.Text,
-                AuthorUsername = post.Author.Handle,
-                AuthorName = post.Author.DisplayName ?? post.Author.Handle,
-                AuthorAvatar = post.Author.Avatar?.ToString(),
+                Content = post.Record.Text ?? string.Empty,
+                AuthorUsername = (post.Author.Handle ?? string.Empty)!,
+                AuthorName = (post.Author.DisplayName ?? post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = post.Author.Avatar?.ToString() ?? string.Empty,
                 PostedAt = post.Record.CreatedAt.DateTime,
                 Platform = Platform,
                 LikeCount = post.LikeCount,
@@ -569,9 +569,9 @@ public class BlueSkyService : IBlueSkyService
             return new UserProfile
             {
                 Id = profile.Did.ToString(),
-                Username = profile.Handle,
-                DisplayName = profile.DisplayName ?? profile.Handle,
-                Bio = profile.Description,
+                Username = (profile.Handle ?? string.Empty)!,
+                DisplayName = (profile.DisplayName ?? profile.Handle ?? string.Empty)!,
+                Bio = (profile.Description ?? string.Empty)!,
                 Avatar = profile.Avatar?.ToString(),
                 Banner = profile.Banner?.ToString(),
                 FollowerCount = profile.FollowersCount,
