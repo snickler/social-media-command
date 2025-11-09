@@ -334,18 +334,18 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     public bool IsSplitViewActive => CurrentLayoutMode == LayoutMode.SplitView;
     public bool IsComposeOnlyActive => CurrentLayoutMode == LayoutMode.ComposeOnly;
 
-    public string PostEditorColumnWidth => CurrentLayoutMode switch
+    public Avalonia.Controls.GridLength PostEditorColumnWidth => CurrentLayoutMode switch
     {
-        LayoutMode.SplitView => "1*",
-        LayoutMode.ComposeOnly => "1*",
-        _ => "1*"
+        LayoutMode.SplitView => new Avalonia.Controls.GridLength(1, Avalonia.Controls.GridUnitType.Star),
+        LayoutMode.ComposeOnly => new Avalonia.Controls.GridLength(1, Avalonia.Controls.GridUnitType.Star),
+        _ => new Avalonia.Controls.GridLength(1, Avalonia.Controls.GridUnitType.Star)
     };
 
-    public string FeedColumnWidth => CurrentLayoutMode switch
+    public Avalonia.Controls.GridLength FeedColumnWidth => CurrentLayoutMode switch
     {
-        LayoutMode.SplitView => "1*",
-        LayoutMode.ComposeOnly => "0",
-        _ => "1*"
+        LayoutMode.SplitView => new Avalonia.Controls.GridLength(1, Avalonia.Controls.GridUnitType.Star),
+        LayoutMode.ComposeOnly => new Avalonia.Controls.GridLength(0, Avalonia.Controls.GridUnitType.Pixel),
+        _ => new Avalonia.Controls.GridLength(1, Avalonia.Controls.GridUnitType.Star)
     };
 
     #endregion

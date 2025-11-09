@@ -18,6 +18,11 @@ public partial class SocialFeedViewModel : ObservableObject
 {
     private readonly IFeedService _feedService;
     private readonly IAccountService _accountService;
+    private readonly IBlueSkyService _blueSkyService;
+    private readonly ITwitterService _twitterService;
+    private readonly ILinkedInService _linkedInService;
+    private readonly IThreadsService _threadsService;
+    private readonly IFacebookService _facebookService;
 
     [ObservableProperty]
     private bool _isLoading = false;
@@ -37,17 +42,29 @@ public partial class SocialFeedViewModel : ObservableObject
     [ObservableProperty]
     private bool _hasError = false;
 
-    public SocialFeedViewModel(IFeedService feedService, IAccountService accountService)
+    public SocialFeedViewModel(
+        IFeedService feedService,
+        IAccountService accountService,
+        IBlueSkyService blueSkyService,
+        ITwitterService twitterService,
+        ILinkedInService linkedInService,
+        IThreadsService threadsService,
+        IFacebookService facebookService)
     {
         _feedService = feedService ?? throw new ArgumentNullException(nameof(feedService));
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
+        _blueSkyService = blueSkyService ?? throw new ArgumentNullException(nameof(blueSkyService));
+        _twitterService = twitterService ?? throw new ArgumentNullException(nameof(twitterService));
+        _linkedInService = linkedInService ?? throw new ArgumentNullException(nameof(linkedInService));
+        _threadsService = threadsService ?? throw new ArgumentNullException(nameof(threadsService));
+        _facebookService = facebookService ?? throw new ArgumentNullException(nameof(facebookService));
 
         // Initialize collections
         FeedPosts = new ObservableCollection<SocialFeedPostViewModel>();
         PlatformFilters = new ObservableCollection<PlatformFilterViewModel>();
 
-        // Initialize platform filters
-        InitializePlatformFilters();
+        // Initialize platform filters based on connected accounts
+        _ = Task.Run(InitializePlatformFiltersAsync);
 
         // Load initial feed data
         _ = Task.Run(LoadFeedAsync);
@@ -148,38 +165,57 @@ public partial class SocialFeedViewModel : ObservableObject
 
     #region Helper Methods
 
-    private void InitializePlatformFilters()
+    private async Task InitializePlatformFiltersAsync()
     {
-        PlatformFilters.Clear();
-
-        // Add "All" filter
-        PlatformFilters.Add(new PlatformFilterViewModel
+        try
         {
-            Id = "all",
-            Name = "All",
-            Color = "#6B7280",
-            IsSelected = true
-        });
+            // Get all authenticated accounts
+            var accounts = await _accountService.GetAllAccountsAsync().ConfigureAwait(false);
+            var authenticatedAccounts = accounts.Where(a => a.IsAuthenticated).ToList();
 
-        // Add platform-specific filters
-        var platforms = new[]
-        {
-            new { Id = "bluesky", Name = "BlueSky", Color = "#0085FF" },
-            new { Id = "x", Name = "X", Color = "#000000" },
-            new { Id = "linkedin", Name = "LinkedIn", Color = "#0A66C2" },
-            new { Id = "threads", Name = "Threads", Color = "#000000" },
-            new { Id = "facebook", Name = "Facebook", Color = "#1877F2" }
-        };
+            System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Found {authenticatedAccounts.Count} authenticated accounts");
 
-        foreach (var platform in platforms)
-        {
-            PlatformFilters.Add(new PlatformFilterViewModel
+            // Update UI on UI thread
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
             {
-                Id = platform.Id,
-                Name = platform.Name,
-                Color = platform.Color,
-                IsSelected = false
+                PlatformFilters.Clear();
+
+                // Add "All" filter
+                PlatformFilters.Add(new PlatformFilterViewModel
+                {
+                    Id = "all",
+                    Name = "All",
+                    Color = "#6B7280",
+                    IsSelected = true
+                });
+
+                // Get unique platforms from authenticated accounts
+                var connectedPlatforms = authenticatedAccounts
+                    .Select(a => a.PlatformId)
+                    .Distinct()
+                    .ToList();
+
+                System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Connected platforms: {string.Join(", ", connectedPlatforms)}");
+
+                // Add platform-specific filters only for connected platforms
+                foreach (var platform in connectedPlatforms)
+                {
+                    var config = PlatformConfigurations.GetPlatformConfig(platform);
+                    PlatformFilters.Add(new PlatformFilterViewModel
+                    {
+                        Id = platform.ToString().ToLower(),
+                        Name = config.Name,
+                        Color = config.Color,
+                        IsSelected = false
+                    });
+                }
+
+                OnPropertyChanged(nameof(PlatformFilters));
             });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Error initializing filters: {ex.Message}");
         }
     }
 
@@ -188,15 +224,94 @@ public partial class SocialFeedViewModel : ObservableObject
         try
         {
             IsLoading = true;
+            HasError = false;
+            ErrorMessage = string.Empty;
 
-            // Simulate loading feed data from multiple platforms
-            var feedData = await GenerateMockFeedData();
+            System.Diagnostics.Debug.WriteLine("[SocialFeedViewModel] Loading feeds from authenticated accounts...");
 
-            FeedPosts.Clear();
-            foreach (var post in feedData)
+            // Get all authenticated accounts
+            var accounts = await _accountService.GetAllAccountsAsync().ConfigureAwait(false);
+            var authenticatedAccounts = accounts.Where(a => a.IsAuthenticated).ToList();
+
+            System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Found {authenticatedAccounts.Count} authenticated accounts");
+
+            var allFeedItems = new List<SocialFeedPostViewModel>();
+
+            // Load feeds from each platform
+            foreach (var account in authenticatedAccounts)
             {
-                FeedPosts.Add(post);
+                try
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Loading feed for {account.PlatformId}: {account.Username}");
+
+                    IEnumerable<SocialFeedItem>? feedItems = null;
+
+                    switch (account.PlatformId)
+                    {
+                        case SocialPlatform.BlueSky:
+                            feedItems = await _blueSkyService.GetTimelineAsync(account, 20).ConfigureAwait(false);
+                            break;
+                        case SocialPlatform.X:
+                            feedItems = await _twitterService.GetTimelineAsync(account, 20).ConfigureAwait(false);
+                            break;
+                        case SocialPlatform.LinkedIn:
+                            feedItems = await _linkedInService.GetTimelineAsync(account, 20).ConfigureAwait(false);
+                            break;
+                        case SocialPlatform.Threads:
+                            feedItems = await _threadsService.GetTimelineAsync(account, 20).ConfigureAwait(false);
+                            break;
+                        case SocialPlatform.Facebook:
+                            feedItems = await _facebookService.GetTimelineAsync(account, 20).ConfigureAwait(false);
+                            break;
+                    }
+
+                    if (feedItems != null && feedItems.Any())
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Loaded {feedItems.Count()} items from {account.PlatformId}");
+
+                        foreach (var item in feedItems)
+                        {
+                            allFeedItems.Add(ConvertToViewModel(item, account.PlatformId));
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] No items returned from {account.PlatformId}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Error loading feed from {account.PlatformId}: {ex.Message}");
+                    // Continue loading other platforms even if one fails
+                }
             }
+
+            // Update UI on UI thread
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                FeedPosts.Clear();
+
+                if (allFeedItems.Any())
+                {
+                    // Sort by posted time, newest first
+                    var sortedItems = allFeedItems.OrderByDescending(p => p.PostedAt).ToList();
+
+                    foreach (var post in sortedItems)
+                    {
+                        FeedPosts.Add(post);
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Displayed {FeedPosts.Count} total feed items");
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[SocialFeedViewModel] No feed items to display");
+                }
+
+                OnPropertyChanged(nameof(HasFeedItems));
+                OnPropertyChanged(nameof(TotalFeedItemCount));
+                OnPropertyChanged(nameof(StatusText));
+            });
 
             ApplyPlatformFilter();
         }
@@ -204,7 +319,8 @@ public partial class SocialFeedViewModel : ObservableObject
         {
             HasError = true;
             ErrorMessage = ex.Message;
-            System.Diagnostics.Debug.WriteLine($"Failed to load feed: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Failed to load feed: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[SocialFeedViewModel] Stack trace: {ex.StackTrace}");
         }
         finally
         {
@@ -213,60 +329,33 @@ public partial class SocialFeedViewModel : ObservableObject
         }
     }
 
+    private SocialFeedPostViewModel ConvertToViewModel(SocialFeedItem item, SocialPlatform platform)
+    {
+        var platformName = platform.ToString().ToLower();
+
+        return new SocialFeedPostViewModel
+        {
+            Id = item.PlatformPostId ?? item.Id,
+            UserName = item.AuthorName,
+            UserHandle = item.AuthorUsername.StartsWith("@") ? item.AuthorUsername : $"@{item.AuthorUsername}",
+            Platform = platformName,
+            Content = item.Content,
+            TimeAgo = item.GetTimeAgo(), // Use the model's built-in method
+            PostedAt = item.PostedAt,
+            LikesCount = item.LikeCount,
+            RetweetsCount = item.RepostCount,
+            RepliesCount = item.ReplyCount,
+            IsLiked = false, // Would need to check user's like status
+            IsRetweeted = false, // Would need to check user's retweet status
+            HasMedia = item.Media?.Any() ?? false
+        };
+    }
+
     private async Task<List<SocialFeedPostViewModel>> GenerateMockFeedData()
     {
-        // Simulate API delay
-        await Task.Delay(1000);
-
-        var posts = new List<SocialFeedPostViewModel>();
-        var random = new Random();
-
-        var mockUsers = new[]
-        {
-            new { Name = "BlueSky User 1", Handle = "@user1", Platform = "bluesky" },
-            new { Name = "BlueSky User 2", Handle = "@user2", Platform = "bluesky" },
-            new { Name = "BlueSky User 3", Handle = "@user3", Platform = "bluesky" },
-            new { Name = "LinkedIn User", Handle = "@linkedinuser", Platform = "linkedin" },
-            new { Name = "X User", Handle = "@xuser", Platform = "x" }
-        };
-
-        var mockContents = new[]
-        {
-            "Latest updates from the world of tech! #technology #innovation",
-            "Just shared my thoughts on sustainable business practices. Check out my latest article!",
-            "Amazing conference today! So many insights to share with the community.",
-            "Working on some exciting new features. Can't wait to share them with you all!",
-            "Great discussion about the future of remote work. What are your thoughts?",
-            "Behind the scenes look at our latest project. The team has been incredible!",
-            "Interesting article about AI and machine learning trends in 2024.",
-            "Beautiful sunset from the office today. Sometimes you need to take a moment to appreciate the little things."
-        };
-
-        for (int i = 0; i < 15; i++)
-        {
-            var user = mockUsers[random.Next(mockUsers.Length)];
-            var content = mockContents[random.Next(mockContents.Length)];
-            var timeAgo = random.Next(1, 180); // 1 to 180 minutes ago
-
-            posts.Add(new SocialFeedPostViewModel
-            {
-                Id = $"post-{i}",
-                UserName = user.Name,
-                UserHandle = user.Handle,
-                Platform = user.Platform,
-                Content = content,
-                TimeAgo = $"{(timeAgo < 60 ? timeAgo + "m" : (timeAgo / 60) + "h")} ago",
-                PostedAt = DateTime.Now.AddMinutes(-timeAgo),
-                LikesCount = random.Next(0, 100),
-                RetweetsCount = random.Next(0, 50),
-                RepliesCount = random.Next(0, 25),
-                IsLiked = random.Next(0, 10) < 2, // 20% chance of being liked
-                IsRetweeted = random.Next(0, 10) < 1, // 10% chance of being retweeted
-                HasMedia = random.Next(0, 10) < 3 // 30% chance of having media
-            });
-        }
-
-        return posts.OrderByDescending(p => p.PostedAt).ToList();
+        // Old mock method - no longer used
+        // Kept for reference but replaced by LoadFeedAsync
+        return new List<SocialFeedPostViewModel>();
     }
 
     private void ApplyPlatformFilter()

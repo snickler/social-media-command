@@ -85,16 +85,16 @@ public partial class SettingsViewModel : ObservableObject
 
     // Platform Settings
     [ObservableProperty]
-    private bool _enableTwitterIntegration = true;
+    private bool _enableTwitterIntegration = false;
 
     [ObservableProperty]
-    private bool _enableFacebookIntegration = true;
+    private bool _enableFacebookIntegration = false;
 
     [ObservableProperty]
-    private bool _enableInstagramIntegration = true;
+    private bool _enableInstagramIntegration = false;
 
     [ObservableProperty]
-    private bool _enableLinkedInIntegration = true;
+    private bool _enableLinkedInIntegration = false;
 
     [ObservableProperty]
     private bool _enableTikTokIntegration = false;

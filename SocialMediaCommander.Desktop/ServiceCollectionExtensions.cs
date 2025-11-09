@@ -53,9 +53,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IFacebookService, FacebookService>();
 
         // Application Services
-        services.AddScoped<IPostService, MockPostService>();
+        services.AddScoped<IPostService, PostService>();
         services.AddScoped<IAccountService, SecureAccountService>();
-        services.AddScoped<IMediaService, MockMediaService>();
+        services.AddScoped<IMediaService, MediaService>(); // Use real MediaService instead of mock
         services.AddScoped<IFeedService, InMemoryFeedService>();
 
         // Enhanced Security Services
