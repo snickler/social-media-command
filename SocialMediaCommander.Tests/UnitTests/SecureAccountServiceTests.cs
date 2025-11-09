@@ -223,15 +223,25 @@ public class SecureAccountServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteAccountAsync_LastAccountForPlatform_ShouldThrowException()
+    public async Task DeleteAccountAsync_LastAccountForPlatform_ShouldSucceed()
     {
         // Arrange
         var account = CreateTestAccount();
         var createdAccount = await _accountService.CreateAccountAsync(account);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _accountService.DeleteAccountAsync(createdAccount.Id));
+        // Act
+        var deleted = await _accountService.DeleteAccountAsync(createdAccount.Id);
+
+        // Assert
+        deleted.Should().BeTrue();
+
+        // Verify account is actually deleted
+        var deletedAccount = await _accountService.GetAccountByIdAsync(createdAccount.Id);
+        deletedAccount.Should().BeNull();
+
+        // Verify no accounts remain for the platform
+        var platformAccounts = await _accountService.GetAccountsForPlatformAsync(createdAccount.PlatformId);
+        platformAccounts.Should().BeEmpty();
     }
 
     [Fact]

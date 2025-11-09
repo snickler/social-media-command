@@ -20,7 +20,7 @@ public class BlueSkyServiceTests : IDisposable
     {
         _mockAuthService = new Mock<IAuthenticationService>();
         _httpClient = new HttpClient();
-        _blueSkyService = new BlueSkyService(_httpClient, _mockAuthService.Object);
+        _blueSkyService = new BlueSkyService(_mockAuthService.Object);
     }
 
     [Fact]
@@ -77,19 +77,11 @@ public class BlueSkyServiceTests : IDisposable
     }
 
     [Fact]
-    public void Constructor_NullHttpClient_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Assert.Throws<ArgumentNullException>(() =>
-            new BlueSkyService(null!, _mockAuthService.Object));
-    }
-
-    [Fact]
     public void Constructor_NullAuthService_ShouldThrowArgumentNullException()
     {
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
-            new BlueSkyService(_httpClient, null!));
+            new BlueSkyService(null!));
     }
 
     [Fact]
