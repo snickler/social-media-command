@@ -7,13 +7,13 @@
 **Option A: Use BlueSky Developer Portal**
 1. Visit the [BlueSky Developer Portal](https://bsky.social/settings/developers)
 2. Create a new OAuth application
-3. Set Redirect URI to: `http://localhost:8080/callback`
+3. Set Redirect URI to: `http://localhost:8080/oauth/callback`
 4. Copy your `Client ID` and `Client Secret`
 
 **Option B: Use Placeholder for Testing (Will Fail)**
 - Client ID: `YOUR_CLIENT_ID_HERE`
 - Client Secret: `YOUR_CLIENT_SECRET_HERE`
-- Redirect URI: `http://localhost:8080/callback`
+- Redirect URI: `http://localhost:8080/oauth/callback`
 
 ### 2. Open Social Media Commander
 
@@ -33,7 +33,7 @@ Platform: [BlueSky ?]
 OAuth Configuration:
 ?? Client ID: [Paste your BlueSky client ID here]
 ?? Client Secret: [Paste your BlueSky client secret here]
-?? Redirect URI: http://localhost:8080/callback (pre-filled)
+?? Redirect URI: http://localhost:8080/oauth/callback (pre-filled)
 
 [?? Test OAuth Configuration]  [?? Start OAuth Flow]
 ```
@@ -41,7 +41,7 @@ OAuth Configuration:
 3. **Fill in the OAuth fields**:
    - **Client ID**: Paste your BlueSky OAuth Client ID
    - **Client Secret**: Paste your BlueSky OAuth Client Secret  
-   - **Redirect URI**: Already filled with `http://localhost:8080/callback`
+   - **Redirect URI**: Already filled with `http://localhost:8080/oauth/callback`
 
 4. **Optional: Click "?? Test OAuth Configuration"**
    - This validates your credentials before starting OAuth
@@ -57,7 +57,7 @@ OAuth Configuration:
 1. **Log in** to your BlueSky account (if not already logged in)
 2. **Review permissions** being requested
 3. **Click "Authorize"** or "Allow"
-4. Browser redirects to `http://localhost:8080/callback`
+4. Browser redirects to `http://localhost:8080/oauth/callback`
 5. You'll see a success message in the browser
 6. Browser window can be closed (it will auto-close after 3 seconds)
 
@@ -85,7 +85,7 @@ Back in Social Media Commander:
 **Cause**: Incorrect Client ID, Client Secret, or Redirect URI
 **Solution**: 
 1. Double-check credentials from BlueSky Developer Portal
-2. Ensure Redirect URI is exactly: `http://localhost:8080/callback`
+2. Ensure Redirect URI is exactly: `http://localhost:8080/oauth/callback`
 3. Click "Test OAuth Configuration" to see specific errors
 
 ### "Authentication failed" error
@@ -134,7 +134,7 @@ Back in Social Media Commander:
 4. **You authorize in browser**
    - BlueSky asks for permissions
    - You click "Authorize"
-   - BlueSky redirects to `http://localhost:8080/callback?code=...`
+   - BlueSky redirects to `http://localhost:8080/oauth/callback?code=...`
 
 5. **App receives callback**
    - HTTP listener receives the authorization code

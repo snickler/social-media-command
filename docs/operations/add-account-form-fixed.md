@@ -124,7 +124,7 @@ Modified `AccountManagerView.axaml` to include a "Start OAuth Flow" button:
 2. **Fill in OAuth credentials**:
    - Client ID: `your_bluesky_client_id`
    - Client Secret: `your_bluesky_client_secret`
-   - Redirect URI: `http://localhost:8080/callback` (pre-filled)
+   - Redirect URI: `http://localhost:8080/oauth/callback` (pre-filled)
 
 3. **Click "?? Test OAuth Configuration"** (optional):
    - Validates the credentials
@@ -161,7 +161,7 @@ Modified `AccountManagerView.axaml` to include a "Start OAuth Flow" button:
 - **Platform**: Dropdown to select social media platform
 - **Client ID**: OAuth application client ID
 - **Client Secret**: OAuth application client secret (masked)
-- **Redirect URI**: Callback URL (default: `http://localhost:8080/callback`)
+- **Redirect URI**: Callback URL (default: `http://localhost:8080/oauth/callback`)
 - **Test OAuth Configuration**: Button to validate credentials
 - **Start OAuth Flow**: Button to begin OAuth authentication
 
@@ -220,7 +220,7 @@ Now:
 
 1. Visit BlueSky Developer Portal
 2. Create new OAuth application
-3. Set redirect URI: `http://localhost:8080/callback`
+3. Set redirect URI: `http://localhost:8080/oauth/callback`
 4. Copy Client ID and Client Secret
 5. Paste into Social Media Commander form
 
@@ -229,7 +229,7 @@ Now:
 1. Visit https://developer.twitter.com
 2. Create Project & App
 3. Generate OAuth 2.0 Client ID & Secret
-4. Configure redirect URI: `http://localhost:8080/callback`
+4. Configure redirect URI: `http://localhost:8080/oauth/callback`
 5. Copy credentials to Social Media Commander
 
 ### LinkedIn Setup
