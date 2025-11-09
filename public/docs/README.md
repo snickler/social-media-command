@@ -19,8 +19,8 @@ This folder contains all documentation for the Social Media Commander project, o
 
 ### Development Documentation
 - [Enhanced Features](development/enhanced-features.md) - New and enhanced features
-- [Enhanced Features Final](development/enhanced-features-final.md) - Final feature implementation details
 - [OAuth Configuration Demo](development/oauth-config-demo.md) - OAuth setup and configuration guide
+- [PRD (Product Requirements Document)](development/prd.md) - Product requirements and specifications
 
 ### Operations Documentation
 - [Log Analysis Fixes](operations/log-analysis-fixes.md) - Logging improvements and fixes
