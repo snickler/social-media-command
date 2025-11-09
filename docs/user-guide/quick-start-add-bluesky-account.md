@@ -5,7 +5,7 @@
 ### 1. Get BlueSky OAuth Credentials
 
 **Option A: Use BlueSky Developer Portal**
-1. Visit BlueSky Developer Portal (check BlueSky documentation for current URL)
+1. Visit the [BlueSky Developer Portal](https://bsky.social/settings/developers)
 2. Create a new OAuth application
 3. Set Redirect URI to: `http://localhost:8080/callback`
 4. Copy your `Client ID` and `Client Secret`
