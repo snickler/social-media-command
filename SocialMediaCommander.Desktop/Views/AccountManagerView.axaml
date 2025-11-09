@@ -163,8 +163,8 @@
                                     <TextBlock Text="Connect BlueSky"/>
                                 </StackPanel>
                             </Button>
-                            
-                            <!-- X/Twitter -->
+                           
+                            <!--X/Twitter 
                             <Button Command="{Binding ConnectAccountCommand}" 
                                    CommandParameter="{x:Static models:SocialPlatform.X}"
                                    Classes="primary"
@@ -174,8 +174,9 @@
                                     <TextBlock Text="Connect X"/>
                                 </StackPanel>
                             </Button>
+                             
                             
-                            <!-- LinkedIn -->
+                            
                             <Button Command="{Binding ConnectAccountCommand}" 
                                    CommandParameter="{x:Static models:SocialPlatform.LinkedIn}"
                                    Classes="primary"
@@ -186,7 +187,7 @@
                                 </StackPanel>
                             </Button>
                             
-                            <!-- Threads -->
+                            
                             <Button Command="{Binding ConnectAccountCommand}" 
                                    CommandParameter="{x:Static models:SocialPlatform.Threads}"
                                    Classes="primary"
@@ -197,7 +198,7 @@
                                 </StackPanel>
                             </Button>
                             
-                            <!-- Facebook -->
+                            
                             <Button Command="{Binding ConnectAccountCommand}" 
                                    CommandParameter="{x:Static models:SocialPlatform.Facebook}"
                                    Classes="primary"
@@ -206,8 +207,8 @@
                                     <TextBlock Text="f" FontWeight="Bold" Foreground="White"/>
                                     <TextBlock Text="Connect Facebook"/>
                                 </StackPanel>
-                            </Button>
-                        </StackPanel>
+                            </Button> -->
+                        </StackPanel> 
                     </StackPanel>
                     
                     <!-- Authentication Status -->
@@ -284,14 +285,40 @@
                                     </ComboBox.ItemTemplate>
                                 </ComboBox>
                             </StackPanel>
+
+                            <!-- Authentication Method Selection (only for BlueSky) -->
+                            <StackPanel Spacing="8" IsVisible="{Binding ShowAuthMethodSelector}">
+                                <TextBlock Text="Authentication Method" 
+                                           FontWeight="Medium"
+                                           Foreground="{DynamicResource SMC-Foreground}"/>
+                                <ComboBox ItemsSource="{Binding AvailableAuthMethods}"
+                                          SelectedItem="{Binding SelectedAuthMethod}"
+                                          Classes="modern"
+                                          MinWidth="200">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="{Binding}" VerticalAlignment="Center"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <TextBlock FontSize="12"
+                                           Foreground="{DynamicResource SMC-Muted-Foreground}"
+                                           TextWrapping="Wrap">
+                                    <Run Text="OAuth: More secure, requires developer account setup"/>
+                                    <LineBreak/>
+                                    <Run Text="App Password: Simpler, generate from BlueSky settings"/>
+                                </TextBlock>
+                            </StackPanel>
                             
-                            <!-- OAuth Configuration Section (only for new accounts) -->
+                            <!-- OAuth Configuration Section (only for OAuth method) -->
                             <Border Background="{DynamicResource SMC-Muted}"
                                     BorderBrush="{DynamicResource SMC-Card-Border}"
                                     BorderThickness="1"
                                     CornerRadius="8"
                                     Padding="16"
-                                    IsVisible="{Binding IsAddingAccount}">
+                                    IsVisible="{Binding IsOAuthAuthMethod}">
                                 <StackPanel Spacing="16">
                                     <StackPanel Spacing="4">
                                         <TextBlock Text="OAuth Configuration" 
@@ -349,8 +376,67 @@
                                                     Command="{Binding TestOAuthConfigCommand}"
                                                     Classes="secondary"
                                                     MinWidth="200"/>
+                                            <Button Content="🚀 Start OAuth Flow" 
+                                                    Command="{Binding StartOAuthFlowCommand}"
+                                                    Classes="primary"
+                                                    IsEnabled="{Binding CanTestOAuthConfig}"
+                                                    MinWidth="200"/>
                                         </StackPanel>
                                     </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- App Password Configuration Section (only for App Password method) -->
+                            <Border Background="{DynamicResource SMC-Muted}"
+                                    BorderBrush="{DynamicResource SMC-Card-Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="16"
+                                    IsVisible="{Binding IsAppPasswordAuthMethod}">
+                                <StackPanel Spacing="16">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="BlueSky App Password" 
+                                                   FontWeight="SemiBold"
+                                                   FontSize="16"
+                                                   Foreground="{DynamicResource SMC-Foreground}"/>
+                                        <TextBlock FontSize="14"
+                                                   TextWrapping="Wrap"
+                                                   Foreground="{DynamicResource SMC-Muted-Foreground}">
+                                            <Run Text="1. Go to BlueSky Settings → App Passwords"/>
+                                            <LineBreak/>
+                                            <Run Text="2. Click 'Add App Password'"/>
+                                            <LineBreak/>
+                                            <Run Text="3. Name it 'Social Media Commander'"/>
+                                            <LineBreak/>
+                                            <Run Text="4. Copy the generated password (format: xxxx-xxxx-xxxx-xxxx)"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    
+                                    <!-- App Password Field -->
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="App Password" 
+                                                   FontWeight="Medium"
+                                                   FontSize="14"
+                                                   Foreground="{DynamicResource SMC-Foreground}"/>
+                                        <TextBox Text="{Binding AppPassword}"
+                                                 Watermark="xxxx-xxxx-xxxx-xxxx"
+                                                 PasswordChar="*"
+                                                 Classes="modern"/>
+                                        <TextBlock Text="⚠️ This password will be encrypted and stored securely" 
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                    </StackPanel>
+                                    
+                                    <!-- Test App Password Button -->
+                                    <StackPanel Orientation="Horizontal" 
+                                               Spacing="12"
+                                               HorizontalAlignment="Center">
+                                        <Button Content="🔐 Test App Password" 
+                                                Command="{Binding TestAppPasswordCommand}"
+                                                Classes="secondary"
+                                                IsEnabled="{Binding CanSaveAppPasswordAccount}"
+                                                MinWidth="200"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Border>
                             
@@ -454,7 +540,7 @@
                                                 CornerRadius="24"
                                                 Background="#0085FF"
                                                 Margin="0,0,16,0">
-                                            <TextBlock Text="{Binding DisplayName[0]}" 
+                                            <TextBlock Text="{Binding DisplayName}" 
                                                        Foreground="White"
                                                        FontSize="16"
                                                        FontWeight="Bold"
@@ -528,4 +614,4 @@
             </ScrollViewer>
         </Grid>
     </Border>
-</UserControl> 
+</UserControl>

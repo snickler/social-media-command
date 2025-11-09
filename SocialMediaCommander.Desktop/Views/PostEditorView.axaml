@@ -148,16 +148,50 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <ToggleButton Classes="PlatformToggle" 
-                                                  IsChecked="{Binding IsSelected, Mode=TwoWay}">
-                                        <StackPanel Orientation="Horizontal" Spacing="8">
-                                            <TextBlock Text="✓" IsVisible="{Binding IsSelected}" FontWeight="Bold"/>
-                                            <TextBlock Text="{Binding Name}"/>
-                                            <TextBlock Text="{Binding CharacterLimit, StringFormat='({0} chars)'}" 
-                                                       Opacity="0.6" FontSize="12"
-                                                       IsVisible="{Binding HasCharacterLimit}"/>
-                                        </StackPanel>
-                                    </ToggleButton>
+                                    <StackPanel Spacing="4" Margin="0,0,12,12">
+                                        <!-- Platform Toggle -->
+                                        <ToggleButton Classes="PlatformToggle" 
+                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                                <TextBlock Text="✓" IsVisible="{Binding IsSelected}" FontWeight="Bold"/>
+                                                <TextBlock Text="{Binding Name}"/>
+                                                <TextBlock Text="{Binding CharacterLimit, StringFormat='({0} chars)'}" 
+                                                           Opacity="0.6" FontSize="12"
+                                                           IsVisible="{Binding HasCharacterLimit}"/>
+                                            </StackPanel>
+                                        </ToggleButton>
+                                        
+                                        <!-- Account Selector (shown when platform is selected) -->
+                                        <ComboBox IsVisible="{Binding IsSelected}"
+                                                  ItemsSource="{Binding AvailableAccounts}"
+                                                  SelectedItem="{Binding SelectedAccount, Mode=TwoWay}"
+                                                  Width="200"
+                                                  FontSize="12"
+                                                  Padding="8,4">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                                        <TextBlock Text="👤" FontSize="12"/>
+                                                        <TextBlock Text="{Binding DisplayText}" 
+                                                                   FontSize="12"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                        <TextBlock Text="✓" 
+                                                                   FontSize="10" 
+                                                                   FontWeight="Bold"
+                                                                   Foreground="{DynamicResource SMC-Success}"
+                                                                   IsVisible="{Binding IsAuthenticated}"/>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        
+                                        <!-- Account display text (read-only indicator) -->
+                                        <TextBlock Text="{Binding AccountDisplayText}"
+                                                   IsVisible="{Binding IsSelected}"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource SMC-Muted-Foreground}"
+                                                   Margin="0,2,0,0"/>
+                                    </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
@@ -190,7 +224,79 @@
                                        FontSize="12" Opacity="0.7"/>
                             <Button Content="📷 Upload Media" 
                                     Classes="outline" 
-                                    Command="{Binding UploadMediaCommand}"/>
+                                    Command="{Binding UploadMediaCommand}"
+                                    IsEnabled="{Binding !#MediaGrid.IsVisible}"/>
+                            
+                            <!-- Media Preview Grid -->
+                            <Grid Name="MediaGrid" 
+                                  IsVisible="{Binding Media.Count}"
+                                  ColumnDefinitions="*,*,*,*" 
+                                  RowDefinitions="Auto" 
+                                  ColumnSpacing="8">
+                                
+                                <ItemsControl ItemsSource="{Binding Media}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel Orientation="Horizontal" ItemWidth="150" ItemHeight="150"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="150" Height="150" 
+                                                    CornerRadius="8" 
+                                                    Margin="0,0,8,8"
+                                                    BorderBrush="{DynamicResource SMC-Card-Border}" 
+                                                    BorderThickness="1"
+                                                    ClipToBounds="True">
+                                                <Grid>
+                                                    <!-- Image Preview -->
+                                                    <Border Background="{DynamicResource SMC-Muted}">
+                                                        <Image Source="{Binding FilePath}" 
+                                                               Stretch="UniformToFill"
+                                                               Width="150" 
+                                                               Height="150"/>
+                                                    </Border>
+                                                    
+                                                    <!-- File Info Overlay (Bottom) -->
+                                                    <Border Background="#AA000000" 
+                                                            VerticalAlignment="Bottom"
+                                                            Padding="8,4">
+                                                        <TextBlock Text="{Binding FileName}" 
+                                                                   Foreground="White"
+                                                                   FontSize="10"
+                                                                   TextTrimming="CharacterEllipsis"/>
+                                                    </Border>
+                                                    
+                                                    <!-- Delete Button Overlay (Top Right) -->
+                                                    <Button Background="#AAFF0000" 
+                                                            Foreground="White"
+                                                            Width="24" 
+                                                            Height="24" 
+                                                            Padding="0"
+                                                            VerticalAlignment="Top" 
+                                                            HorizontalAlignment="Right"
+                                                            Margin="4"
+                                                            CornerRadius="12"
+                                                            Command="{Binding $parent[UserControl].DataContext.RemoveMediaCommand}"
+                                                            CommandParameter="{Binding}">
+                                                        <TextBlock Text="✕" 
+                                                                   FontSize="14" 
+                                                                   FontWeight="Bold"
+                                                                   HorizontalAlignment="Center" 
+                                                                   VerticalAlignment="Center"/>
+                                                    </Button>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </Grid>
+                            
+                            <!-- Media Count Info -->
+                            <TextBlock Text="{Binding Media.Count, StringFormat='{}{0} of 4 media files'}" 
+                                       FontSize="12" 
+                                       Foreground="{DynamicResource SMC-Muted-Foreground}"
+                                       IsVisible="{Binding Media.Count}"/>
                         </StackPanel>
                     </StackPanel>
 
@@ -442,4 +548,4 @@
             </Grid>
         </Border>
     </StackPanel>
-</UserControl> 
+</UserControl>
