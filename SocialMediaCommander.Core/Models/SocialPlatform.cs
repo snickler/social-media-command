@@ -5,11 +5,8 @@ namespace SocialMediaCommander.Core.Models;
 /// </summary>
 public enum SocialPlatform
 {
-    BlueSky,
-    X,
-    LinkedIn,
-    Threads,
-    Facebook
+    BlueSky
+    // TODO: Add X, LinkedIn, Threads, Facebook when implementations are ready
 }
 
 /// <summary>
