@@ -59,7 +59,7 @@ Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation fronte
 - OAuth configs show placeholders in UI until user provides real credentials
 - Test constructors accept `customDirectory` parameter to isolate test data (see `SettingsService(string customDirectory)`)
 
-**Recovery procedures** (see `SECURE_STORAGE_IMPLEMENTATION.md`):
+**Recovery procedures** (see `docs/security/secure-storage-implementation.md`):
 - Decryption failure: delete encrypted file to reset to defaults
 - Integrity issues: `DataIntegrityService` auto-repairs or flags for manual intervention
 
@@ -292,10 +292,26 @@ Before proposing changes, **MUST** complete:
 - **Testing Infrastructure**: `TestAppBuilder.cs`, `ScreenshotHelper.cs`, `RecordedTestBase.cs`, `VisualRegressionTests.cs`
 - **Documentation**: 
   - Performance: `PERFORMANCE_OPTIMIZATIONS.md`
-  - Security: `SECURE_STORAGE_IMPLEMENTATION.md`
+  - Security: `docs/security/secure-storage-implementation.md`
   - Features: `ENHANCED_FEATURES_FINAL.md`
   - Workflows: `.github/WORKFLOWS_OVERVIEW.md`, `.github/RELEASE_WORKFLOW.md`, `.github/PRE_RELEASE_GUIDE.md`
   - Testing: `.github/VISUAL_REGRESSION_TESTING.md`
+
+---
+
+## Custom Agents
+
+For specialized tasks, use dedicated custom agents in `.github/agents/`:
+
+- **`security-specialist.md`** — Encryption, secure storage, cross-platform security
+- **`performance-specialist.md`** — Async patterns, memory optimization, caching strategies
+- **`testing-tdd-specialist.md`** — TDD, xUnit, FluentAssertions, visual regression testing
+- **`ui-ux-avalonia-specialist.md`** — Avalonia UI, XAML styling, animations, accessibility
+- **`cicd-release-specialist.md`** — GitHub Actions, releases, semantic versioning
+- **`git-hooks-quality-specialist.md`** — Pre-commit hooks, code quality enforcement
+- **`documentation-specialist.md`** — Technical writing, documentation maintenance
+
+Access agents at: https://github.com/copilot/agents
 
 ---
 
@@ -303,4 +319,5 @@ Before proposing changes, **MUST** complete:
 
 - **Copilot instructions docs**: https://aka.ms/vscode-instructions-docs
 - **Performance best practices**: See `PERFORMANCE_OPTIMIZATIONS.md` for detailed implementation patterns
-- **Security implementation**: See `SECURE_STORAGE_IMPLEMENTATION.md` for encryption details and recovery procedures
+- **Security implementation**: See `docs/security/secure-storage-implementation.md` for encryption details and recovery procedures
+- **Custom agents guide**: See `.github/CUSTOM_AGENTS_AND_DOCS_CONSOLIDATION.md` for usage examples
