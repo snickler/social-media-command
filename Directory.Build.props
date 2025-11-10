@@ -34,11 +34,12 @@
 
   <!-- Automatic Git Hooks Setup Target -->
   <!-- Runs on first build to configure hooks automatically -->
-  <Target Name="SetupGitHooks" BeforeTargets="BeforeBuild" Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
+  <!-- Handles concurrent builds gracefully by continuing on error -->
+  <Target Name="SetupGitHooks" 
+          BeforeTargets="BeforeBuild" 
+          Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingInsideVisualStudio)' != 'true'">
     <PropertyGroup>
       <GitHooksPath>.githooks</GitHooksPath>
-      <SetupScriptWindows>setup-hooks.ps1</SetupScriptWindows>
-      <SetupScriptUnix>setup-hooks.sh</SetupScriptUnix>
     </PropertyGroup>
     
     <!-- Check if hooks are already configured -->
@@ -47,25 +48,25 @@
           IgnoreExitCode="true"
           ContinueOnError="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="CurrentHooksPath" />
-      <Output TaskParameter="ExitCode" PropertyName="GitConfigExitCode" />
     </Exec>
     
     <!-- Configure hooks if not already set up -->
+    <!-- ContinueOnError handles concurrent builds racing to configure hooks -->
     <Exec Command="git config core.hooksPath $(GitHooksPath)" 
           Condition="'$(CurrentHooksPath)' != '$(GitHooksPath)'"
-          IgnoreExitCode="false" />
+          IgnoreExitCode="true"
+          ContinueOnError="true" />
     
-    <!-- Log success message -->
-    <Message Text="✅ Git hooks configured automatically at: $(GitHooksPath)" 
-             Importance="high" 
-             Condition="'$(CurrentHooksPath)' != '$(GitHooksPath)'" />
-    
-    <!-- Make hooks executable on Unix-like systems (always run if files exist) -->
+    <!-- Make hooks executable on Unix-like systems -->
     <Exec Command="test -f $(GitHooksPath)/pre-commit &amp;&amp; chmod +x $(GitHooksPath)/pre-commit || true" 
           Condition="'$(OS)' != 'Windows_NT'"
           IgnoreExitCode="true"
           ContinueOnError="true" />
     <Exec Command="test -f $(GitHooksPath)/post-commit &amp;&amp; chmod +x $(GitHooksPath)/post-commit || true" 
+          Condition="'$(OS)' != 'Windows_NT'"
+          IgnoreExitCode="true"
+          ContinueOnError="true" />
+    <Exec Command="test -f $(GitHooksPath)/commit-msg &amp;&amp; chmod +x $(GitHooksPath)/commit-msg || true" 
           Condition="'$(OS)' != 'Windows_NT'"
           IgnoreExitCode="true"
           ContinueOnError="true" />
