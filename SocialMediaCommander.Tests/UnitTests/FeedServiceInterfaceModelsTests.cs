@@ -30,16 +30,12 @@ public class FeedServiceInterfaceModelsTests
         // Arrange
         var postsByPlatform = new Dictionary<SocialPlatform, int>
         {
-            { SocialPlatform.X, 150 },
-            { SocialPlatform.LinkedIn, 75 },
-            { SocialPlatform.BlueSky, 100 }
+            { SocialPlatform.BlueSky, 150 }
         };
 
         var engagementByPlatform = new Dictionary<SocialPlatform, int>
         {
-            { SocialPlatform.X, 2500 },
-            { SocialPlatform.LinkedIn, 1200 },
-            { SocialPlatform.BlueSky, 800 }
+            { SocialPlatform.BlueSky, 2500 }
         };
 
         var topHashtags = new List<string> { "technology", "innovation", "ai", "business" };
@@ -48,8 +44,8 @@ public class FeedServiceInterfaceModelsTests
         // Act
         var stats = new FeedStatistics
         {
-            TotalPosts = 325,
-            TotalEngagement = 4500,
+            TotalPosts = 150,
+            TotalEngagement = 2500,
             PostsByPlatform = postsByPlatform,
             EngagementByPlatform = engagementByPlatform,
             TopHashtags = topHashtags,
@@ -57,8 +53,8 @@ public class FeedServiceInterfaceModelsTests
         };
 
         // Assert
-        Assert.Equal(325, stats.TotalPosts);
-        Assert.Equal(4500, stats.TotalEngagement);
+        Assert.Equal(150, stats.TotalPosts);
+        Assert.Equal(2500, stats.TotalEngagement);
         Assert.Equal(postsByPlatform, stats.PostsByPlatform);
         Assert.Equal(engagementByPlatform, stats.EngagementByPlatform);
         Assert.Equal(topHashtags, stats.TopHashtags);
@@ -73,15 +69,11 @@ public class FeedServiceInterfaceModelsTests
         {
             PostsByPlatform = new Dictionary<SocialPlatform, int>
             {
-                { SocialPlatform.X, 100 },
-                { SocialPlatform.LinkedIn, 50 },
-                { SocialPlatform.Facebook, 75 }
+                { SocialPlatform.BlueSky, 100 }
             },
             EngagementByPlatform = new Dictionary<SocialPlatform, int>
             {
-                { SocialPlatform.X, 1500 },
-                { SocialPlatform.LinkedIn, 800 },
-                { SocialPlatform.Facebook, 1200 }
+                { SocialPlatform.BlueSky, 1500 }
             }
         };
 
@@ -90,8 +82,8 @@ public class FeedServiceInterfaceModelsTests
         var totalEngagement = stats.EngagementByPlatform.Values.Sum();
 
         // Assert
-        Assert.Equal(225, totalPosts);
-        Assert.Equal(3500, totalEngagement);
+        Assert.Equal(100, totalPosts);
+        Assert.Equal(1500, totalEngagement);
     }
 
     [Fact]
@@ -101,26 +93,18 @@ public class FeedServiceInterfaceModelsTests
         var stats = new FeedStatistics();
 
         // Act
-        stats.PostsByPlatform[SocialPlatform.X] = 100;
-        stats.PostsByPlatform[SocialPlatform.LinkedIn] = 50;
-        stats.PostsByPlatform[SocialPlatform.Facebook] = 75;
+        stats.PostsByPlatform[SocialPlatform.BlueSky] = 100;
+        stats.PostsByPlatform[SocialPlatform.BlueSky] = 50;
+        stats.PostsByPlatform[SocialPlatform.BlueSky] = 75;
         stats.PostsByPlatform[SocialPlatform.BlueSky] = 25;
-        stats.PostsByPlatform[SocialPlatform.Threads] = 40;
+        stats.PostsByPlatform[SocialPlatform.BlueSky] = 40;
 
-        stats.EngagementByPlatform[SocialPlatform.X] = 1500;
-        stats.EngagementByPlatform[SocialPlatform.LinkedIn] = 800;
-        stats.EngagementByPlatform[SocialPlatform.Facebook] = 1200;
-        stats.EngagementByPlatform[SocialPlatform.BlueSky] = 300;
-        stats.EngagementByPlatform[SocialPlatform.Threads] = 600;
+        stats.EngagementByPlatform[SocialPlatform.BlueSky] = 1500;
 
         // Assert
-        Assert.Equal(5, stats.PostsByPlatform.Count);
-        Assert.Equal(5, stats.EngagementByPlatform.Count);
-        Assert.True(stats.PostsByPlatform.ContainsKey(SocialPlatform.X));
-        Assert.True(stats.PostsByPlatform.ContainsKey(SocialPlatform.LinkedIn));
-        Assert.True(stats.PostsByPlatform.ContainsKey(SocialPlatform.Facebook));
+        Assert.Single(stats.PostsByPlatform);
+        Assert.Single(stats.EngagementByPlatform);
         Assert.True(stats.PostsByPlatform.ContainsKey(SocialPlatform.BlueSky));
-        Assert.True(stats.PostsByPlatform.ContainsKey(SocialPlatform.Threads));
     }
 
     [Fact]
@@ -190,16 +174,16 @@ public class FeedServiceInterfaceModelsTests
         var stats = new FeedStatistics();
 
         // Act
-        stats.PostsByPlatform.Add(SocialPlatform.X, 100);
-        stats.EngagementByPlatform.Add(SocialPlatform.X, 1500);
+        stats.PostsByPlatform.Add(SocialPlatform.BlueSky, 100);
+        stats.EngagementByPlatform.Add(SocialPlatform.BlueSky, 1500);
         stats.TopHashtags.Add("newhashtag");
 
         // Assert
         Assert.Single(stats.PostsByPlatform);
         Assert.Single(stats.EngagementByPlatform);
         Assert.Single(stats.TopHashtags);
-        Assert.Equal(100, stats.PostsByPlatform[SocialPlatform.X]);
-        Assert.Equal(1500, stats.EngagementByPlatform[SocialPlatform.X]);
+        Assert.Equal(100, stats.PostsByPlatform[SocialPlatform.BlueSky]);
+        Assert.Equal(1500, stats.EngagementByPlatform[SocialPlatform.BlueSky]);
         Assert.Equal("newhashtag", stats.TopHashtags[0]);
     }
 
@@ -211,17 +195,17 @@ public class FeedServiceInterfaceModelsTests
         {
             PostsByPlatform = new Dictionary<SocialPlatform, int>
             {
-                { SocialPlatform.X, 100 }
+                { SocialPlatform.BlueSky, 100 }
             },
             EngagementByPlatform = new Dictionary<SocialPlatform, int>
             {
-                { SocialPlatform.X, 1500 }
+                { SocialPlatform.BlueSky, 1500 }
             }
         };
 
         // Act
-        var engagementRate = stats.PostsByPlatform[SocialPlatform.X] > 0
-            ? (double)stats.EngagementByPlatform[SocialPlatform.X] / stats.PostsByPlatform[SocialPlatform.X]
+        var engagementRate = stats.PostsByPlatform[SocialPlatform.BlueSky] > 0
+            ? (double)stats.EngagementByPlatform[SocialPlatform.BlueSky] / stats.PostsByPlatform[SocialPlatform.BlueSky]
             : 0;
 
         // Assert

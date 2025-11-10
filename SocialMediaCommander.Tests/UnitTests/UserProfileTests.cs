@@ -59,7 +59,7 @@ public class UserProfileTests
             PostCount = 250,
             IsVerified = true,
             CreatedAt = createdAt,
-            Platform = SocialPlatform.X,
+            Platform = SocialPlatform.BlueSky,
             AdditionalData = additionalData
         };
 
@@ -78,7 +78,7 @@ public class UserProfileTests
         Assert.Equal(250, userProfile.PostCount);
         Assert.True(userProfile.IsVerified);
         Assert.Equal(createdAt, userProfile.CreatedAt);
-        Assert.Equal(SocialPlatform.X, userProfile.Platform);
+        Assert.Equal(SocialPlatform.BlueSky, userProfile.Platform);
         Assert.Equal(additionalData, userProfile.AdditionalData);
     }
 
@@ -105,10 +105,7 @@ public class UserProfileTests
 
     [Theory]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.LinkedIn)]
-    [InlineData(SocialPlatform.Threads)]
-    [InlineData(SocialPlatform.Facebook)]
+    // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
     public void UserProfile_Platform_ShouldAcceptAllSocialPlatforms(SocialPlatform platform)
     {
         // Act

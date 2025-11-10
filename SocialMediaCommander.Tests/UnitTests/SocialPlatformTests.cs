@@ -15,11 +15,7 @@ public class SocialPlatformTests
         var platforms = Enum.GetValues<SocialPlatform>();
 
         Assert.Contains(SocialPlatform.BlueSky, platforms);
-        Assert.Contains(SocialPlatform.X, platforms);
-        Assert.Contains(SocialPlatform.LinkedIn, platforms);
-        Assert.Contains(SocialPlatform.Threads, platforms);
-        Assert.Contains(SocialPlatform.Facebook, platforms);
-        Assert.Equal(5, platforms.Length);
+        Assert.Single(platforms);
     }
 
     [Fact]
@@ -29,20 +25,13 @@ public class SocialPlatformTests
         var configurations = PlatformConfigurations.Platforms;
 
         // Assert
-        Assert.Equal(5, configurations.Count);
+        Assert.Single(configurations);
         Assert.True(configurations.ContainsKey(SocialPlatform.BlueSky));
-        Assert.True(configurations.ContainsKey(SocialPlatform.X));
-        Assert.True(configurations.ContainsKey(SocialPlatform.LinkedIn));
-        Assert.True(configurations.ContainsKey(SocialPlatform.Threads));
-        Assert.True(configurations.ContainsKey(SocialPlatform.Facebook));
     }
 
     [Theory]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.LinkedIn)]
-    [InlineData(SocialPlatform.Threads)]
-    [InlineData(SocialPlatform.Facebook)]
+    // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
     public void GetPlatformConfig_WithValidPlatform_ShouldReturnCorrectConfig(SocialPlatform platform)
     {
         // Act
@@ -76,73 +65,7 @@ public class SocialPlatformTests
         Assert.Contains("bluesky.png", config.IconPath);
     }
 
-    [Fact]
-    public void XConfiguration_ShouldHaveCorrectProperties()
-    {
-        // Act
-        var config = PlatformConfigurations.GetPlatformConfig(SocialPlatform.X);
-
-        // Assert
-        Assert.Equal(SocialPlatform.X, config.Id);
-        Assert.Equal("X", config.Name);
-        Assert.Equal("#000000", config.Color);
-        Assert.Equal(280, config.CharacterLimit);
-        Assert.True(config.HashtagSupport);
-        Assert.True(config.MediaSupport);
-        Assert.True(config.ThreadSupport);
-        Assert.Contains("x.png", config.IconPath);
-    }
-
-    [Fact]
-    public void LinkedInConfiguration_ShouldHaveCorrectProperties()
-    {
-        // Act
-        var config = PlatformConfigurations.GetPlatformConfig(SocialPlatform.LinkedIn);
-
-        // Assert
-        Assert.Equal(SocialPlatform.LinkedIn, config.Id);
-        Assert.Equal("LinkedIn", config.Name);
-        Assert.Equal("#0077B5", config.Color);
-        Assert.Null(config.CharacterLimit); // LinkedIn has no character limit
-        Assert.True(config.HashtagSupport);
-        Assert.True(config.MediaSupport);
-        Assert.False(config.ThreadSupport); // LinkedIn doesn't support threads
-        Assert.Contains("linkedin.png", config.IconPath);
-    }
-
-    [Fact]
-    public void ThreadsConfiguration_ShouldHaveCorrectProperties()
-    {
-        // Act
-        var config = PlatformConfigurations.GetPlatformConfig(SocialPlatform.Threads);
-
-        // Assert
-        Assert.Equal(SocialPlatform.Threads, config.Id);
-        Assert.Equal("Threads", config.Name);
-        Assert.Equal("#000000", config.Color);
-        Assert.Equal(500, config.CharacterLimit);
-        Assert.True(config.HashtagSupport);
-        Assert.True(config.MediaSupport);
-        Assert.True(config.ThreadSupport);
-        Assert.Contains("threads.png", config.IconPath);
-    }
-
-    [Fact]
-    public void FacebookConfiguration_ShouldHaveCorrectProperties()
-    {
-        // Act
-        var config = PlatformConfigurations.GetPlatformConfig(SocialPlatform.Facebook);
-
-        // Assert
-        Assert.Equal(SocialPlatform.Facebook, config.Id);
-        Assert.Equal("Facebook", config.Name);
-        Assert.Equal("#1877F2", config.Color);
-        Assert.Null(config.CharacterLimit); // Facebook has no character limit
-        Assert.True(config.HashtagSupport);
-        Assert.True(config.MediaSupport);
-        Assert.False(config.ThreadSupport); // Facebook doesn't support threads
-        Assert.Contains("facebook.png", config.IconPath);
-    }
+    // TODO: Add tests for X, LinkedIn, Threads, Facebook when implementations are ready
 
     [Fact]
     public void GetAllPlatforms_ShouldReturnAllConfigurations()
@@ -152,14 +75,10 @@ public class SocialPlatformTests
 
         // Assert
         Assert.NotNull(allPlatforms);
-        Assert.Equal(5, allPlatforms.Count());
+        Assert.Single(allPlatforms);
 
         var platformNames = allPlatforms.Select(p => p.Name).ToList();
         Assert.Contains("BlueSky", platformNames);
-        Assert.Contains("X", platformNames);
-        Assert.Contains("LinkedIn", platformNames);
-        Assert.Contains("Threads", platformNames);
-        Assert.Contains("Facebook", platformNames);
     }
 
     [Fact]
@@ -170,16 +89,10 @@ public class SocialPlatformTests
 
         // Assert
         Assert.NotNull(threadPlatforms);
-        Assert.True(threadPlatforms.Count() >= 2); // At least BlueSky, X, and Threads support threads
+        Assert.Single(threadPlatforms); // Only BlueSky supports threads
 
         var threadPlatformNames = threadPlatforms.Select(p => p.Name).ToList();
         Assert.Contains("BlueSky", threadPlatformNames);
-        Assert.Contains("X", threadPlatformNames);
-        Assert.Contains("Threads", threadPlatformNames);
-
-        // These platforms should NOT support threads
-        Assert.DoesNotContain("LinkedIn", threadPlatformNames);
-        Assert.DoesNotContain("Facebook", threadPlatformNames);
     }
 
     [Fact]
@@ -277,7 +190,7 @@ public class SocialPlatformTests
         // Arrange & Act
         var config = new SocialPlatformConfig
         {
-            Id = SocialPlatform.X,
+            Id = SocialPlatform.BlueSky,
             Name = "Test Platform",
             Color = "#FF0000",
             CharacterLimit = 280,
@@ -288,7 +201,7 @@ public class SocialPlatformTests
         };
 
         // Assert
-        Assert.Equal(SocialPlatform.X, config.Id);
+        Assert.Equal(SocialPlatform.BlueSky, config.Id);
         Assert.Equal("Test Platform", config.Name);
         Assert.Equal("#FF0000", config.Color);
         Assert.Equal(280, config.CharacterLimit);
@@ -307,7 +220,7 @@ public class SocialPlatformTests
 
         for (int i = 0; i < 100; i++)
         {
-            tasks.Add(Task.Run(() => PlatformConfigurations.GetPlatformConfig(SocialPlatform.X)));
+            tasks.Add(Task.Run(() => PlatformConfigurations.GetPlatformConfig(SocialPlatform.BlueSky)));
         }
 
         var results = await Task.WhenAll(tasks);
@@ -317,8 +230,8 @@ public class SocialPlatformTests
         Assert.All(results, config =>
         {
             Assert.NotNull(config);
-            Assert.Equal(SocialPlatform.X, config.Id);
-            Assert.Equal("X", config.Name);
+            Assert.Equal(SocialPlatform.BlueSky, config.Id);
+            Assert.Equal("BlueSky", config.Name);
         });
     }
 

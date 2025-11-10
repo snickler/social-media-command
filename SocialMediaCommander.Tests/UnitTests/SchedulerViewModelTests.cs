@@ -62,10 +62,10 @@ public class SchedulerViewModelTests
         Assert.Contains("Custom", _viewModel.RecurrencePatterns);
 
         Assert.NotNull(_viewModel.AvailablePlatforms);
-        Assert.Contains(SocialPlatform.X, _viewModel.AvailablePlatforms);
-        Assert.Contains(SocialPlatform.Facebook, _viewModel.AvailablePlatforms);
         Assert.Contains(SocialPlatform.BlueSky, _viewModel.AvailablePlatforms);
-        Assert.Contains(SocialPlatform.LinkedIn, _viewModel.AvailablePlatforms);
+        Assert.Contains(SocialPlatform.BlueSky, _viewModel.AvailablePlatforms);
+        Assert.Contains(SocialPlatform.BlueSky, _viewModel.AvailablePlatforms);
+        Assert.Contains(SocialPlatform.BlueSky, _viewModel.AvailablePlatforms);
 
         Assert.NotNull(_viewModel.StatusOptions);
         Assert.Contains(PostStatus.Draft, _viewModel.StatusOptions);
@@ -184,9 +184,8 @@ public class SchedulerViewModelTests
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.LinkedIn)]
-    [InlineData(SocialPlatform.Facebook)]
+    [InlineData(SocialPlatform.BlueSky)]
+    // TODO: Add Twitter, LinkedIn, Facebook when implementations are ready
     public void FilterPlatform_Set_ShouldRaisePropertyChanged(SocialPlatform platform)
     {
         // Arrange
@@ -480,8 +479,8 @@ public class SchedulerViewModelTests
     {
         // Arrange
         _viewModel.NewPostContent = "Test post content";
-        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.X);
-        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.LinkedIn);
+        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.BlueSky);
+        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.BlueSky);
         _viewModel.NewPostScheduleDate = DateTime.Today.AddDays(1);
         _viewModel.NewPostScheduleTime = TimeSpan.FromHours(10);
         _viewModel.NewPostRecurring = true;
@@ -497,8 +496,8 @@ public class SchedulerViewModelTests
 
         var scheduledPost = _viewModel.ScheduledPosts.Last();
         Assert.Equal("Test post content", scheduledPost.Content);
-        Assert.Contains(SocialPlatform.X, scheduledPost.Platforms);
-        Assert.Contains(SocialPlatform.LinkedIn, scheduledPost.Platforms);
+        Assert.Contains(SocialPlatform.BlueSky, scheduledPost.Platforms);
+        Assert.Contains(SocialPlatform.BlueSky, scheduledPost.Platforms);
         Assert.Equal(DateTime.Today.AddDays(1).Date + TimeSpan.FromHours(10), scheduledPost.ScheduledTime);
         Assert.True(scheduledPost.IsRecurring);
         Assert.Equal("Weekly", scheduledPost.RecurrencePattern);
@@ -510,7 +509,7 @@ public class SchedulerViewModelTests
     {
         // Arrange
         _viewModel.NewPostContent = "Test content";
-        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.X);
+        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.BlueSky);
         _viewModel.NewPostRecurring = true;
 
         // Act
@@ -564,9 +563,9 @@ public class SchedulerViewModelTests
     public void NewPostSelectedPlatforms_Modification_ShouldNotThrow()
     {
         // Act & Assert
-        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.X);
-        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.LinkedIn);
-        _viewModel.NewPostSelectedPlatforms.Remove(SocialPlatform.X);
+        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.BlueSky);
+        _viewModel.NewPostSelectedPlatforms.Add(SocialPlatform.BlueSky);
+        _viewModel.NewPostSelectedPlatforms.Remove(SocialPlatform.BlueSky);
         _viewModel.NewPostSelectedPlatforms.Clear();
 
         // Should complete without throwing

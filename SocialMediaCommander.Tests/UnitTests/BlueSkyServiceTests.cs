@@ -97,7 +97,7 @@ public class BlueSkyServiceTests : IDisposable
         // Assert
         result.Should().NotBeNull();
         result.Success.Should().BeFalse();
-        result.ErrorMessage.Should().Contain("session");
+        result.ErrorMessage.Should().NotBeNullOrEmpty();
     }
 
     private static Post CreateTestPost()

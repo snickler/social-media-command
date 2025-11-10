@@ -274,7 +274,7 @@ public class BackupServiceTests : IDisposable
             new Account
             {
                 Id = "test1",
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 DisplayName = "Test Account 1",
                 Username = "test1",
                 AuthStatus = AuthenticationStatus.Authenticated,
@@ -296,7 +296,7 @@ public class BackupServiceTests : IDisposable
     {
         return new Dictionary<SocialPlatform, OAuthConfig>
         {
-            [SocialPlatform.X] = new OAuthConfig
+            [SocialPlatform.BlueSky] = new OAuthConfig
             {
                 ClientId = "test_x_client",
                 ClientSecret = "test_x_secret",

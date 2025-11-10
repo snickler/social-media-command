@@ -526,7 +526,7 @@ public class MCPIntegrationModelsTests
     {
         // Arrange
         var id = Guid.NewGuid().ToString();
-        var platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn };
+        var platforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
         var operations = new List<MCPSocialOperation> { new() };
         var server = new MCPServer();
         var configuration = new Dictionary<string, object> { { "key", "value" } };

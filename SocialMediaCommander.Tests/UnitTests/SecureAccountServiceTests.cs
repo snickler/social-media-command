@@ -114,20 +114,14 @@ public class SecureAccountServiceTests : IDisposable
     public async Task GetAccountsForPlatformAsync_ExistingAccounts_ShouldReturnFilteredAccounts()
     {
         // Arrange
-        var twitterAccount = CreateTestAccount(SocialPlatform.X);
         var blueskyAccount = CreateTestAccount(SocialPlatform.BlueSky);
 
-        await _accountService.CreateAccountAsync(twitterAccount);
         await _accountService.CreateAccountAsync(blueskyAccount);
 
         // Act
-        var twitterAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.X);
         var blueskyAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
-        twitterAccounts.Should().HaveCount(1);
-        twitterAccounts.First().PlatformId.Should().Be(SocialPlatform.X);
-
         blueskyAccounts.Should().HaveCount(1);
         blueskyAccounts.First().PlatformId.Should().Be(SocialPlatform.BlueSky);
     }
@@ -271,7 +265,7 @@ public class SecureAccountServiceTests : IDisposable
         var createdAccount = await _accountService.CreateAccountAsync(account);
 
         // Act
-        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.X);
+        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
         defaultAccount.Should().NotBeNull();
@@ -283,7 +277,7 @@ public class SecureAccountServiceTests : IDisposable
     public async Task GetDefaultAccountForPlatformAsync_NoAccounts_ShouldReturnNull()
     {
         // Act
-        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.X);
+        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
         defaultAccount.Should().BeNull();
@@ -367,7 +361,7 @@ public class SecureAccountServiceTests : IDisposable
         allAccounts.Should().HaveCount(10);
     }
 
-    private static Account CreateTestAccount(SocialPlatform platform = SocialPlatform.X)
+    private static Account CreateTestAccount(SocialPlatform platform = SocialPlatform.BlueSky)
     {
         return new Account
         {

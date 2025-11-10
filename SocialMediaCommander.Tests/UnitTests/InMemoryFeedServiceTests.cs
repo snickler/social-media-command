@@ -33,7 +33,7 @@ public class InMemoryFeedServiceTests : IDisposable
         Assert.NotNull(_service);
 
         // Verify that mock data was loaded by checking we can get feed items
-        var platforms = new[] { SocialPlatform.X, SocialPlatform.Facebook };
+        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
         var result = await _service.GetFeedItemsAsync(platforms, 10);
 
         Assert.NotNull(result);
@@ -45,7 +45,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task GetFeedItemsAsync_WithMultiplePlatforms_ShouldReturnFilteredResults()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X, SocialPlatform.Facebook };
+        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
 
         // Act
         var result = await _service.GetFeedItemsAsync(platforms, 20);
@@ -67,14 +67,14 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task GetFeedItemsAsync_WithSinglePlatform_ShouldReturnOnlyThatPlatform()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.LinkedIn };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act
         var result = await _service.GetFeedItemsAsync(platforms, 10);
 
         // Assert
         Assert.NotNull(result);
-        Assert.All(result, item => Assert.Equal(SocialPlatform.LinkedIn, item.Platform));
+        Assert.All(result, item => Assert.Equal(SocialPlatform.BlueSky, item.Platform));
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task GetFeedItemsAsync_WithLimitZero_ShouldReturnEmpty()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act
         var result = await _service.GetFeedItemsAsync(platforms, 0);
@@ -111,7 +111,7 @@ public class InMemoryFeedServiceTests : IDisposable
         // Arrange
         var config = new FeedConfiguration
         {
-            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.Facebook },
+            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky },
             MaxAge = TimeSpan.FromDays(7),
             SortOrder = FeedSortOrder.Chronological,
             MaxItemsPerPlatform = 5,
@@ -136,7 +136,7 @@ public class InMemoryFeedServiceTests : IDisposable
         // Arrange
         var config = new FeedConfiguration
         {
-            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.X },
+            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.BlueSky },
             SortOrder = FeedSortOrder.Engagement,
             MaxItemsPerPlatform = 10
         };
@@ -161,7 +161,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task RefreshFeedAsync_ShouldAddNewItems()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
         var initialCount = (await _service.GetFeedItemsAsync(platforms, 100)).Count();
 
         // Act
@@ -176,15 +176,15 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task RefreshFeedAsync_ShouldUpdateRefreshTimes()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.Facebook };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act
         await _service.RefreshFeedAsync(platforms);
         var refreshTimes = await _service.GetLastRefreshTimesAsync();
 
         // Assert
-        Assert.True(refreshTimes[SocialPlatform.Facebook].HasValue);
-        Assert.True(refreshTimes[SocialPlatform.Facebook]!.Value > DateTime.UtcNow.AddMinutes(-1));
+        Assert.True(refreshTimes[SocialPlatform.BlueSky].HasValue);
+        Assert.True(refreshTimes[SocialPlatform.BlueSky]!.Value > DateTime.UtcNow.AddMinutes(-1));
     }
 
     [Fact]
@@ -195,7 +195,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(refreshTimes);
-        Assert.Equal(5, refreshTimes.Count); // Should have all 5 platforms
+        Assert.Single(refreshTimes); // Should have all platforms
 
         foreach (var platform in Enum.GetValues<SocialPlatform>())
         {
@@ -229,14 +229,14 @@ public class InMemoryFeedServiceTests : IDisposable
     {
         // Arrange
         var searchTerm = "a"; // Common letter to find matches
-        var platforms = new[] { SocialPlatform.LinkedIn };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act
         var result = await _service.SearchFeedItemsAsync(searchTerm, platforms);
 
         // Assert
         Assert.NotNull(result);
-        Assert.All(result, item => Assert.Equal(SocialPlatform.LinkedIn, item.Platform));
+        Assert.All(result, item => Assert.Equal(SocialPlatform.BlueSky, item.Platform));
     }
 
     [Fact]
@@ -286,14 +286,14 @@ public class InMemoryFeedServiceTests : IDisposable
     {
         // Arrange
         var hashtags = new[] { "technology" };
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act
         var result = await _service.GetFeedItemsByHashtagsAsync(hashtags, platforms);
 
         // Assert
         Assert.NotNull(result);
-        Assert.All(result, item => Assert.Equal(SocialPlatform.X, item.Platform));
+        Assert.All(result, item => Assert.Equal(SocialPlatform.BlueSky, item.Platform));
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(5, result.Count); // Should have results for all 5 platforms
+        Assert.Single(result); // Should have results for all platforms
 
         foreach (var platform in Enum.GetValues<SocialPlatform>())
         {
@@ -319,7 +319,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task GetFeedStatisticsAsync_ShouldCalculateCorrectStats()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X, SocialPlatform.Facebook };
+        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
         var timeRange = TimeSpan.FromDays(30);
 
         // Act
@@ -345,7 +345,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task MarkFeedItemsAsReadAsync_ShouldMarkItemsAsRead()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
         var feedItems = await _service.GetFeedItemsAsync(platforms, 5);
         var itemIds = feedItems.Select(item => item.Id).ToList();
 
@@ -356,7 +356,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Assert
         var finalUnreadCount = await _service.GetUnreadCountsAsync();
-        Assert.True(finalUnreadCount[SocialPlatform.X] <= initialUnreadCount[SocialPlatform.X]);
+        Assert.True(finalUnreadCount[SocialPlatform.BlueSky] <= initialUnreadCount[SocialPlatform.BlueSky]);
     }
 
     [Fact]
@@ -367,7 +367,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Assert
         Assert.NotNull(result);
-        Assert.Equal(5, result.Count); // Should have counts for all 5 platforms
+        Assert.Single(result); // Should have counts for all platforms
 
         foreach (var platform in Enum.GetValues<SocialPlatform>())
         {
@@ -377,11 +377,8 @@ public class InMemoryFeedServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.Facebook)]
-    [InlineData(SocialPlatform.LinkedIn)]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.Threads)]
+    // TODO: Add Twitter, Facebook, LinkedIn, Threads when implementations are ready
     public async Task GetFeedItemsAsync_ForEachPlatform_ShouldReturnPlatformSpecificContent(SocialPlatform platform)
     {
         // Arrange
@@ -399,7 +396,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task RefreshFeedAsync_WithMultiplePlatforms_ShouldUpdateAllPlatforms()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X, SocialPlatform.Facebook, SocialPlatform.LinkedIn };
+        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.BlueSky, SocialPlatform.BlueSky };
 
         // Act
         await _service.RefreshFeedAsync(platforms);
@@ -417,7 +414,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task ConcurrentOperations_ShouldHandleCorrectly()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
         var tasks = new List<Task>();
 
         // Act - Perform multiple concurrent operations
@@ -439,7 +436,7 @@ public class InMemoryFeedServiceTests : IDisposable
         // Arrange
         var config = new FeedConfiguration
         {
-            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.Facebook },
+            EnabledPlatforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky },
             MaxItemsPerPlatform = 3,
             GroupByPlatform = true,
             SortOrder = FeedSortOrder.Platform
@@ -460,7 +457,7 @@ public class InMemoryFeedServiceTests : IDisposable
     public async Task DataConsistency_AfterMultipleRefreshes_ShouldMaintainIntegrity()
     {
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act - Multiple refreshes
         for (int i = 0; i < 3; i++)
@@ -479,7 +476,7 @@ public class InMemoryFeedServiceTests : IDisposable
 
         // Statistics should be consistent with feed items
         Assert.True(statistics.TotalPosts >= 0);
-        Assert.True(unreadCounts[SocialPlatform.X] >= 0);
+        Assert.True(unreadCounts[SocialPlatform.BlueSky] >= 0);
     }
 
     [Fact]
@@ -489,7 +486,7 @@ public class InMemoryFeedServiceTests : IDisposable
         // The service should automatically remove items older than 30 days during refresh
 
         // Arrange
-        var platforms = new[] { SocialPlatform.X };
+        var platforms = new[] { SocialPlatform.BlueSky };
 
         // Act - Force multiple refreshes to trigger cleanup
         for (int i = 0; i < 5; i++)

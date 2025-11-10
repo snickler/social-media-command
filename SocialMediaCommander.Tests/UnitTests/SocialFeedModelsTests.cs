@@ -44,34 +44,34 @@ public class SocialFeedModelsTests
         var feedItem = new SocialFeedItem
         {
             Id = id,
-            Platform = SocialPlatform.X,
+            Platform = SocialPlatform.BlueSky,
             AuthorName = "John Doe",
-            AuthorUsername = "johndoe",
-            AuthorAvatar = "https://example.com/avatar.jpg",
+            AuthorUsername = "johndoe.bsky.social",
+            AuthorAvatar = "https://cdn.bsky.app/img/avatar/plain/did:plc:example/avatar.jpg",
             Content = "Test content with #hashtags",
             PostedAt = postedAt,
             Media = media,
             Engagement = engagement,
             IsThread = true,
             Hashtags = hashtags,
-            PlatformPostId = "tweet123",
-            PlatformUrl = "https://twitter.com/johndoe/status/123"
+            PlatformPostId = "3kjxr7q2nl52w",
+            PlatformUrl = "https://bsky.app/profile/johndoe.bsky.social/post/3kjxr7q2nl52w"
         };
 
         // Assert
         Assert.Equal(id, feedItem.Id);
-        Assert.Equal(SocialPlatform.X, feedItem.Platform);
+        Assert.Equal(SocialPlatform.BlueSky, feedItem.Platform);
         Assert.Equal("John Doe", feedItem.AuthorName);
-        Assert.Equal("johndoe", feedItem.AuthorUsername);
-        Assert.Equal("https://example.com/avatar.jpg", feedItem.AuthorAvatar);
+        Assert.Equal("johndoe.bsky.social", feedItem.AuthorUsername);
+        Assert.Equal("https://cdn.bsky.app/img/avatar/plain/did:plc:example/avatar.jpg", feedItem.AuthorAvatar);
         Assert.Equal("Test content with #hashtags", feedItem.Content);
         Assert.Equal(postedAt, feedItem.PostedAt);
         Assert.Equal(media, feedItem.Media);
         Assert.Equal(engagement, feedItem.Engagement);
         Assert.True(feedItem.IsThread);
         Assert.Equal(hashtags, feedItem.Hashtags);
-        Assert.Equal("tweet123", feedItem.PlatformPostId);
-        Assert.Equal("https://twitter.com/johndoe/status/123", feedItem.PlatformUrl);
+        Assert.Equal("3kjxr7q2nl52w", feedItem.PlatformPostId);
+        Assert.Equal("https://bsky.app/profile/johndoe.bsky.social/post/3kjxr7q2nl52w", feedItem.PlatformUrl);
     }
 
     [Theory]
@@ -211,7 +211,7 @@ public class SocialFeedModelsTests
     public void FeedConfiguration_ShouldSetPropertiesCorrectly()
     {
         // Arrange
-        var platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn };
+        var platforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
 
         // Act
         var config = new FeedConfiguration
@@ -357,14 +357,15 @@ public class SocialFeedModelsTests
     public void MockFeedData_GenerateMockFeedItems_ShouldHaveVariedPlatforms()
     {
         // Arrange
-        const int count = 50; // Generate enough to get platform variety
+        const int count = 50; // Generate enough items
 
         // Act
         var items = MockFeedData.GenerateMockFeedItems(count);
 
-        // Assert
+        // Assert - With only BlueSky platform, all posts should be BlueSky
         var platforms = items.Select(i => i.Platform).Distinct().ToList();
-        Assert.True(platforms.Count > 1, "Should have posts from multiple platforms");
+        Assert.Single(platforms);
+        Assert.Equal(SocialPlatform.BlueSky, platforms[0]);
     }
 
     [Fact]
