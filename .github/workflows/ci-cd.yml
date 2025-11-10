@@ -89,8 +89,10 @@ jobs:
           # - github.actor is set to dependabot[bot] for PRs created by Dependabot
           # - github.event.pull_request.user.login is set to dependabot[bot] for PR events
           IS_DEPENDABOT="false"
-          IS_DEPENDABOT="false"
+          SHOULD_SKIP="false"
+          if [[ "${{ github.actor }}" == "dependabot[bot]" ]] || [[ "${{ github.event.pull_request.user.login }}" == "dependabot[bot]" ]]; then
             IS_DEPENDABOT="true"
+          fi
           if [[ "$IS_DEPENDABOT" == "true" ]] && [[ "${{ matrix.os }}-${{ matrix.arch }}" != "${DEPENDABOT_RUNNER}" ]]; then
             SHOULD_SKIP="true"
             echo "Skipping ${{ matrix.os }}-${{ matrix.arch }} for Dependabot PR"

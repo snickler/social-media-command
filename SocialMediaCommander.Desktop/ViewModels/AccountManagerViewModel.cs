@@ -333,7 +333,7 @@ public partial class AccountManagerViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task TestAppPassword()
+    private Task TestAppPassword()
     {
         Console.WriteLine("🔐 TestAppPassword command executed");
         _logger.Information("Testing App Password for platform: {Platform}", SelectedPlatform);
@@ -345,7 +345,7 @@ public partial class AccountManagerViewModel : ObservableObject
                 string.IsNullOrWhiteSpace(AppPassword))
             {
                 AuthenticationStatus = "❌ Please fill in both username and app password";
-                return;
+                return Task.CompletedTask;
             }
 
             AuthenticationStatus = "🔍 Testing App Password authentication...";
@@ -384,6 +384,8 @@ public partial class AccountManagerViewModel : ObservableObject
             AuthenticationStatus = $"❌ App Password test failed: {ex.Message}";
             _logger.Error(ex, "TestAppPassword failed for platform: {Platform}", SelectedPlatform);
         }
+
+        return Task.CompletedTask;
     }
 
     #endregion
@@ -1296,7 +1298,7 @@ public partial class AccountManagerViewModel : ObservableObject
                 await _accountService.CreateAccountAsync(account).ConfigureAwait(false);
 
                 // Update UI on UI thread
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
                     Accounts.Add(account);
                     UpdateComputedProperties();
