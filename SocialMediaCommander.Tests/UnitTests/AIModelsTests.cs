@@ -37,7 +37,7 @@ public class AIModelsTests
         var id = Guid.NewGuid().ToString();
         var prompt = "Test prompt";
         var keywords = new List<string> { "test", "ai" };
-        var platforms = new List<SocialPlatform> { SocialPlatform.X };
+        var platforms = new List<SocialPlatform> { SocialPlatform.BlueSky };
         var createdAt = DateTime.UtcNow;
 
         // Act
@@ -155,7 +155,7 @@ public class AIModelsTests
     {
         // Arrange
         var content = "Test content";
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var hashtags = new List<string> { "#test", "#ai" };
         var suggestions = new List<string> { "Add emoji", "Shorten text" };
 
@@ -240,7 +240,7 @@ public class AIModelsTests
     {
         // Arrange
         var content = "Test content";
-        var platform = SocialPlatform.LinkedIn;
+        var platform = SocialPlatform.BlueSky;
         var scheduledTime = DateTime.UtcNow.AddHours(2);
 
         // Act
@@ -577,7 +577,7 @@ public class AIModelsTests
     {
         // Arrange
         var content = new List<string> { "Tech news", "Tutorials" };
-        var platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn };
+        var platforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky };
 
         // Act
         var insight = new AIAudienceInsight
@@ -659,8 +659,7 @@ public class AIModelsTests
         var factors = new List<string> { "Optimal timing", "Trending hashtags" };
         var platformPerformance = new Dictionary<SocialPlatform, double>
         {
-            { SocialPlatform.X, 0.8 },
-            { SocialPlatform.LinkedIn, 0.6 }
+            { SocialPlatform.BlueSky, 0.8 }
         };
 
         // Act

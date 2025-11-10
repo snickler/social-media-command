@@ -373,24 +373,7 @@ public class OAuthAuthenticationService : IAuthenticationService
                     "avatar" => userData.TryGetProperty("avatar", out var avatar) ? avatar.GetString() ?? string.Empty : string.Empty,
                     _ => string.Empty
                 },
-                SocialPlatform.X => property switch
-                {
-                    "id" => userData.GetProperty("data").GetProperty("id").GetString() ?? string.Empty,
-                    "username" => userData.GetProperty("data").GetProperty("username").GetString() ?? string.Empty,
-                    "name" => userData.GetProperty("data").GetProperty("name").GetString() ?? string.Empty,
-                    "bio" => userData.GetProperty("data").TryGetProperty("description", out var desc) ? desc.GetString() ?? string.Empty : string.Empty,
-                    "avatar" => userData.GetProperty("data").TryGetProperty("profile_image_url", out var img) ? img.GetString() ?? string.Empty : string.Empty,
-                    "verified" => userData.GetProperty("data").TryGetProperty("verified", out var ver) ? ver.GetBoolean().ToString() : "false",
-                    _ => string.Empty
-                },
-                SocialPlatform.LinkedIn => property switch
-                {
-                    "id" => userData.GetProperty("id").GetString() ?? string.Empty,
-                    "username" => userData.TryGetProperty("vanityName", out var vanity) ? vanity.GetString() ?? string.Empty : string.Empty,
-                    "name" => $"{userData.GetProperty("firstName").GetProperty("localized").GetProperty("en_US").GetString()} {userData.GetProperty("lastName").GetProperty("localized").GetProperty("en_US").GetString()}",
-                    "avatar" => userData.TryGetProperty("profilePicture", out var pic) ? pic.GetString() ?? string.Empty : string.Empty,
-                    _ => string.Empty
-                },
+                // TODO: Add Twitter, LinkedIn when implementations are ready
                 _ => userData.TryGetProperty(property, out var prop) ? prop.GetString() ?? string.Empty : string.Empty
             };
         }

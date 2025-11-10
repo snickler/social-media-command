@@ -5,11 +5,8 @@ namespace SocialMediaCommander.Core.Models;
 /// </summary>
 public enum SocialPlatform
 {
-    BlueSky,
-    X,
-    LinkedIn,
-    Threads,
-    Facebook
+    BlueSky
+    // TODO: Add X, LinkedIn, Threads, Facebook when implementations are ready
 }
 
 /// <summary>
@@ -47,7 +44,7 @@ public static class PlatformConfigurations
                 ThreadSupport = true,
                 IconPath = "avares://SocialMediaCommander.Desktop/Assets/Icons/bluesky.png"
             }
-        },
+        }/*
         {
             SocialPlatform.X,
             new SocialPlatformConfig
@@ -103,7 +100,7 @@ public static class PlatformConfigurations
                 ThreadSupport = false,
                 IconPath = "avares://SocialMediaCommander.Desktop/Assets/Icons/facebook.png"
             }
-        }
+        }*/
     };
 
     public static SocialPlatformConfig GetPlatformConfig(SocialPlatform platform)

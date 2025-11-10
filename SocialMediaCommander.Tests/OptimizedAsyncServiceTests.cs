@@ -148,8 +148,8 @@ public class OptimizedAsyncServiceTests
         var accounts = new[]
         {
             new Account { Id = "1", Username = "user1", PlatformId = SocialPlatform.BlueSky },
-            new Account { Id = "2", Username = "user2", PlatformId = SocialPlatform.X },
-            new Account { Id = "3", Username = "user3", PlatformId = SocialPlatform.LinkedIn }
+            new Account { Id = "2", Username = "user2", PlatformId = SocialPlatform.BlueSky },
+            new Account { Id = "3", Username = "user3", PlatformId = SocialPlatform.BlueSky }
         };
 
         // Act

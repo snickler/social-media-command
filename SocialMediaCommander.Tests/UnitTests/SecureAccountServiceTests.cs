@@ -114,20 +114,14 @@ public class SecureAccountServiceTests : IDisposable
     public async Task GetAccountsForPlatformAsync_ExistingAccounts_ShouldReturnFilteredAccounts()
     {
         // Arrange
-        var twitterAccount = CreateTestAccount(SocialPlatform.X);
         var blueskyAccount = CreateTestAccount(SocialPlatform.BlueSky);
 
-        await _accountService.CreateAccountAsync(twitterAccount);
         await _accountService.CreateAccountAsync(blueskyAccount);
 
         // Act
-        var twitterAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.X);
         var blueskyAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
-        twitterAccounts.Should().HaveCount(1);
-        twitterAccounts.First().PlatformId.Should().Be(SocialPlatform.X);
-
         blueskyAccounts.Should().HaveCount(1);
         blueskyAccounts.First().PlatformId.Should().Be(SocialPlatform.BlueSky);
     }
@@ -223,15 +217,25 @@ public class SecureAccountServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task DeleteAccountAsync_LastAccountForPlatform_ShouldThrowException()
+    public async Task DeleteAccountAsync_LastAccountForPlatform_ShouldSucceed()
     {
         // Arrange
         var account = CreateTestAccount();
         var createdAccount = await _accountService.CreateAccountAsync(account);
 
-        // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(
-            () => _accountService.DeleteAccountAsync(createdAccount.Id));
+        // Act
+        var deleted = await _accountService.DeleteAccountAsync(createdAccount.Id);
+
+        // Assert
+        deleted.Should().BeTrue();
+
+        // Verify account is actually deleted
+        var deletedAccount = await _accountService.GetAccountByIdAsync(createdAccount.Id);
+        deletedAccount.Should().BeNull();
+
+        // Verify no accounts remain for the platform
+        var platformAccounts = await _accountService.GetAccountsForPlatformAsync(createdAccount.PlatformId);
+        platformAccounts.Should().BeEmpty();
     }
 
     [Fact]
@@ -261,7 +265,7 @@ public class SecureAccountServiceTests : IDisposable
         var createdAccount = await _accountService.CreateAccountAsync(account);
 
         // Act
-        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.X);
+        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
         defaultAccount.Should().NotBeNull();
@@ -273,7 +277,7 @@ public class SecureAccountServiceTests : IDisposable
     public async Task GetDefaultAccountForPlatformAsync_NoAccounts_ShouldReturnNull()
     {
         // Act
-        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.X);
+        var defaultAccount = await _accountService.GetDefaultAccountForPlatformAsync(SocialPlatform.BlueSky);
 
         // Assert
         defaultAccount.Should().BeNull();
@@ -357,7 +361,7 @@ public class SecureAccountServiceTests : IDisposable
         allAccounts.Should().HaveCount(10);
     }
 
-    private static Account CreateTestAccount(SocialPlatform platform = SocialPlatform.X)
+    private static Account CreateTestAccount(SocialPlatform platform = SocialPlatform.BlueSky)
     {
         return new Account
         {

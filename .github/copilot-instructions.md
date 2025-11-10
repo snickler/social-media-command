@@ -59,7 +59,7 @@ Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation fronte
 - OAuth configs show placeholders in UI until user provides real credentials
 - Test constructors accept `customDirectory` parameter to isolate test data (see `SettingsService(string customDirectory)`)
 
-**Recovery procedures** (see `SECURE_STORAGE_IMPLEMENTATION.md`):
+**Recovery procedures** (see `docs/security/secure-storage-implementation.md`):
 - Decryption failure: delete encrypted file to reset to defaults
 - Integrity issues: `DataIntegrityService` auto-repairs or flags for manual intervention
 
@@ -143,6 +143,59 @@ npm run dev
 - Some UI controls (ToggleSwitch) not fully supported in headless mode — tests skipped with documented reasons
 - Screenshots produce actual PNG data with Skia enabled (not zero-byte files)
 - Platform-specific font rendering may cause minor pixel differences between Windows/Linux/macOS
+
+---
+
+## UI/UX Patterns & Style System
+
+**Avalonia UI style system** with consistent design language and animations (see `docs/UI_UX_IMPROVEMENTS.md` for complete guide):
+
+### Button Variants
+- **Primary**: Indigo background (#4338CA), white text — primary actions (Post, Save, Submit)
+- **Secondary**: Light indigo background (#EBEAFB), indigo text — secondary actions
+- **Outline**: Transparent with indigo border — tertiary actions
+- **Ghost**: Light gray background (#f1f2f6) with border — utility actions
+- **Destructive**: Red background (#f04141) — delete/cancel actions
+
+**Button states** (all variants):
+- Hover: `scale(1.02)`, slight darkening
+- Press: `scale(0.98)`
+- Focus-visible: 2-3px border (keyboard navigation)
+- Disabled: 50% opacity, no cursor
+
+### Animation System
+`SocialMediaCommander.Desktop/Styles/AnimationsAndTransitions.axaml` provides reusable animations:
+- **FadeIn**: 300ms opacity 0→1
+- **SlideInBottom**: 400ms translateY(20px)→0
+- **Pulse**: 1.5s infinite scale heartbeat
+- **Spin**: 2s infinite rotation (loading indicators)
+- **SkeletonLoader**: 1.5s infinite gradient shimmer
+- **SuccessCheckmark**: 600ms scale + opacity (success feedback)
+- **ShakeError**: 500ms horizontal shake (error feedback)
+
+**Animation guidelines**:
+- Use GPU-accelerated properties: `opacity`, `transform` (translateX/Y/Z, scale, rotate)
+- Avoid animating: `width`, `height`, `margin`, `padding` (forces layout recalculation)
+- Standard durations: 150-200ms (micro), 300-400ms (standard), 600ms+ (emphasis)
+- Easing: `QuadraticEaseOut` (most animations), `CubicEaseInOut` (smooth transitions)
+
+### Accessibility
+- **WCAG AA compliant**: Minimum 4.5:1 contrast ratio for text
+- **Focus-visible states**: All interactive elements have visible focus indicators
+- **Keyboard navigation**: Tab order matches visual layout
+- **Tooltips**: Descriptive tooltips on icon-only buttons
+
+### Style Files
+- `SocialMediaCommander.Desktop/App.axaml` — Global button styles, colors, typography
+- `SocialMediaCommander.Desktop/Styles/AnimationsAndTransitions.axaml` — Animation library
+- Include animations via: `<StyleInclude Source="/Styles/AnimationsAndTransitions.axaml"/>`
+
+**When modifying UI**:
+1. Use existing button styles via `Classes="PrimaryButton"`, `Classes="SecondaryButton"`, etc.
+2. Apply animations via `Classes="FadeIn SlideInBottom"` or similar
+3. Maintain consistent spacing (8px/16px/24px increments)
+4. Test keyboard navigation and focus states
+5. Run visual regression tests (see "Test infrastructure" section)
 
 ---
 
@@ -239,10 +292,26 @@ Before proposing changes, **MUST** complete:
 - **Testing Infrastructure**: `TestAppBuilder.cs`, `ScreenshotHelper.cs`, `RecordedTestBase.cs`, `VisualRegressionTests.cs`
 - **Documentation**: 
   - Performance: `PERFORMANCE_OPTIMIZATIONS.md`
-  - Security: `SECURE_STORAGE_IMPLEMENTATION.md`
+  - Security: `docs/security/secure-storage-implementation.md`
   - Features: `ENHANCED_FEATURES_FINAL.md`
   - Workflows: `.github/WORKFLOWS_OVERVIEW.md`, `.github/RELEASE_WORKFLOW.md`, `.github/PRE_RELEASE_GUIDE.md`
   - Testing: `.github/VISUAL_REGRESSION_TESTING.md`
+
+---
+
+## Custom Agents
+
+For specialized tasks, use dedicated custom agents in `.github/agents/`:
+
+- **`security-specialist.md`** — Encryption, secure storage, cross-platform security
+- **`performance-specialist.md`** — Async patterns, memory optimization, caching strategies
+- **`testing-tdd-specialist.md`** — TDD, xUnit, FluentAssertions, visual regression testing
+- **`ui-ux-avalonia-specialist.md`** — Avalonia UI, XAML styling, animations, accessibility
+- **`cicd-release-specialist.md`** — GitHub Actions, releases, semantic versioning
+- **`git-hooks-quality-specialist.md`** — Pre-commit hooks, code quality enforcement
+- **`documentation-specialist.md`** — Technical writing, documentation maintenance
+
+Access agents at: https://github.com/copilot/agents
 
 ---
 
@@ -250,4 +319,5 @@ Before proposing changes, **MUST** complete:
 
 - **Copilot instructions docs**: https://aka.ms/vscode-instructions-docs
 - **Performance best practices**: See `PERFORMANCE_OPTIMIZATIONS.md` for detailed implementation patterns
-- **Security implementation**: See `SECURE_STORAGE_IMPLEMENTATION.md` for encryption details and recovery procedures
+- **Security implementation**: See `docs/security/secure-storage-implementation.md` for encryption details and recovery procedures
+- **Custom agents guide**: See `.github/CUSTOM_AGENTS_AND_DOCS_CONSOLIDATION.md` for usage examples

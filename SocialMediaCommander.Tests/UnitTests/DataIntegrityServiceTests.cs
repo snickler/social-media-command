@@ -71,14 +71,14 @@ public class DataIntegrityServiceTests : IDisposable
             new Account
             {
                 Id = "", // Invalid: empty ID
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 Username = "test",
                 DisplayName = "Test"
             },
             new Account
             {
                 Id = "valid-id",
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 Username = "", // Invalid: empty username
                 DisplayName = "Test"
             }
@@ -108,7 +108,7 @@ public class DataIntegrityServiceTests : IDisposable
             new Account
             {
                 Id = "test-id",
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 Username = "test",
                 DisplayName = "Test",
                 AuthStatus = AuthenticationStatus.Authenticated,
@@ -162,7 +162,7 @@ public class DataIntegrityServiceTests : IDisposable
                     Description = "Account has empty avatar URL",
                     Severity = IssueSeverity.Warning,
                     CanRepair = true,
-                    RelatedData = new Account { Id = "test-id", PlatformId = SocialPlatform.X }
+                    RelatedData = new Account { Id = "test-id", PlatformId = SocialPlatform.BlueSky }
                 }
             }
         };
@@ -294,17 +294,11 @@ public class DataIntegrityServiceTests : IDisposable
         // Arrange
         var invalidOAuthConfigs = new Dictionary<SocialPlatform, OAuthConfig>
         {
-            [SocialPlatform.X] = new OAuthConfig
-            {
-                ClientId = "", // Invalid: empty client ID
-                ClientSecret = "secret",
-                AuthorizationEndpoint = "https://example.com"
-            },
             [SocialPlatform.BlueSky] = new OAuthConfig
             {
-                ClientId = "client",
-                ClientSecret = "secret",
-                AuthorizationEndpoint = "" // Invalid: empty endpoint
+                ClientId = "", // Invalid: empty client ID - triggers Error severity
+                ClientSecret = "", // Invalid: empty client secret - triggers Error severity
+                AuthorizationEndpoint = "https://example.com"
             }
         };
 
@@ -330,7 +324,7 @@ public class DataIntegrityServiceTests : IDisposable
             new Account
             {
                 Id = "valid-id",
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 Username = "valid",
                 DisplayName = "Valid Account",
                 AuthStatus = AuthenticationStatus.Authenticated
@@ -370,7 +364,7 @@ public class DataIntegrityServiceTests : IDisposable
             new Account
             {
                 Id = "healthy-1",
-                PlatformId = SocialPlatform.X,
+                PlatformId = SocialPlatform.BlueSky,
                 Username = "healthy1",
                 DisplayName = "Healthy Account 1",
                 AuthStatus = AuthenticationStatus.Authenticated,
@@ -406,15 +400,6 @@ public class DataIntegrityServiceTests : IDisposable
     {
         return new Dictionary<SocialPlatform, OAuthConfig>
         {
-            [SocialPlatform.X] = new OAuthConfig
-            {
-                ClientId = "healthy-twitter-client",
-                ClientSecret = "healthy-twitter-secret",
-                AuthorizationEndpoint = "https://api.x.com/oauth/authorize",
-                TokenEndpoint = "https://api.x.com/oauth/token",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["read", "write"]
-            },
             [SocialPlatform.BlueSky] = new OAuthConfig
             {
                 ClientId = "healthy-bluesky-client",

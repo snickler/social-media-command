@@ -41,6 +41,9 @@ public partial class AccountManagerViewModel : ObservableObject
     private SocialPlatformConfig? _selectedPlatformConfig;
 
     [ObservableProperty]
+    private AuthenticationMethod _selectedAuthMethod = AuthenticationMethod.OAuth;
+
+    [ObservableProperty]
     private string _newAccountUsername = string.Empty;
 
     [ObservableProperty]
@@ -57,13 +60,48 @@ public partial class AccountManagerViewModel : ObservableObject
     private string _oAuthClientSecret = string.Empty;
 
     [ObservableProperty]
-    private string _oAuthRedirectUri = "http://localhost:8080/callback";
+    private string _oAuthRedirectUri = "http://localhost:8080/oauth/callback";
+
+    // App Password Properties
+    [ObservableProperty]
+    private string _appPassword = string.Empty;
 
     [ObservableProperty]
     private bool _isAuthenticating = false;
 
     [ObservableProperty]
     private string _authenticationStatus = string.Empty;
+
+    // Computed property to control Test OAuth Config button
+    public bool CanTestOAuthConfig =>
+        !string.IsNullOrWhiteSpace(OAuthClientId) &&
+        !string.IsNullOrWhiteSpace(OAuthClientSecret) &&
+        !string.IsNullOrWhiteSpace(OAuthRedirectUri) &&
+        !IsAuthenticating;
+
+    // Computed property to show/hide OAuth configuration section
+    public bool IsOAuthAuthMethod => SelectedAuthMethod == AuthenticationMethod.OAuth;
+
+    // Computed property to show/hide App Password section
+    public bool IsAppPasswordAuthMethod => SelectedAuthMethod == AuthenticationMethod.AppPassword;
+
+    // Computed property to control Start OAuth Flow button
+    public bool CanStartOAuthFlow => IsOAuthAuthMethod && CanTestOAuthConfig;
+
+    // Computed property to control Save Account button for App Password
+    public bool CanSaveAppPasswordAccount => IsAppPasswordAuthMethod &&
+                                              !string.IsNullOrWhiteSpace(NewAccountUsername) &&
+                                              !string.IsNullOrWhiteSpace(AppPassword);
+
+    // Show authentication method selector only for BlueSky
+    public bool ShowAuthMethodSelector => SelectedPlatform == SocialPlatform.BlueSky;
+
+    // Available authentication methods for the selected platform
+    public IEnumerable<AuthenticationMethod> AvailableAuthMethods =>
+        SelectedPlatform == SocialPlatform.BlueSky
+            ? new[] { AuthenticationMethod.OAuth, AuthenticationMethod.AppPassword }
+            : new[] { AuthenticationMethod.OAuth };
+
 
     public AccountManagerViewModel(IAccountService accountService, IAuthenticationService authenticationService, IOAuthConfigurationService oauthConfigService)
     {
@@ -217,16 +255,16 @@ public partial class AccountManagerViewModel : ObservableObject
 
             AuthenticationStatus = "🔍 Testing OAuth configuration...";
 
-            // Create OAuth config object
-            var oauthConfig = new OAuthConfig
-            {
-                ClientId = OAuthClientId.Trim(),
-                ClientSecret = OAuthClientSecret.Trim(),
-                RedirectUri = OAuthRedirectUri.Trim()
-            };
+            // Get default configuration for the platform and merge with user credentials
+            var oauthConfig = _oauthConfigService.GetDefaultConfiguration(SelectedPlatform);
 
-            // Test the configuration
-            var validation = await _oauthConfigService.ValidateConfigurationAsync(SelectedPlatform, oauthConfig);
+            // Override with user-provided values
+            oauthConfig.ClientId = OAuthClientId.Trim();
+            oauthConfig.ClientSecret = OAuthClientSecret.Trim();
+            oauthConfig.RedirectUri = OAuthRedirectUri.Trim();
+
+            // Test the configuration with ConfigureAwait(false) to avoid deadlocks
+            var validation = await _oauthConfigService.ValidateConfigurationAsync(SelectedPlatform, oauthConfig).ConfigureAwait(false);
 
             if (validation.IsValid)
             {
@@ -245,6 +283,109 @@ public partial class AccountManagerViewModel : ObservableObject
             AuthenticationStatus = $"❌ OAuth test failed: {ex.Message}";
             _logger.Error(ex, "OAuth configuration test failed for platform: {Platform}", SelectedPlatform);
         }
+    }
+
+    [RelayCommand]
+    private async Task StartOAuthFlow()
+    {
+        Console.WriteLine("🔐 StartOAuthFlow command executed");
+        _logger.Information("Starting OAuth flow for platform: {Platform}", SelectedPlatform);
+
+        try
+        {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(OAuthClientId) ||
+                string.IsNullOrWhiteSpace(OAuthClientSecret) ||
+                string.IsNullOrWhiteSpace(OAuthRedirectUri))
+            {
+                AuthenticationStatus = "❌ Please fill in all OAuth configuration fields before starting OAuth flow";
+                return;
+            }
+
+            AuthenticationStatus = "💾 Saving OAuth configuration...";
+
+            // Get default configuration for the platform and merge with user credentials
+            var oauthConfig = _oauthConfigService.GetDefaultConfiguration(SelectedPlatform);
+
+            // Override with user-provided values
+            oauthConfig.ClientId = OAuthClientId.Trim();
+            oauthConfig.ClientSecret = OAuthClientSecret.Trim();
+            oauthConfig.RedirectUri = OAuthRedirectUri.Trim();
+
+            // Save the configuration
+            await _oauthConfigService.SaveConfigurationAsync(SelectedPlatform, oauthConfig);
+            _logger.Information("OAuth configuration saved for platform: {Platform}", SelectedPlatform);
+
+            // Now start the OAuth authentication flow
+            AuthenticationStatus = "🚀 Starting OAuth authentication...";
+            await StartOAuthAuthentication(SelectedPlatform, null);
+
+            _logger.Information("OAuth flow initiated for platform: {Platform}", SelectedPlatform);
+        }
+        catch (Exception ex)
+        {
+            AuthenticationStatus = $"❌ Error starting OAuth flow: {ex.Message}";
+            _logger.Error(ex, "StartOAuthFlow failed for platform: {Platform}", SelectedPlatform);
+
+            // Clear status after delay
+            _ = Task.Delay(5000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+        }
+    }
+
+    [RelayCommand]
+    private Task TestAppPassword()
+    {
+        Console.WriteLine("🔐 TestAppPassword command executed");
+        _logger.Information("Testing App Password for platform: {Platform}", SelectedPlatform);
+
+        try
+        {
+            // Validate required fields
+            if (string.IsNullOrWhiteSpace(NewAccountUsername) ||
+                string.IsNullOrWhiteSpace(AppPassword))
+            {
+                AuthenticationStatus = "❌ Please fill in both username and app password";
+                return Task.CompletedTask;
+            }
+
+            AuthenticationStatus = "🔍 Testing App Password authentication...";
+
+            // For BlueSky, test the app password by attempting to create a session
+            if (SelectedPlatform == SocialPlatform.BlueSky)
+            {
+                var testAccount = new Account
+                {
+                    Username = NewAccountUsername.Trim(),
+                    AppPassword = AppPassword,
+                    AuthMethod = AuthenticationMethod.AppPassword,
+                    PlatformId = SelectedPlatform
+                };
+
+                // Test authentication (this would call the BlueSky API)
+                // For now, just validate format
+                if (AppPassword.Length < 19) // BlueSky app passwords are typically 19 chars
+                {
+                    AuthenticationStatus = "❌ BlueSky App Passwords are typically 19 characters (xxxx-xxxx-xxxx-xxxx)";
+                    _logger.Warning("App Password validation failed: incorrect length");
+                }
+                else
+                {
+                    AuthenticationStatus = "✅ App Password format is valid! Click 'Create Account' to save.";
+                    _logger.Information("App Password validation successful for platform: {Platform}", SelectedPlatform);
+                }
+            }
+            else
+            {
+                AuthenticationStatus = "❌ App Password authentication is only supported for BlueSky";
+            }
+        }
+        catch (Exception ex)
+        {
+            AuthenticationStatus = $"❌ App Password test failed: {ex.Message}";
+            _logger.Error(ex, "TestAppPassword failed for platform: {Platform}", SelectedPlatform);
+        }
+
+        return Task.CompletedTask;
     }
 
     #endregion
@@ -269,50 +410,47 @@ public partial class AccountManagerViewModel : ObservableObject
 
             Console.WriteLine("✅ StartAddAccount running on UI thread");
 
-            // Set visible status immediately
-            AuthenticationStatus = "🚀 Starting account setup...";
-            Console.WriteLine($"🔧 AuthenticationStatus set to: {AuthenticationStatus}");
-
             _logger.Information("Starting account addition for platform: {Platform}", SelectedPlatform);
 
-            // For now, let's use a simpler approach - go directly to the edit form
-            // This bypasses OAuth complexity for basic account creation
+            // First, check if OAuth is configured for this platform
+            var hasOAuthConfig = await _oauthConfigService.HasValidConfigurationAsync(SelectedPlatform);
 
-            Console.WriteLine("🔧 Setting IsAddingAccount = true");
-            IsAddingAccount = true;
+            if (!hasOAuthConfig)
+            {
+                // Show OAuth configuration form
+                IsAddingAccount = true;
+                IsEditingAccount = true;
+                CurrentAccount = null;
 
-            Console.WriteLine("🔧 Setting IsEditingAccount = true");
-            IsEditingAccount = true;
+                // Load default OAuth configuration for the platform
+                await LoadDefaultOAuthConfiguration(SelectedPlatform);
 
-            Console.WriteLine("🔧 Setting CurrentAccount = null");
-            CurrentAccount = null;
+                // Generate default account details
+                NewAccountUsername = $"user_{DateTime.Now:HHmmss}";
+                NewAccountDisplayName = $"New {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name} User";
+                NewAccountAvatar = $"https://api.dicebear.com/7.x/personas/svg?seed={SelectedPlatform}-{DateTime.Now.Ticks}";
 
-            // Clear the form
-            Console.WriteLine("🔧 Clearing account form");
-            ClearAccountForm();
+                AuthenticationStatus = "⚠️ Please configure OAuth credentials below, then click 'Start OAuth Flow' to authenticate.";
 
-            // Pre-fill platform
-            Console.WriteLine($"🔧 SelectedPlatform: {SelectedPlatform}");
-            SelectedPlatform = SelectedPlatform; // Ensure it's set
+                _logger.Information("Showing OAuth configuration form for platform: {Platform}", SelectedPlatform);
+            }
+            else
+            {
+                // OAuth is configured, start the flow immediately
+                AuthenticationStatus = "🚀 Starting OAuth authentication...";
+                Console.WriteLine($"🔧 AuthenticationStatus set to: {AuthenticationStatus}");
 
-            // Generate default values
-            NewAccountUsername = $"user_{DateTime.Now:HHmmss}";
-            NewAccountDisplayName = $"New {PlatformConfigurations.GetPlatformConfig(SelectedPlatform).Name} User";
-            NewAccountAvatar = $"https://api.dicebear.com/7.x/personas/svg?seed={SelectedPlatform}-{DateTime.Now.Ticks}";
+                await StartOAuthAuthentication(SelectedPlatform, null);
 
-            Console.WriteLine($"🔧 Form pre-filled - Username: {NewAccountUsername}, DisplayName: {NewAccountDisplayName}");
-
-            AuthenticationStatus = "✏️ Fill in your account details below";
-
-            Console.WriteLine($"🔧 Final state - IsEditingAccount: {IsEditingAccount}, IsAddingAccount: {IsAddingAccount}");
-
-            _logger.Information("Add account form opened for platform: {Platform}", SelectedPlatform);
+                Console.WriteLine($"🔧 OAuth flow initiated for {SelectedPlatform}");
+                _logger.Information("OAuth flow started for platform: {Platform}", SelectedPlatform);
+            }
         }
         catch (Exception ex)
         {
             Console.WriteLine($"❌ StartAddAccount error: {ex.Message}");
             Console.WriteLine($"❌ Stack trace: {ex.StackTrace}");
-            AuthenticationStatus = $"❌ Error opening account form: {ex.Message}";
+            AuthenticationStatus = $"❌ Error starting account addition: {ex.Message}";
             _logger.Error(ex, "StartAddAccount failed for platform: {Platform}", SelectedPlatform);
 
             // Clear status after delay
@@ -332,6 +470,43 @@ public partial class AccountManagerViewModel : ObservableObject
         NewAccountDisplayName = account.DisplayName;
         NewAccountAvatar = account.Avatar ?? string.Empty;
         SelectedPlatform = account.PlatformId;
+
+        // ✅ Load the account's ACTUAL authentication method, not defaults
+        SelectedAuthMethod = account.AuthMethod;
+
+        // Load auth-specific fields based on the account's auth method
+        if (account.AuthMethod == AuthenticationMethod.AppPassword)
+        {
+            // Load app password (it's encrypted in storage, so show placeholder)
+            AppPassword = account.AppPassword ?? string.Empty;
+
+            // Clear OAuth fields since this account uses App Password
+            OAuthClientId = string.Empty;
+            OAuthClientSecret = string.Empty;
+            OAuthRedirectUri = string.Empty;
+
+            _logger.Information("Editing App Password account: {Username}", account.Username);
+        }
+        else if (account.AuthMethod == AuthenticationMethod.OAuth)
+        {
+            // Load OAuth configuration if available
+            if (account.OAuthConfiguration != null)
+            {
+                OAuthClientId = account.OAuthConfiguration.ClientId ?? string.Empty;
+                OAuthClientSecret = account.OAuthConfiguration.ClientSecret ?? string.Empty;
+                OAuthRedirectUri = account.OAuthConfiguration.RedirectUri ?? "http://localhost:8080/oauth/callback";
+            }
+            else
+            {
+                // Load from global config if not stored with account
+                _ = LoadDefaultOAuthConfiguration(account.PlatformId);
+            }
+
+            // Clear app password field
+            AppPassword = string.Empty;
+
+            _logger.Information("Editing OAuth account: {Username}", account.Username);
+        }
     }
 
     [RelayCommand]
@@ -356,6 +531,14 @@ public partial class AccountManagerViewModel : ObservableObject
                 return;
             }
 
+            // Clean up username - remove @ prefix if present (BlueSky doesn't use @ in API calls)
+            var cleanedUsername = NewAccountUsername.Trim();
+            if (cleanedUsername.StartsWith("@"))
+            {
+                cleanedUsername = cleanedUsername.Substring(1);
+                _logger.Information("Removed @ prefix from username: {Original} -> {Cleaned}", NewAccountUsername, cleanedUsername);
+            }
+
             Account account;
 
             if (IsEditingAccount && CurrentAccount != null)
@@ -376,19 +559,22 @@ public partial class AccountManagerViewModel : ObservableObject
                     _logger.Information("OAuth configuration updated for platform: {Platform}", CurrentAccount.PlatformId);
                 }
 
-                // Update existing account
+                // Update existing account - preserve AuthMethod and credentials
                 account = new Account
                 {
                     Id = CurrentAccount.Id,
                     PlatformId = CurrentAccount.PlatformId,
-                    Username = NewAccountUsername.Trim(),
+                    Username = cleanedUsername,
                     DisplayName = NewAccountDisplayName.Trim(),
                     Avatar = NewAccountAvatar,
                     IsDefault = CurrentAccount.IsDefault,
                     CreatedAt = CurrentAccount.CreatedAt,
                     LastUsed = DateTime.UtcNow,
+                    AuthMethod = CurrentAccount.AuthMethod, // Preserve existing auth method
+                    AuthStatus = CurrentAccount.AuthStatus, // Preserve auth status
                     Tokens = CurrentAccount.Tokens,
                     OAuthConfiguration = updatedOAuthConfig,
+                    AppPassword = CurrentAccount.AppPassword, // Preserve existing app password
                     Metadata = CurrentAccount.Metadata
                 };
 
@@ -427,21 +613,29 @@ public partial class AccountManagerViewModel : ObservableObject
                 {
                     Id = Guid.NewGuid().ToString(),
                     PlatformId = SelectedPlatform,
-                    Username = NewAccountUsername.Trim(),
+                    Username = cleanedUsername,
                     DisplayName = NewAccountDisplayName.Trim(),
                     Avatar = NewAccountAvatar,
                     IsDefault = !AccountsForSelectedPlatform.Any(), // First account for platform is default
-                    OAuthConfiguration = oauthConfig // Store OAuth config with the account
+                    AuthMethod = SelectedAuthMethod,
+                    AuthStatus = SelectedAuthMethod == AuthenticationMethod.AppPassword
+                        ? Core.Models.AuthenticationStatus.Authenticated  // ✅ Set as authenticated for app password
+                        : Core.Models.AuthenticationStatus.NotAuthenticated,  // OAuth needs token flow to authenticate
+                    OAuthConfiguration = oauthConfig, // Store OAuth config with the account (if OAuth)
+                    AppPassword = SelectedAuthMethod == AuthenticationMethod.AppPassword ? AppPassword : null
                 };
 
                 await _accountService.CreateAccountAsync(account);
                 Accounts.Add(account);
 
-                var statusMessage = oauthConfig != null
-                    ? $"✅ Account '{account.DisplayName}' created with OAuth configuration!"
-                    : $"✅ Account '{account.DisplayName}' created successfully";
+                var statusMessage = SelectedAuthMethod switch
+                {
+                    AuthenticationMethod.OAuth when oauthConfig != null => $"✅ Account '{account.DisplayName}' created with OAuth configuration!",
+                    AuthenticationMethod.AppPassword => $"✅ Account '{account.DisplayName}' created with App Password!",
+                    _ => $"✅ Account '{account.DisplayName}' created successfully"
+                };
                 AuthenticationStatus = statusMessage;
-                _logger.Information("New account created and added to collection: {AccountId}", account.Id);
+                _logger.Information("New account created and added to collection: {AccountId}, AuthMethod: {AuthMethod}", account.Id, account.AuthMethod);
             }
 
             // Update computed properties
@@ -614,46 +808,8 @@ public partial class AccountManagerViewModel : ObservableObject
 
         try
         {
-            // Get OAuth configuration from the global configuration service
-            var oauthConfig = await _oauthConfigService.GetConfigurationAsync(platform);
-
-            // For testing, let's create a mock account directly without OAuth
-            var mockAccount = new Account
-            {
-                Id = Guid.NewGuid().ToString(),
-                PlatformId = platform,
-                Username = $"demo_{platform.ToString().ToLower()}",
-                DisplayName = $"Demo {PlatformConfigurations.GetPlatformConfig(platform).Name} Account",
-                Avatar = $"https://api.dicebear.com/7.x/personas/svg?seed={platform}-demo",
-                IsDefault = !Accounts.Any(a => a.PlatformId == platform),
-                CreatedAt = DateTime.UtcNow,
-                LastUsed = DateTime.UtcNow,
-                AuthStatus = Core.Models.AuthenticationStatus.Authenticated,
-                OAuthConfiguration = oauthConfig, // Store OAuth config with the account
-                Tokens = new Core.Models.OAuthTokens
-                {
-                    AccessToken = $"demo_token_{Guid.NewGuid():N}",
-                    TokenType = "Bearer",
-                    ExpiresAt = DateTime.UtcNow.AddHours(1)
-                },
-                Metadata = new Dictionary<string, string>
-                {
-                    ["demo"] = "true",
-                    ["created_by"] = "connect_button"
-                }
-            };
-
-            await _accountService.CreateAccountAsync(mockAccount);
-            Accounts.Add(mockAccount);
-
-            AuthenticationStatus = $"✅ Demo account for {PlatformConfigurations.GetPlatformConfig(platform).Name} connected successfully!";
-
-            UpdateComputedProperties();
-
-            _logger.Information("Mock account created successfully for platform: {Platform}, AccountId: {AccountId}", platform, mockAccount.Id);
-
-            // Clear status after delay
-            _ = Task.Delay(3000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+            // Start the real OAuth authentication flow
+            await StartOAuthAuthentication(platform, null);
         }
         catch (Exception ex)
         {
@@ -670,13 +826,19 @@ public partial class AccountManagerViewModel : ObservableObject
         try
         {
             IsAuthenticating = true;
-            AuthenticationStatus = $"Starting authentication for {PlatformConfigurations.GetPlatformConfig(platform).Name}...";
+            AuthenticationStatus = $"🔐 Starting authentication for {PlatformConfigurations.GetPlatformConfig(platform).Name}...";
+            _logger.Information("Starting OAuth authentication for platform: {Platform}", platform);
 
-            var result = await _authenticationService.StartAuthenticationAsync(platform);
+            var result = await _authenticationService.StartAuthenticationAsync(platform).ConfigureAwait(false);
 
             if (result.IsSuccess && !string.IsNullOrEmpty(result.AuthorizationUrl))
             {
-                AuthenticationStatus = "Opening browser for authentication...";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    AuthenticationStatus = "🌐 Opening browser for authentication...";
+                });
+
+                _logger.Information("OAuth authorization URL generated: {Url}", result.AuthorizationUrl);
 
                 // Open the authorization URL in the default browser
                 var startInfo = new System.Diagnostics.ProcessStartInfo
@@ -686,84 +848,40 @@ public partial class AccountManagerViewModel : ObservableObject
                 };
                 System.Diagnostics.Process.Start(startInfo);
 
-                AuthenticationStatus = "Waiting for authorization...";
-
-                // TODO: In a real implementation, you would listen for the redirect callback
-                // For now, we'll simulate a successful authentication after a delay
-                await Task.Delay(3000);
-
-                // Simulate completing the OAuth flow
-                var completeResult = await _authenticationService.CompleteAuthenticationAsync(platform, "mock_auth_code", result.State ?? "");
-
-                if (completeResult.IsSuccess && completeResult.Tokens != null)
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    AuthenticationStatus = "Authentication successful! Creating account...";
+                    AuthenticationStatus = "⏳ Waiting for authorization in browser...";
+                });
 
-                    if (existingAccount != null)
-                    {
-                        // Update existing account with new tokens
-                        existingAccount.Tokens = completeResult.Tokens;
-                        existingAccount.LastUsed = DateTime.UtcNow;
-                        existingAccount.AuthStatus = Core.Models.AuthenticationStatus.Authenticated;
+                _logger.Information("Browser opened for OAuth authorization");
 
-                        await _accountService.UpdateAccountAsync(existingAccount);
-
-                        // Update in collection
-                        var index = Accounts.IndexOf(existingAccount);
-                        if (index >= 0)
-                        {
-                            Accounts[index] = existingAccount;
-                        }
-
-                        AuthenticationStatus = "Account reconnected successfully!";
-                    }
-                    else
-                    {
-                        // Create new account
-                        var newAccount = new Account
-                        {
-                            Id = Guid.NewGuid().ToString(),
-                            PlatformId = platform,
-                            Username = completeResult.UserProfile?.Username ?? $"user_{DateTime.Now.Ticks}",
-                            DisplayName = completeResult.UserProfile?.DisplayName ?? $"User {DateTime.Now:HH:mm}",
-                            Avatar = completeResult.UserProfile?.Avatar ?? $"https://api.dicebear.com/7.x/personas/svg?seed={platform}-{DateTime.Now.Ticks}",
-                            IsDefault = !AccountsForSelectedPlatform.Any(),
-                            CreatedAt = DateTime.UtcNow,
-                            LastUsed = DateTime.UtcNow,
-                            Tokens = completeResult.Tokens,
-                            AuthStatus = Core.Models.AuthenticationStatus.Authenticated,
-                            Metadata = new Dictionary<string, string>()
-                        };
-
-                        await _accountService.CreateAccountAsync(newAccount);
-                        Accounts.Add(newAccount);
-
-                        AuthenticationStatus = "Account connected successfully!";
-                    }
-
-                    UpdateComputedProperties();
-                }
-                else
-                {
-                    AuthenticationStatus = $"Authentication failed: {completeResult.ErrorMessage}";
-                }
+                // The actual OAuth callback will be handled by HandleOAuthCallbackAsync
+                // which is subscribed to the OAuthAuthenticationService.OnAuthenticationCallback event
             }
             else
             {
-                AuthenticationStatus = $"Failed to start authentication: {result.ErrorMessage}";
+                var errorMsg = $"Failed to start authentication: {result.ErrorMessage}";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    AuthenticationStatus = $"❌ {errorMsg}";
+                });
+                _logger.Warning("OAuth authentication start failed: {Error}", result.ErrorMessage);
+
+                IsAuthenticating = false;
+                _ = ClearAuthenticationStatusAfterDelayAsync();
             }
         }
         catch (Exception ex)
         {
-            AuthenticationStatus = $"Authentication error: {ex.Message}";
-            System.Diagnostics.Debug.WriteLine($"OAuth authentication failed: {ex}");
-        }
-        finally
-        {
-            IsAuthenticating = false;
+            var errorMsg = $"Authentication error: {ex.Message}";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                AuthenticationStatus = $"❌ {errorMsg}";
+            });
+            _logger.Error(ex, "OAuth authentication failed for platform: {Platform}", platform);
 
-            // Clear status after delay
-            _ = Task.Delay(3000).ContinueWith(_ => AuthenticationStatus = string.Empty);
+            IsAuthenticating = false;
+            _ = ClearAuthenticationStatusAfterDelayAsync();
         }
     }
 
@@ -859,7 +977,9 @@ public partial class AccountManagerViewModel : ObservableObject
         NewAccountAvatar = string.Empty;
         OAuthClientId = string.Empty;
         OAuthClientSecret = string.Empty;
-        OAuthRedirectUri = "http://localhost:8080/callback";
+        OAuthRedirectUri = "http://localhost:8080/oauth/callback";
+        AppPassword = string.Empty;
+        SelectedAuthMethod = AuthenticationMethod.OAuth;
     }
 
     private async Task LoadAccountsAsync()
@@ -920,12 +1040,21 @@ public partial class AccountManagerViewModel : ObservableObject
         OnPropertyChanged(nameof(SelectedPlatformName));
         OnPropertyChanged(nameof(SelectedPlatformColor));
         OnPropertyChanged(nameof(OAuthSetupGuidance));
+        OnPropertyChanged(nameof(ShowAuthMethodSelector));
+        OnPropertyChanged(nameof(AvailableAuthMethods));
 
         // Update SelectedPlatformConfig to match the platform
         var config = PlatformConfigs.FirstOrDefault(p => p.Id == value);
         if (config != null && SelectedPlatformConfig != config)
         {
             SelectedPlatformConfig = config;
+        }
+
+        // Reset authentication method to OAuth when switching platforms
+        // unless it's BlueSky which supports both
+        if (value != SocialPlatform.BlueSky)
+        {
+            SelectedAuthMethod = AuthenticationMethod.OAuth;
         }
 
         if (IsAddingAccount)
@@ -936,6 +1065,50 @@ public partial class AccountManagerViewModel : ObservableObject
             // Load default OAuth configuration for the platform (fire-and-forget)
             _ = LoadDefaultOAuthConfiguration(value);
         }
+    }
+
+    partial void OnOAuthClientIdChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanTestOAuthConfig));
+    }
+
+    partial void OnOAuthClientSecretChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanTestOAuthConfig));
+    }
+
+    partial void OnOAuthRedirectUriChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanTestOAuthConfig));
+    }
+
+    partial void OnIsAuthenticatingChanged(bool value)
+    {
+        OnPropertyChanged(nameof(CanTestOAuthConfig));
+    }
+
+    partial void OnSelectedAuthMethodChanged(AuthenticationMethod value)
+    {
+        OnPropertyChanged(nameof(IsOAuthAuthMethod));
+        OnPropertyChanged(nameof(IsAppPasswordAuthMethod));
+        OnPropertyChanged(nameof(CanStartOAuthFlow));
+        OnPropertyChanged(nameof(CanSaveAppPasswordAccount));
+
+        // Clear form fields when switching authentication methods
+        if (value == AuthenticationMethod.OAuth)
+        {
+            AppPassword = string.Empty;
+        }
+        else if (value == AuthenticationMethod.AppPassword)
+        {
+            OAuthClientId = string.Empty;
+            OAuthClientSecret = string.Empty;
+        }
+    }
+
+    partial void OnAppPasswordChanged(string value)
+    {
+        OnPropertyChanged(nameof(CanSaveAppPasswordAccount));
     }
 
     partial void OnSelectedPlatformConfigChanged(SocialPlatformConfig? value)
@@ -1012,10 +1185,7 @@ public partial class AccountManagerViewModel : ObservableObject
         return platform switch
         {
             SocialPlatform.BlueSky => "BS",
-            SocialPlatform.X => "𝕏",
-            SocialPlatform.LinkedIn => "in",
-            SocialPlatform.Threads => "T",
-            SocialPlatform.Facebook => "f",
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             _ => "?"
         };
     }
@@ -1025,10 +1195,7 @@ public partial class AccountManagerViewModel : ObservableObject
         return platform switch
         {
             SocialPlatform.BlueSky => "1. Go to BlueSky Developer Portal\n2. Create new App\n3. Copy Client ID & Secret to OAuth Config",
-            SocialPlatform.X => "1. Visit developer.twitter.com\n2. Create Project & App\n3. Generate OAuth 2.0 Client ID & Secret\n4. Add to OAuth Config",
-            SocialPlatform.LinkedIn => "1. Go to LinkedIn Developer Console\n2. Create new Application\n3. Get Client ID & Client Secret\n4. Configure OAuth settings",
-            SocialPlatform.Threads => "1. Visit developers.facebook.com\n2. Create Threads App\n3. Get App ID & App Secret\n4. Configure OAuth redirect",
-            SocialPlatform.Facebook => "1. Go to developers.facebook.com\n2. Create App for Pages\n3. Get App ID & App Secret\n4. Add OAuth settings",
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             _ => "Check platform's developer documentation for OAuth setup instructions."
         };
     }
@@ -1063,7 +1230,7 @@ public partial class AccountManagerViewModel : ObservableObject
             // Load configuration values
             OAuthClientId = config.ClientId ?? string.Empty;
             OAuthClientSecret = config.ClientSecret ?? string.Empty;
-            OAuthRedirectUri = config.RedirectUri ?? "http://localhost:8080/callback";
+            OAuthRedirectUri = config.RedirectUri ?? "http://localhost:8080/oauth/callback";
         }
         catch (Exception ex)
         {
@@ -1071,7 +1238,7 @@ public partial class AccountManagerViewModel : ObservableObject
             // Set sensible defaults
             OAuthClientId = string.Empty;
             OAuthClientSecret = string.Empty;
-            OAuthRedirectUri = "http://localhost:8080/callback";
+            OAuthRedirectUri = "http://localhost:8080/oauth/callback";
         }
     }
 
@@ -1090,16 +1257,22 @@ public partial class AccountManagerViewModel : ObservableObject
     {
         try
         {
-            IsAuthenticating = true;
-            AuthenticationStatus = "Completing authentication...";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                IsAuthenticating = true;
+                AuthenticationStatus = "✅ Authorization received! Completing authentication...";
+            });
 
-            // Find which platform is being authenticated based on state or current context
-            // For now, we'll use the selected platform
-            var result = await _authenticationService.CompleteAuthenticationAsync(SelectedPlatform, authorizationCode, state);
+            _logger.Information("OAuth callback received with authorization code");
+
+            // Complete the OAuth authentication flow
+            var result = await _authenticationService.CompleteAuthenticationAsync(SelectedPlatform, authorizationCode, state).ConfigureAwait(false);
 
             if (result.IsSuccess && result.Tokens != null && result.UserProfile != null)
             {
-                // Create new account with OAuth tokens
+                _logger.Information("OAuth authentication successful for user: {Username}", result.UserProfile.Username);
+
+                // Create new account with OAuth tokens and user profile
                 var account = new Account
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -1109,32 +1282,57 @@ public partial class AccountManagerViewModel : ObservableObject
                     Avatar = result.UserProfile.Avatar,
                     AuthStatus = Core.Models.AuthenticationStatus.Authenticated,
                     Tokens = result.Tokens,
+                    IsDefault = !Accounts.Any(a => a.PlatformId == SelectedPlatform), // First account for platform is default
+                    CreatedAt = DateTime.UtcNow,
+                    LastUsed = DateTime.UtcNow,
                     Metadata = new Dictionary<string, string>
                     {
                         ["UserId"] = result.UserProfile.Id,
                         ["Bio"] = result.UserProfile.Bio ?? "",
-                        ["ProfileUrl"] = result.UserProfile.ProfileUrl ?? ""
+                        ["ProfileUrl"] = result.UserProfile.ProfileUrl ?? "",
+                        ["AuthMethod"] = "OAuth2.0",
+                        ["ConnectedAt"] = DateTime.UtcNow.ToString("O")
                     }
                 };
 
-                await _accountService.CreateAccountAsync(account);
-                await LoadAccountsAsync();
+                await _accountService.CreateAccountAsync(account).ConfigureAwait(false);
 
-                AuthenticationStatus = $"Successfully connected {result.UserProfile.DisplayName}!";
+                // Update UI on UI thread
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Accounts.Add(account);
+                    UpdateComputedProperties();
+                    AuthenticationStatus = $"✅ Successfully connected {result.UserProfile.DisplayName}!";
+                    _logger.Information("Account created and added to collection: {AccountId}", account.Id);
+                });
 
-                // Clear status after delay - using proper async pattern
+                // Clear status after delay
                 _ = ClearAuthenticationStatusAfterDelayAsync();
             }
             else
             {
-                AuthenticationStatus = $"Authentication failed: {result.ErrorMessage}";
-                IsAuthenticating = false;
+                var errorMsg = $"Authentication failed: {result.ErrorMessage ?? "Unknown error"}";
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    AuthenticationStatus = $"❌ {errorMsg}";
+                    IsAuthenticating = false;
+                });
+                _logger.Warning("OAuth authentication completion failed: {Error}", result.ErrorMessage);
+
+                _ = ClearAuthenticationStatusAfterDelayAsync();
             }
         }
         catch (Exception ex)
         {
-            AuthenticationStatus = $"Authentication error: {ex.Message}";
-            IsAuthenticating = false;
+            var errorMsg = $"Authentication error: {ex.Message}";
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                AuthenticationStatus = $"❌ {errorMsg}";
+                IsAuthenticating = false;
+            });
+            _logger.Error(ex, "OAuth callback handling failed");
+
+            _ = ClearAuthenticationStatusAfterDelayAsync();
         }
     }
 

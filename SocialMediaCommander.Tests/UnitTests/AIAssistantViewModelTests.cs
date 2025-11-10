@@ -49,9 +49,8 @@ public class AIAssistantViewModelTests
     {
         // Assert
         Assert.NotNull(_viewModel.TargetPlatforms);
-        Assert.Equal(5, _viewModel.TargetPlatforms.Count);
-        Assert.True(_viewModel.TargetPlatforms.First(p => p.Platform == SocialPlatform.X).IsSelected);
-        Assert.False(_viewModel.TargetPlatforms.First(p => p.Platform == SocialPlatform.LinkedIn).IsSelected);
+        Assert.Single(_viewModel.TargetPlatforms);
+        Assert.True(_viewModel.TargetPlatforms.First(p => p.Platform == SocialPlatform.BlueSky).IsSelected);
 
         Assert.NotNull(_viewModel.ContentVariations);
         Assert.Empty(_viewModel.ContentVariations);
@@ -309,7 +308,7 @@ public class AIAssistantViewModelTests
             Success = true,
             GeneratedContent = new List<AIGeneratedContent>
             {
-                new() { Content = "Generated test content", Platform = SocialPlatform.X }
+                new() { Content = "Generated test content", Platform = SocialPlatform.BlueSky }
             }
         };
 
@@ -337,7 +336,7 @@ public class AIAssistantViewModelTests
             r.BrandVoice == "Tech company" &&
             r.Keywords.Count == 3 &&
             r.Keywords.Contains("AI") &&
-            r.TargetPlatforms.Contains(SocialPlatform.X)
+            r.TargetPlatforms.Contains(SocialPlatform.BlueSky)
         )), Times.Once);
 
         Assert.Equal("Generated test content", _viewModel.GeneratedContent);
@@ -441,7 +440,7 @@ public class AIAssistantViewModelTests
         // Assert
         _mockAIService.Verify(x => x.OptimizeContentAsync(It.Is<AIOptimizationRequest>(r =>
             r.Content == "Original content" &&
-            r.Platform == SocialPlatform.X &&
+            r.Platform == SocialPlatform.BlueSky &&
             r.OptimizationType == AIOptimizationType.Engagement
         )), Times.Once);
 
@@ -455,8 +454,8 @@ public class AIAssistantViewModelTests
         // Arrange
         var expectedVariations = new List<AIGeneratedContent>
         {
-            new() { Content = "Variation 1", Platform = SocialPlatform.X },
-            new() { Content = "Variation 2", Platform = SocialPlatform.X }
+            new() { Content = "Variation 1", Platform = SocialPlatform.BlueSky },
+            new() { Content = "Variation 2", Platform = SocialPlatform.BlueSky }
         };
 
         _mockAIService.Setup(x => x.GenerateVariationsAsync("Original content", 3))
@@ -573,14 +572,14 @@ public class PlatformSelectionItemTests
         // Arrange & Act
         var item = new PlatformSelectionItem
         {
-            Platform = SocialPlatform.LinkedIn,
+            Platform = SocialPlatform.BlueSky,
             IsSelected = true
         };
 
         // Assert
-        Assert.Equal(SocialPlatform.LinkedIn, item.Platform);
+        Assert.Equal(SocialPlatform.BlueSky, item.Platform);
         Assert.True(item.IsSelected);
-        Assert.Equal("LinkedIn", item.DisplayName);
+        Assert.Equal("BlueSky", item.DisplayName);
     }
 
     [Fact]
@@ -605,11 +604,8 @@ public class PlatformSelectionItemTests
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X, "X")]
-    [InlineData(SocialPlatform.LinkedIn, "LinkedIn")]
-    [InlineData(SocialPlatform.Facebook, "Facebook")]
     [InlineData(SocialPlatform.BlueSky, "BlueSky")]
-    [InlineData(SocialPlatform.Threads, "Threads")]
+    // TODO: Add other platforms when implementations are ready
     public void DisplayName_ShouldReturnCorrectPlatformName(SocialPlatform platform, string expectedName)
     {
         // Arrange

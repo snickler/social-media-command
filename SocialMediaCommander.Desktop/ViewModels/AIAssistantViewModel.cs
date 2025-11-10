@@ -44,11 +44,8 @@ public class AIAssistantViewModel : INotifyPropertyChanged
 
         TargetPlatforms = new ObservableCollection<PlatformSelectionItem>
         {
-            new() { Platform = SocialPlatform.X, IsSelected = true },
-            new() { Platform = SocialPlatform.LinkedIn, IsSelected = false },
-            new() { Platform = SocialPlatform.Facebook, IsSelected = false },
-            new() { Platform = SocialPlatform.BlueSky, IsSelected = false },
-            new() { Platform = SocialPlatform.Threads, IsSelected = false }
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
+            new() { Platform = SocialPlatform.BlueSky, IsSelected = true }
         };
 
         ContentVariations = new ObservableCollection<AIGeneratedContent>();
@@ -235,7 +232,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         {
             IsGenerating = true;
 
-            var selectedPlatform = TargetPlatforms.FirstOrDefault(p => p.IsSelected)?.Platform ?? SocialPlatform.X;
+            var selectedPlatform = TargetPlatforms.FirstOrDefault(p => p.IsSelected)?.Platform ?? SocialPlatform.BlueSky;
 
             var request = new AIOptimizationRequest
             {

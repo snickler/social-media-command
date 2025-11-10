@@ -5,8 +5,8 @@ This folder contains all documentation for the Social Media Commander project, o
 ## Documentation Structure
 
 ### User Documentation
-- [User Guide](user-guides/user-guide.md) - Complete user guide for the application
-- [Getting Started](user-guides/getting-started.md) - Quick start guide and installation instructions
+- [Adding Accounts (OAuth)](user-guide/adding-accounts-oauth.md) - OAuth account setup guide
+- [Quick Start: BlueSky Account](user-guide/quick-start-add-bluesky-account.md) - Quick start guide for adding BlueSky accounts
 
 ### Technical Documentation
 - [Technical Documentation](technical/technical-documentation.md) - Architecture and technical implementation details
@@ -34,6 +34,27 @@ This folder contains all documentation for the Social Media Commander project, o
 ### Operations Documentation
 - [Log Analysis Fixes](operations/log-analysis-fixes.md) - Logging improvements and fixes
 - [Logging Implementation](operations/logging-implementation.md) - Logging system implementation
+
+### UI/UX Documentation
+- [UI/UX Improvements](UI_UX_IMPROVEMENTS.md) - Comprehensive guide to UI enhancements
+- [UI/UX Summary](UI_UX_IMPROVEMENTS_SUMMARY.md) - Quick reference for UI changes
+- [Visual Component Guide](VISUAL_COMPONENT_GUIDE.md) - Visual examples and component usage
+
+### Architecture & Features Documentation
+- [Post Publishing Flow](architecture/post-publishing-flow.md) - Post publishing architecture
+- [Multi-Account Posting](features/multi-account-posting-selection.md) - Multi-account feature guide
+- [Dual Authentication](features/dual-authentication-bluesky.md) - BlueSky dual auth implementation
+- [idunno.Bluesky Integration](features/idunno-bluesky-integration.md) - BlueSky SDK integration
+
+### Bug Fixes Documentation
+- [Account Selection Fix](bugfixes/account-selection-not-respected-fix.md) - Account selection bug fix
+- [BlueSky Posting Fix](bugfixes/bluesky-posting-not-working-fix.md) - BlueSky posting implementation
+- [Media Upload Fix](bugfixes/bluesky-media-upload-fixed.md) - Media upload bug fix
+- [UI Issues Fixed](bugfixes/three-ui-issues-fixed.md) - Three critical UI fixes
+
+### User Guide Documentation
+- [Adding Accounts (OAuth)](user-guide/adding-accounts-oauth.md) - OAuth account setup
+- [Quick Start: BlueSky Account](user-guide/quick-start-add-bluesky-account.md) - Quick start guide
 
 ## Accessing Documentation
 

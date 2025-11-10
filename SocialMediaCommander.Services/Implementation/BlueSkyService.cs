@@ -1,29 +1,86 @@
-using System.Text;
-using System.Text.Json;
+using System.Collections.Concurrent;
+using idunno.Bluesky;
+using idunno.Bluesky.Embed;
+using idunno.Bluesky.RichText;
+using idunno.AtProto;
+using idunno.AtProto.Repo;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
-using SocialMediaCommander.Services.Serialization;
+using CorePost = SocialMediaCommander.Core.Models.Post;
 
 namespace SocialMediaCommander.Services.Implementation;
 
 /// <summary>
-/// BlueSky (AT Protocol) specific service implementation
+/// BlueSky (AT Protocol) specific service implementation using idunno.Bluesky
 /// </summary>
 public class BlueSkyService : IBlueSkyService
 {
-    private readonly HttpClient _httpClient;
     private readonly IAuthenticationService _authService;
-    private const string BaseUrl = "https://bsky.social/xrpc";
 
     public SocialPlatform Platform => SocialPlatform.BlueSky;
 
-    public BlueSkyService(HttpClient httpClient, IAuthenticationService authService)
+    public BlueSkyService(IAuthenticationService authService)
     {
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
         _authService = authService ?? throw new ArgumentNullException(nameof(authService));
     }
 
-    public async Task<PublishResult> PostAsync(Post post, Account account)
+    /// <summary>
+    /// Creates an authenticated BlueSky agent for the account
+    /// </summary>
+    private async Task<(BlueskyAgent? Agent, string? Error)> CreateAuthenticatedAgentAsync(Account account)
+    {
+        var agent = new BlueskyAgent();
+
+        try
+        {
+            if (account.AuthMethod == AuthenticationMethod.AppPassword)
+            {
+                // Login with App Password
+                if (string.IsNullOrEmpty(account.AppPassword))
+                {
+                    return (null, "App password is not configured");
+                }
+
+                var loginResult = await agent.Login(account.Username, account.AppPassword).ConfigureAwait(false);
+
+                if (!loginResult.Succeeded)
+                {
+                    var errorMsg = loginResult.AtErrorDetail?.Message ?? "Login failed";
+                    return (null, errorMsg);
+                }
+
+                return (agent, null);
+            }
+            else if (account.AuthMethod == AuthenticationMethod.OAuth)
+            {
+                // For OAuth, we still use Login method with the access token
+                // idunno.Bluesky manages sessions internally
+                if (account.Tokens == null || account.Tokens.IsExpired)
+                {
+                    return (null, "OAuth tokens are missing or expired");
+                }
+
+                // Use the access token as the password for OAuth session
+                var loginResult = await agent.Login(account.Username, account.Tokens.AccessToken).ConfigureAwait(false);
+
+                if (!loginResult.Succeeded)
+                {
+                    var errorMsg = loginResult.AtErrorDetail?.Message ?? "OAuth session failed";
+                    return (null, errorMsg);
+                }
+
+                return (agent, null);
+            }
+
+            return (null, $"Unsupported authentication method: {account.AuthMethod}");
+        }
+        catch (Exception ex)
+        {
+            return (null, $"Authentication error: {ex.Message}");
+        }
+    }
+
+    public async Task<PublishResult> PostAsync(CorePost post, Account account)
     {
         try
         {
@@ -36,61 +93,152 @@ public class BlueSkyService : IBlueSkyService
                 };
             }
 
-            var session = await CreateSessionAsync(account);
-            if (!session)
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null)
             {
+                var (_, error) = await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false);
                 return new PublishResult
                 {
                     Success = false,
-                    ErrorMessage = "Failed to create BlueSky session"
+                    ErrorMessage = error ?? "Failed to authenticate"
                 };
             }
 
-            var postData = new BlueSkyPostData
+            // Format post text for BlueSky
+            var postText = post.FormatForPlatform(Platform);
+
+            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Posting to BlueSky with {post.Media.Count} media attachments");
+
+            // Check if we have media to upload
+            if (post.Media.Any())
             {
-                Repo = account.Username,
-                Collection = "app.bsky.feed.post",
-                Record = new BlueSkyPostRecord
+                System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Uploading {post.Media.Count} media file(s)");
+
+                var embeddedImages = new List<EmbeddedImage>();
+
+                foreach (var media in post.Media.Take(4)) // BlueSky supports max 4 images
                 {
-                    Text = post.FormatForPlatform(Platform),
-                    CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    Facets = ExtractFacets(post.Content)
+                    try
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Uploading media: {media.FileName} from {media.FilePath}");
+
+                        // Read the image file
+                        byte[] imageBytes;
+                        if (File.Exists(media.FilePath))
+                        {
+                            imageBytes = await File.ReadAllBytesAsync(media.FilePath).ConfigureAwait(false);
+                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Read {imageBytes.Length} bytes from {media.FilePath}");
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] ERROR: File not found at {media.FilePath}");
+                            continue;
+                        }
+
+                        // Upload image to BlueSky
+                        var uploadResponse = await agent.UploadImage(
+                            imageBytes,
+                            media.MimeType,
+                            media.FileName ?? "Image",
+                            new AspectRatio(1000, 1000)).ConfigureAwait(false);
+
+                        if (uploadResponse.Succeeded && uploadResponse.Result != null)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Successfully uploaded media: {media.FileName}");
+                            embeddedImages.Add(uploadResponse.Result);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Failed to upload media: {media.FileName}. Error: {uploadResponse.AtErrorDetail?.Message}");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Exception uploading media {media.FileName}: {ex.Message}");
+                        // Continue with other media even if one fails
+                    }
                 }
-            };
 
-            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.BlueSkyPostData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+                // Post with media if any uploaded successfully
+                if (embeddedImages.Any())
+                {
+                    System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Posting with {embeddedImages.Count} embedded image(s)");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.createRecord");
-            request.Content = content;
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
+                    // Pass the collection of EmbeddedImage directly to Post method
+                    // For single image: Post(text, EmbeddedImage, cancellationToken)
+                    // For multiple images: Post(text, ICollection<EmbeddedImage>, cancellationToken)
+                    AtProtoHttpResult<CreateRecordResult> response;
+                    if (embeddedImages.Count == 1)
+                    {
+                        response = await agent.Post(postText, embeddedImages[0]).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        response = await agent.Post(postText, embeddedImages).ConfigureAwait(false);
+                    }
 
-            var response = await _httpClient.SendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
+                    if (response.Succeeded && response.Result != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Post with media succeeded! URI: {response.Result.Uri}");
+                        return new PublishResult
+                        {
+                            Success = true,
+                            PlatformPostId = response.Result.Uri.ToString(),
+                            PublishedAt = DateTime.UtcNow,
+                            Metadata = new Dictionary<string, string>
+                            {
+                                ["Cid"] = response.Result.Cid.ToString(),
+                                ["Uri"] = response.Result.Uri.ToString(),
+                                ["MediaCount"] = embeddedImages.Count.ToString()
+                            }
+                        };
+                    }
 
-            if (response.IsSuccessStatusCode)
+                    System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Post with media failed: {response.AtErrorDetail?.Message}");
+                    return new PublishResult
+                    {
+                        Success = false,
+                        ErrorMessage = response.AtErrorDetail?.Message ?? "Unknown error occurred"
+                    };
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine("[BlueSkyService] No media uploaded successfully, posting text only");
+                    // Fall through to text-only post
+                }
+            }
+
+            // Post text-only (no media or media upload failed)
+            System.Diagnostics.Debug.WriteLine("[BlueSkyService] Posting text-only");
+            var textResponse = await agent.Post(postText).ConfigureAwait(false);
+
+            if (textResponse.Succeeded && textResponse.Result != null)
             {
-                using var document = JsonDocument.Parse(responseContent);
-                var uri = document.RootElement.GetProperty("uri").GetString();
-
+                System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Text-only post succeeded! URI: {textResponse.Result.Uri}");
                 return new PublishResult
                 {
                     Success = true,
-                    PlatformPostId = uri ?? "",
-                    PublishedAt = DateTime.UtcNow
+                    PlatformPostId = textResponse.Result.Uri.ToString(),
+                    PublishedAt = DateTime.UtcNow,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["Cid"] = textResponse.Result.Cid.ToString(),
+                        ["Uri"] = textResponse.Result.Uri.ToString()
+                    }
                 };
             }
-            else
+
+            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Text-only post failed: {textResponse.AtErrorDetail?.Message}");
+            return new PublishResult
             {
-                return new PublishResult
-                {
-                    Success = false,
-                    ErrorMessage = $"BlueSky API error: {responseContent}"
-                };
-            }
+                Success = false,
+                ErrorMessage = textResponse.AtErrorDetail?.Message ?? "Unknown error occurred"
+            };
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Exception in PostAsync: {ex.Message}");
+            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Stack trace: {ex.StackTrace}");
             return new PublishResult
             {
                 Success = false,
@@ -99,64 +247,68 @@ public class BlueSkyService : IBlueSkyService
         }
     }
 
-    public async Task<PublishResult> PostThreadAsync(Post post, Account account)
+    public async Task<PublishResult> PostThreadAsync(CorePost post, Account account)
     {
         try
         {
             if (!post.IsThread || !post.ThreadPosts.Any())
             {
-                return await PostAsync(post, account);
+                return await PostAsync(post, account).ConfigureAwait(false);
             }
 
-            var results = new List<PublishResult>();
-            string? replyTo = null;
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null)
+            {
+                var (_, error) = await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false);
+                return new PublishResult
+                {
+                    Success = false,
+                    ErrorMessage = error ?? "Failed to authenticate"
+                };
+            }
 
             // Post main post first
-            var mainResult = await PostAsync(post, account);
-            results.Add(mainResult);
+            var mainText = post.FormatForPlatform(Platform);
+            var mainResponse = await agent.Post(mainText).ConfigureAwait(false);
 
-            if (!mainResult.Success)
-            {
-                return mainResult;
-            }
-
-            replyTo = mainResult.PlatformPostId;
-
-            // Post thread posts
-            foreach (var threadPost in post.ThreadPosts)
-            {
-                var threadPostData = new Post
-                {
-                    Content = threadPost.Content,
-                    TargetPlatforms = new List<SocialPlatform> { Platform }
-                };
-
-                var threadResult = await PostReplyAsync(threadPostData, account, replyTo ?? throw new InvalidOperationException("Reply URI cannot be null"));
-                results.Add(threadResult);
-
-                if (!threadResult.Success)
-                {
-                    break;
-                }
-
-                replyTo = threadResult.PlatformPostId;
-            }
-
-            var failedPosts = results.Where(r => !r.Success).ToList();
-            if (failedPosts.Any())
+            if (!mainResponse.Succeeded || mainResponse.Result == null)
             {
                 return new PublishResult
                 {
                     Success = false,
-                    ErrorMessage = $"Thread partially failed: {string.Join(", ", failedPosts.Select(f => f.ErrorMessage))}"
+                    ErrorMessage = $"Failed to post main thread post: {mainResponse.AtErrorDetail?.Message ?? "Unknown error"}"
                 };
+            }
+
+            var previousRef = mainResponse.Result.StrongReference;
+
+            // Post replies in order
+            foreach (var threadPost in post.ThreadPosts)
+            {
+                var replyResponse = await agent.ReplyTo(previousRef, threadPost.Content).ConfigureAwait(false);
+
+                if (!replyResponse.Succeeded || replyResponse.Result == null)
+                {
+                    return new PublishResult
+                    {
+                        Success = false,
+                        ErrorMessage = $"Thread failed at reply: {replyResponse.AtErrorDetail?.Message ?? "Unknown error"}"
+                    };
+                }
+
+                previousRef = replyResponse.Result.StrongReference;
             }
 
             return new PublishResult
             {
                 Success = true,
-                PlatformPostId = mainResult.PlatformPostId,
-                PublishedAt = DateTime.UtcNow
+                PlatformPostId = mainResponse.Result.Uri.ToString(),
+                PublishedAt = DateTime.UtcNow,
+                Metadata = new Dictionary<string, string>
+                {
+                    ["ThreadLength"] = (post.ThreadPosts.Count + 1).ToString(),
+                    ["MainPostCid"] = mainResponse.Result.Cid.ToString()
+                }
             };
         }
         catch (Exception ex)
@@ -175,25 +327,19 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return false;
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return false;
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return false;
 
-            var deleteData = new BlueSkyDeleteData
+            // Parse AT URI from post ID
+            if (!Uri.TryCreate(postId, UriKind.Absolute, out var uri))
             {
-                Repo = account.Username,
-                Collection = "app.bsky.feed.post",
-                Rkey = ExtractRkeyFromUri(postId)
-            };
+                return false;
+            }
 
-            var json = JsonSerializer.Serialize(deleteData, ServicesJsonContext.Default.BlueSkyDeleteData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var atUri = new AtUri(uri.ToString());
+            var response = await agent.DeletePost(atUri).ConfigureAwait(false);
 
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.deleteRecord");
-            request.Content = content;
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
-
-            var response = await _httpClient.SendAsync(request);
-            return response.IsSuccessStatusCode;
+            return response.Succeeded;
         }
         catch
         {
@@ -207,18 +353,31 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return Enumerable.Empty<SocialFeedItem>();
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{BaseUrl}/com.atproto.repo.listRecords?repo={account.Username}&collection=app.bsky.feed.post&limit={limit}");
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
+            // Get user's posts using author feed
+            var feedResponse = await agent.GetAuthorFeed(account.Username, limit: limit).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return Enumerable.Empty<SocialFeedItem>();
+            if (!feedResponse.Succeeded || feedResponse.Result == null)
+            {
+                return Enumerable.Empty<SocialFeedItem>();
+            }
 
-            var json = await response.Content.ReadAsStringAsync();
-            return ParseBlueSkyPosts(json, account);
+            // feedResponse.Result is directly enumerable
+            return feedResponse.Result.Select(feedView => new SocialFeedItem
+            {
+                Id = feedView.Post.Uri.ToString(),
+                Content = feedView.Post.Record.Text ?? string.Empty,
+                AuthorUsername = (feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorName = (feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = feedView.Post.Author.Avatar?.ToString() ?? string.Empty,
+                PostedAt = feedView.Post.Record.CreatedAt.DateTime,
+                Platform = Platform,
+                LikeCount = feedView.Post.LikeCount,
+                RepostCount = feedView.Post.RepostCount,
+                ReplyCount = feedView.Post.ReplyCount
+            }).ToList();
         }
         catch
         {
@@ -232,18 +391,31 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return Enumerable.Empty<SocialFeedItem>();
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{BaseUrl}/app.bsky.feed.getTimeline?limit={limit}");
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
+            var timelineResponse = await agent.GetTimeline(limit: limit).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return Enumerable.Empty<SocialFeedItem>();
+            if (!timelineResponse.Succeeded || timelineResponse.Result == null)
+            {
+                return Enumerable.Empty<SocialFeedItem>();
+            }
 
-            var json = await response.Content.ReadAsStringAsync();
-            return ParseBlueSkyFeed(json);
+            // timelineResponse.Result is directly enumerable
+            return timelineResponse.Result.Select(feedView => new SocialFeedItem
+            {
+                Id = feedView.Post.Uri.ToString(),
+                Content = feedView.Post.Record.Text ?? string.Empty,
+                AuthorUsername = (feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorName = (feedView.Post.Author.DisplayName ?? feedView.Post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = feedView.Post.Author.Avatar?.ToString() ?? string.Empty,
+                PostedAt = feedView.Post.Record.CreatedAt.DateTime,
+                Platform = Platform,
+                LikeCount = feedView.Post.LikeCount,
+                RepostCount = feedView.Post.RepostCount,
+                ReplyCount = feedView.Post.ReplyCount,
+                IsRepost = feedView.Reason != null
+            }).ToList();
         }
         catch
         {
@@ -257,18 +429,30 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return Enumerable.Empty<SocialFeedItem>();
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return Enumerable.Empty<SocialFeedItem>();
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return Enumerable.Empty<SocialFeedItem>();
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{BaseUrl}/app.bsky.feed.searchPosts?q={Uri.EscapeDataString(query)}&limit={limit}");
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
+            var searchResponse = await agent.SearchPosts(query, limit: limit).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return Enumerable.Empty<SocialFeedItem>();
+            if (!searchResponse.Succeeded || searchResponse.Result == null)
+            {
+                return Enumerable.Empty<SocialFeedItem>();
+            }
 
-            var json = await response.Content.ReadAsStringAsync();
-            return ParseBlueSkySearchResults(json);
+            // searchResponse.Result is directly enumerable
+            return searchResponse.Result.Select(post => new SocialFeedItem
+            {
+                Id = post.Uri.ToString(),
+                Content = post.Record.Text ?? string.Empty,
+                AuthorUsername = (post.Author.Handle ?? string.Empty)!,
+                AuthorName = (post.Author.DisplayName ?? post.Author.Handle ?? string.Empty)!,
+                AuthorAvatar = post.Author.Avatar?.ToString() ?? string.Empty,
+                PostedAt = post.Record.CreatedAt.DateTime,
+                Platform = Platform,
+                LikeCount = post.LikeCount,
+                RepostCount = post.RepostCount,
+                ReplyCount = post.ReplyCount
+            }).ToList();
         }
         catch
         {
@@ -283,9 +467,9 @@ public class BlueSkyService : IBlueSkyService
         return Task.FromResult(Enumerable.Empty<string>());
     }
 
-    public async Task<ValidationResult> ValidateContentAsync(Post post)
+    public async Task<ValidationResult> ValidateContentAsync(CorePost post)
     {
-        var limits = await GetPlatformLimitsAsync();
+        var limits = await GetPlatformLimitsAsync().ConfigureAwait(false);
 
         var result = new ValidationResult();
 
@@ -310,12 +494,25 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return "";
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return "";
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return "";
 
-            // BlueSky media upload implementation would go here
-            // This is a placeholder - actual implementation would upload to BlueSky's blob storage
-            return $"bsky-media-{Guid.NewGuid()}";
+            // Upload image using idunno.Bluesky
+            var imageBytes = await File.ReadAllBytesAsync(media.FilePath).ConfigureAwait(false);
+
+            var uploadResponse = await agent.UploadImage(
+                imageBytes,
+                media.MimeType,
+                media.FileName ?? "Image",
+                new AspectRatio(1000, 1000)).ConfigureAwait(false);
+
+            if (uploadResponse.Succeeded && uploadResponse.Result != null)
+            {
+                // Return the blob ref link as the media ID
+                return uploadResponse.Result.Image.ToString();
+            }
+
+            return "";
         }
         catch
         {
@@ -341,24 +538,9 @@ public class BlueSkyService : IBlueSkyService
     {
         try
         {
-            if (account.Tokens == null || account.Tokens.IsExpired)
-            {
-                // Need to re-authenticate
-                return false;
-            }
-
-            // For BlueSky, we need to create a session with the access token
-            var sessionData = new BlueSkySessionData
-            {
-                Identifier = account.Username,
-                Password = account.Tokens.AccessToken // This would be the app password in real implementation
-            };
-
-            var json = JsonSerializer.Serialize(sessionData, ServicesJsonContext.Default.BlueSkySessionData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var response = await _httpClient.PostAsync($"{BaseUrl}/com.atproto.server.createSession", content);
-            return response.IsSuccessStatusCode;
+            var (agent, _) = await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false);
+            agent?.Dispose();
+            return agent != null;
         }
         catch
         {
@@ -372,213 +554,36 @@ public class BlueSkyService : IBlueSkyService
         {
             if (!account.IsAuthenticated) return null;
 
-            var session = await CreateSessionAsync(account);
-            if (!session) return null;
+            using var agent = (await CreateAuthenticatedAgentAsync(account).ConfigureAwait(false)).Agent;
+            if (agent == null) return null;
 
-            var request = new HttpRequestMessage(HttpMethod.Get,
-                $"{BaseUrl}/app.bsky.actor.getProfile?actor={account.Username}");
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
+            var profileResponse = await agent.GetProfile(account.Username).ConfigureAwait(false);
 
-            var response = await _httpClient.SendAsync(request);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!profileResponse.Succeeded || profileResponse.Result == null)
+            {
+                return null;
+            }
 
-            var json = await response.Content.ReadAsStringAsync();
-            using var document = JsonDocument.Parse(json);
-            var root = document.RootElement;
+            var profile = profileResponse.Result;
 
             return new UserProfile
             {
-                Id = root.GetProperty("did").GetString() ?? "",
-                Username = root.GetProperty("handle").GetString() ?? "",
-                DisplayName = root.TryGetProperty("displayName", out var name) ? name.GetString() ?? "" : "",
-                Avatar = root.TryGetProperty("avatar", out var avatar) ? avatar.GetString() : null
+                Id = profile.Did.ToString(),
+                Username = (profile.Handle ?? string.Empty)!,
+                DisplayName = (profile.DisplayName ?? profile.Handle ?? string.Empty)!,
+                Bio = (profile.Description ?? string.Empty)!,
+                Avatar = profile.Avatar?.ToString(),
+                Banner = profile.Banner?.ToString(),
+                FollowerCount = profile.FollowersCount,
+                FollowingCount = profile.FollowsCount,
+                PostCount = profile.PostsCount,
+                CreatedAt = DateTime.UtcNow, // AT Protocol doesn't expose account creation date
+                Platform = Platform
             };
         }
         catch
         {
             return null;
-        }
-    }
-
-    private async Task<PublishResult> PostReplyAsync(Post post, Account account, string replyToUri)
-    {
-        try
-        {
-            var postData = new BlueSkyPostData
-            {
-                Repo = account.Username,
-                Collection = "app.bsky.feed.post",
-                Record = new BlueSkyPostRecord
-                {
-                    Text = post.FormatForPlatform(Platform),
-                    CreatedAt = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
-                    Reply = new BlueSkyReply
-                    {
-                        Parent = new BlueSkyParent { Uri = replyToUri, Cid = "" }
-                    }
-                }
-            };
-
-            var json = JsonSerializer.Serialize(postData, ServicesJsonContext.Default.BlueSkyPostData);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-            var request = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl}/com.atproto.repo.createRecord");
-            request.Content = content;
-            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", account.Tokens!.AccessToken);
-
-            var response = await _httpClient.SendAsync(request);
-            var responseContent = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
-            {
-                using var document = JsonDocument.Parse(responseContent);
-                var uri = document.RootElement.GetProperty("uri").GetString();
-
-                return new PublishResult
-                {
-                    Success = true,
-                    PlatformPostId = uri ?? "",
-                    PublishedAt = DateTime.UtcNow
-                };
-            }
-            else
-            {
-                return new PublishResult
-                {
-                    Success = false,
-                    ErrorMessage = $"BlueSky reply error: {responseContent}"
-                };
-            }
-        }
-        catch (Exception ex)
-        {
-            return new PublishResult
-            {
-                Success = false,
-                ErrorMessage = $"Failed to post reply to BlueSky: {ex.Message}"
-            };
-        }
-    }
-
-    private object[] ExtractFacets(string content)
-    {
-        // Extract mentions, hashtags, and links from content
-        // This is a simplified implementation
-        var facets = new List<object>();
-
-        // Find hashtags
-        var hashtagMatches = System.Text.RegularExpressions.Regex.Matches(content, @"#\w+");
-        foreach (System.Text.RegularExpressions.Match match in hashtagMatches)
-        {
-            facets.Add(new
-            {
-                index = new { byteStart = match.Index, byteEnd = match.Index + match.Length },
-                features = new[] { new { type = "app.bsky.richtext.facet#tag", tag = match.Value.Substring(1) } }
-            });
-        }
-
-        return facets.ToArray();
-    }
-
-    private string ExtractRkeyFromUri(string uri)
-    {
-        // Extract the record key from a BlueSky URI
-        var parts = uri.Split('/');
-        return parts.LastOrDefault() ?? "";
-    }
-
-    private IEnumerable<SocialFeedItem> ParseBlueSkyPosts(string json, Account account)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(json);
-            var records = document.RootElement.GetProperty("records");
-
-            var items = new List<SocialFeedItem>();
-            foreach (var record in records.EnumerateArray())
-            {
-                var value = record.GetProperty("value");
-                items.Add(new SocialFeedItem
-                {
-                    Id = record.GetProperty("uri").GetString() ?? "",
-                    Content = value.GetProperty("text").GetString() ?? "",
-                    AuthorUsername = account.Username,
-                    AuthorName = account.DisplayName,
-                    PostedAt = DateTime.Parse(value.GetProperty("createdAt").GetString() ?? DateTime.UtcNow.ToString()),
-                    Platform = Platform
-                });
-            }
-
-            return items;
-        }
-        catch
-        {
-            return Enumerable.Empty<SocialFeedItem>();
-        }
-    }
-
-    private IEnumerable<SocialFeedItem> ParseBlueSkyFeed(string json)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(json);
-            var feed = document.RootElement.GetProperty("feed");
-
-            var items = new List<SocialFeedItem>();
-            foreach (var item in feed.EnumerateArray())
-            {
-                var post = item.GetProperty("post");
-                var record = post.GetProperty("record");
-                var author = post.GetProperty("author");
-
-                items.Add(new SocialFeedItem
-                {
-                    Id = post.GetProperty("uri").GetString() ?? "",
-                    Content = record.GetProperty("text").GetString() ?? "",
-                    AuthorUsername = author.GetProperty("handle").GetString() ?? "",
-                    AuthorName = author.TryGetProperty("displayName", out var name) ? name.GetString() ?? "" : "",
-                    PostedAt = DateTime.Parse(record.GetProperty("createdAt").GetString() ?? DateTime.UtcNow.ToString()),
-                    Platform = Platform
-                });
-            }
-
-            return items;
-        }
-        catch
-        {
-            return Enumerable.Empty<SocialFeedItem>();
-        }
-    }
-
-    private IEnumerable<SocialFeedItem> ParseBlueSkySearchResults(string json)
-    {
-        try
-        {
-            using var document = JsonDocument.Parse(json);
-            var posts = document.RootElement.GetProperty("posts");
-
-            var items = new List<SocialFeedItem>();
-            foreach (var post in posts.EnumerateArray())
-            {
-                var record = post.GetProperty("record");
-                var author = post.GetProperty("author");
-
-                items.Add(new SocialFeedItem
-                {
-                    Id = post.GetProperty("uri").GetString() ?? "",
-                    Content = record.GetProperty("text").GetString() ?? "",
-                    AuthorUsername = author.GetProperty("handle").GetString() ?? "",
-                    AuthorName = author.TryGetProperty("displayName", out var name) ? name.GetString() ?? "" : "",
-                    PostedAt = DateTime.Parse(record.GetProperty("createdAt").GetString() ?? DateTime.UtcNow.ToString()),
-                    Platform = Platform
-                });
-            }
-
-            return items;
-        }
-        catch
-        {
-            return Enumerable.Empty<SocialFeedItem>();
         }
     }
 }

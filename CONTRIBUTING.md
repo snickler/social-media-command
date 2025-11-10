@@ -198,7 +198,7 @@ Maintainers can trigger manual releases:
 ### Documentation
 
 - [CI/CD Documentation](.github/CI_CD_DOCUMENTATION.md)
-- [Security Implementation](SECURE_STORAGE_IMPLEMENTATION.md)
+- [Security Implementation](docs/security/secure-storage-implementation.md)
 - [Performance Optimizations](PERFORMANCE_OPTIMIZATIONS.md)
 
 ### Communication

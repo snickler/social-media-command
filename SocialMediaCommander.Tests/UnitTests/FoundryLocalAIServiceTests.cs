@@ -76,7 +76,7 @@ public class FoundryLocalAIServiceTests : IDisposable
             Tone = AITone.Professional,
             IncludeHashtags = true,
             IncludeEmojis = false,
-            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn }
+            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.BlueSky, SocialPlatform.BlueSky }
         };
 
         var mockResponse = new
@@ -207,7 +207,7 @@ public class FoundryLocalAIServiceTests : IDisposable
         var request = new AIOptimizationRequest
         {
             Content = "AI is great for business",
-            Platform = SocialPlatform.LinkedIn,
+            Platform = SocialPlatform.BlueSky,
             OptimizationType = AIOptimizationType.Engagement
         };
 
@@ -373,7 +373,7 @@ public class FoundryLocalAIServiceTests : IDisposable
         SetupHttpResponse(HttpStatusCode.OK, JsonSerializer.Serialize(mockResponse));
 
         // Act
-        var result = await _service.AnalyzeContentAsync(content, SocialPlatform.X);
+        var result = await _service.AnalyzeContentAsync(content, SocialPlatform.BlueSky);
 
         // Assert
         Assert.NotNull(result);
@@ -460,11 +460,8 @@ public class FoundryLocalAIServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.LinkedIn)]
-    [InlineData(SocialPlatform.Facebook)]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.Threads)]
+    // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
     public async Task GenerateContentAsync_WithDifferentPlatforms_ShouldAdaptContent(SocialPlatform platform)
     {
         // Arrange

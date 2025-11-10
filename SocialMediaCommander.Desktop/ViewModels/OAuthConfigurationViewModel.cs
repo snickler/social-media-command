@@ -415,6 +415,17 @@ public partial class OAuthConfigurationViewModel : ObservableObject
             case nameof(SelectedPlatform):
                 _ = LoadConfigurationAsync(SelectedPlatform); // Fire-and-forget with discard to suppress CS4014
                 break;
+            case nameof(IsValid):
+            case nameof(IsLoading):
+                OnPropertyChanged(nameof(CanTest));
+                break;
+            case nameof(IsSaving):
+                OnPropertyChanged(nameof(CanSave));
+                OnPropertyChanged(nameof(CanLoadDefaults));
+                break;
+            case nameof(HasUnsavedChanges):
+                OnPropertyChanged(nameof(CanSave));
+                break;
         }
 
         // Update computed properties

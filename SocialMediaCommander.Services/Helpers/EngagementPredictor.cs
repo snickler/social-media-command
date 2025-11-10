@@ -38,7 +38,7 @@ public class EngagementPredictor
         if (string.IsNullOrWhiteSpace(content))
             return 0.5;
 
-        var factors = _platformFactors.GetValueOrDefault(platform, _platformFactors[SocialPlatform.X]);
+        var factors = _platformFactors.GetValueOrDefault(platform, _platformFactors[SocialPlatform.BlueSky]);
         var baseScore = 0.5; // Start with neutral
 
         // Content length optimization
@@ -103,39 +103,7 @@ public class EngagementPredictor
     {
         return new Dictionary<SocialPlatform, PlatformEngagementFactors>
         {
-            [SocialPlatform.X] = new()
-            {
-                OptimalLength = new Range(100, 280),
-                OptimalHashtags = new Range(1, 3),
-                QuestionMultiplier = 1.2,
-                CallToActionMultiplier = 1.1,
-                ImageMultiplier = 1.3,
-                VideoMultiplier = 1.5,
-                LinkPenalty = 0.9,
-                EngagementWords = new[] { "retweet", "share", "comment", "like", "follow", "reply" }
-            },
-            [SocialPlatform.Facebook] = new()
-            {
-                OptimalLength = new Range(200, 500),
-                OptimalHashtags = new Range(1, 2),
-                QuestionMultiplier = 1.3,
-                CallToActionMultiplier = 1.2,
-                ImageMultiplier = 1.4,
-                VideoMultiplier = 1.6,
-                LinkPenalty = 0.8,
-                EngagementWords = new[] { "share", "comment", "like", "follow", "tag", "mention" }
-            },
-            [SocialPlatform.LinkedIn] = new()
-            {
-                OptimalLength = new Range(300, 800),
-                OptimalHashtags = new Range(3, 5),
-                QuestionMultiplier = 1.1,
-                CallToActionMultiplier = 1.0,
-                ImageMultiplier = 1.2,
-                VideoMultiplier = 1.3,
-                LinkPenalty = 1.0,
-                EngagementWords = new[] { "share", "comment", "connect", "follow", "endorse", "recommend" }
-            },
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             [SocialPlatform.BlueSky] = new()
             {
                 OptimalLength = new Range(80, 250),
@@ -146,17 +114,6 @@ public class EngagementPredictor
                 VideoMultiplier = 1.4,
                 LinkPenalty = 0.95,
                 EngagementWords = new[] { "repost", "share", "reply", "like", "follow" }
-            },
-            [SocialPlatform.Threads] = new()
-            {
-                OptimalLength = new Range(100, 400),
-                OptimalHashtags = new Range(1, 2),
-                QuestionMultiplier = 1.3,
-                CallToActionMultiplier = 1.1,
-                ImageMultiplier = 1.4,
-                VideoMultiplier = 1.5,
-                LinkPenalty = 0.9,
-                EngagementWords = new[] { "share", "reply", "like", "follow", "repost" }
             }
         };
     }
@@ -221,25 +178,12 @@ public class EngagementPredictor
 
         switch (platform)
         {
-            case SocialPlatform.LinkedIn:
-                // Professional content bonus
-                var professionalWords = new[] { "professional", "career", "business", "industry", "experience", "skills" };
-                if (professionalWords.Any(word => contentLower.Contains(word)))
-                    score += 0.1;
-                break;
-
-            case SocialPlatform.X:
-                // Trending topics bonus (simplified)
-                if (contentLower.Contains("breaking") || contentLower.Contains("news"))
+            case SocialPlatform.BlueSky:
+                // BlueSky-specific engagement patterns
+                if (contentLower.Contains("repost") || contentLower.Contains("share"))
                     score += 0.05;
                 break;
-
-            case SocialPlatform.Facebook:
-                // Personal connection bonus
-                var personalWords = new[] { "family", "friends", "community", "local", "personal" };
-                if (personalWords.Any(word => contentLower.Contains(word)))
-                    score += 0.08;
-                break;
+                // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
         }
 
         return score;
@@ -305,11 +249,9 @@ public class EngagementPredictor
         if (!factors.HasCallToAction)
             recommendations.Add("Include a call-to-action to drive engagement");
 
-        if (platforms.Contains(SocialPlatform.LinkedIn) && factors.Length < 200)
-            recommendations.Add("LinkedIn posts perform better with more detailed content");
-
-        if (platforms.Contains(SocialPlatform.X) && factors.Length > 280)
-            recommendations.Add("Consider shortening for X/Twitter's character limit");
+        // TODO: Add platform-specific recommendations for Twitter, LinkedIn when implementations are ready
+        if (platforms.Contains(SocialPlatform.BlueSky) && factors.Length > 300)
+            recommendations.Add("Consider shortening for BlueSky's character limit");
 
         return recommendations.Any() ? recommendations : new List<string> { "Content looks optimized for engagement!" };
     }

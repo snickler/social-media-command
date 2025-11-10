@@ -401,6 +401,6 @@ Always ensure CI/CD runs the same checks (or more comprehensive versions) to cat
 ## References
 
 - [Git Hooks Documentation](https://git-scm.com/docs/githooks)
-- [Copilot Instructions](.github/copilot-instructions.md) - Project-specific quality standards
-- [Performance Best Practices](PERFORMANCE_OPTIMIZATIONS.md)
-- [Security Implementation](SECURE_STORAGE_IMPLEMENTATION.md)
+- [Copilot Instructions](../../.github/copilot-instructions.md) - Project-specific quality standards
+- [Performance Best Practices](../../PERFORMANCE_OPTIMIZATIONS.md)
+- [Security Implementation](../security/secure-storage-implementation.md)

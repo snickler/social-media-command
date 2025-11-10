@@ -126,7 +126,8 @@ public partial class SchedulerViewModel : ObservableObject
 
     public ObservableCollection<SocialPlatform> AvailablePlatforms { get; } = new()
     {
-        SocialPlatform.X, SocialPlatform.Facebook, SocialPlatform.BlueSky, SocialPlatform.LinkedIn
+        // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
+        SocialPlatform.BlueSky
     };
 
     public ObservableCollection<PostStatus> StatusOptions { get; } = new()
@@ -488,7 +489,7 @@ public partial class SchedulerViewModel : ObservableObject
                     Id = "1",
                     Content = "🚀 Exciting news! Our new feature is launching next week. Stay tuned for updates! #Innovation #TechNews",
                     ScheduledTime = DateTime.Today.AddHours(14),
-                    Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.LinkedIn },
+                    Platforms = new List<SocialPlatform> { SocialPlatform.BlueSky },
                     Status = PostStatus.Publishing,
                     CreatedAt = DateTime.Now.AddDays(-1),
                     Author = "Marketing Team"
@@ -498,7 +499,7 @@ public partial class SchedulerViewModel : ObservableObject
                     Id = "2",
                     Content = "📊 Weekly analytics report shows 25% increase in engagement. Thank you for your continued support!",
                     ScheduledTime = DateTime.Today.AddDays(1).AddHours(10),
-                    Platforms = new List<SocialPlatform> { SocialPlatform.Facebook, SocialPlatform.BlueSky },
+                    Platforms = new List<SocialPlatform> { SocialPlatform.BlueSky },
                     Status = PostStatus.Publishing,
                     CreatedAt = DateTime.Now.AddHours(-3),
                     Author = "Analytics Team"
@@ -508,13 +509,14 @@ public partial class SchedulerViewModel : ObservableObject
                     Id = "3",
                     Content = "🎯 Pro tip: Use our advanced scheduling features to optimize your social media presence!",
                     ScheduledTime = DateTime.Today.AddDays(2).AddHours(16),
-                    Platforms = new List<SocialPlatform> { SocialPlatform.X, SocialPlatform.Facebook, SocialPlatform.LinkedIn },
+                    Platforms = new List<SocialPlatform> { SocialPlatform.BlueSky },
                     Status = PostStatus.Publishing,
                     CreatedAt = DateTime.Now.AddMinutes(-45),
                     Author = "Content Team",
                     IsRecurring = true,
                     RecurrencePattern = "Weekly"
                 }
+                // TODO: Add sample posts for Twitter, LinkedIn, Facebook, Threads when implementations are ready
             };
 
             foreach (var post in samplePosts)

@@ -110,10 +110,11 @@ public static class ScreenshotHelper
 
     /// <summary>
     /// Saves a bitmap to the specified path.
+    /// Must be called from UI thread or within a Dispatcher.UIThread.InvokeAsync context.
     /// </summary>
     /// <param name="bitmap">Bitmap to save (WriteableBitmap from CaptureRenderedFrame)</param>
     /// <param name="filePath">Full path to save location</param>
-    public static async ValueTask Save(WriteableBitmap bitmap, string filePath)
+    public static ValueTask Save(WriteableBitmap bitmap, string filePath)
     {
         if (bitmap is null)
         {
@@ -127,21 +128,11 @@ public static class ScreenshotHelper
             Directory.CreateDirectory(directory);
         }
 
-        if (Dispatcher.UIThread.CheckAccess())
-        {
-            SaveInternal(bitmap, normalizedPath);
-            return;
-        }
-
-        await Dispatcher.UIThread.InvokeAsync(
-            () => SaveInternal(bitmap, normalizedPath),
-            DispatcherPriority.Render);
-    }
-
-    private static void SaveInternal(WriteableBitmap bitmap, string filePath)
-    {
+        // Save directly - caller must ensure this runs on UI thread
         // WriteableBitmap.Save() works correctly with Skia backend enabled
-        bitmap.Save(filePath);
+        bitmap.Save(normalizedPath);
+
+        return ValueTask.CompletedTask;
     }
 
     /// <summary>

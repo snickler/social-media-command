@@ -34,9 +34,20 @@ public class Account
     public AuthenticationStatus AuthStatus { get; set; } = AuthenticationStatus.NotAuthenticated;
 
     /// <summary>
-    /// OAuth tokens for API authentication
+    /// Authentication method used for this account
+    /// </summary>
+    public AuthenticationMethod AuthMethod { get; set; } = AuthenticationMethod.OAuth;
+
+    /// <summary>
+    /// OAuth tokens for API authentication (used with OAuth method)
     /// </summary>
     public OAuthTokens? Tokens { get; set; }
+
+    /// <summary>
+    /// App Password for authentication (used with AppPassword method for BlueSky)
+    /// This will be encrypted when stored
+    /// </summary>
+    public string? AppPassword { get; set; }
 
     /// <summary>
     /// OAuth configuration for this account (client credentials, endpoints, etc.)
@@ -66,8 +77,14 @@ public class Account
     /// Checks if the account has valid authentication
     /// </summary>
     public bool IsAuthenticated => AuthStatus == AuthenticationStatus.Authenticated &&
-                                   Tokens != null &&
-                                   !Tokens.IsExpired;
+                                   (AuthMethod switch
+                                   {
+                                       AuthenticationMethod.OAuth => Tokens != null && !Tokens.IsExpired,
+                                       AuthenticationMethod.AppPassword => !string.IsNullOrEmpty(AppPassword),
+                                       AuthenticationMethod.ApiKey => Metadata.ContainsKey("ApiKey") && !string.IsNullOrEmpty(Metadata["ApiKey"]),
+                                       AuthenticationMethod.UsernamePassword => Metadata.ContainsKey("Password") && !string.IsNullOrEmpty(Metadata["Password"]),
+                                       _ => false
+                                   });
 }
 
 /// <summary>
@@ -122,6 +139,32 @@ public enum AuthenticationStatus
 }
 
 /// <summary>
+/// Authentication method type for accounts
+/// </summary>
+public enum AuthenticationMethod
+{
+    /// <summary>
+    /// OAuth 2.0 authentication flow
+    /// </summary>
+    OAuth,
+
+    /// <summary>
+    /// App-specific password authentication (BlueSky App Password)
+    /// </summary>
+    AppPassword,
+
+    /// <summary>
+    /// API Key authentication
+    /// </summary>
+    ApiKey,
+
+    /// <summary>
+    /// Username/Password authentication
+    /// </summary>
+    UsernamePassword
+}
+
+/// <summary>
 /// Configuration for default accounts created for each platform
 /// </summary>
 public static class DefaultAccounts
@@ -139,7 +182,7 @@ public static class DefaultAccounts
                 IsDefault = true
             }
         },
-        {
+    /*    {
             SocialPlatform.X,
             new Account
             {
@@ -182,7 +225,7 @@ public static class DefaultAccounts
                 DisplayName = "Default Facebook",
                 IsDefault = true
             }
-        }
+        }*/
     };
 
     public static IEnumerable<Account> GetAllDefaultAccounts()

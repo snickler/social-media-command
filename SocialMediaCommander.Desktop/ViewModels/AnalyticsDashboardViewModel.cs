@@ -220,11 +220,7 @@ public partial class AnalyticsDashboardViewModel : ObservableObject
         PlatformMetrics.Clear();
         var platforms = new[]
         {
-            new { Name = "LinkedIn", Color = "#0A66C2", Icon = "💼" },
-            new { Name = "X (Twitter)", Color = "#000000", Icon = "🐦" },
             new { Name = "BlueSky", Color = "#0085FF", Icon = "🦋" },
-            new { Name = "Threads", Color = "#000000", Icon = "🧵" },
-            new { Name = "Facebook", Color = "#1877F2", Icon = "📘" }
         };
 
         foreach (var platform in platforms)

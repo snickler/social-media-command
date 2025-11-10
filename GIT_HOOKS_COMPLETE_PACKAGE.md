@@ -282,7 +282,7 @@ project-root/
 ### Internal Documentation
 - [Copilot Instructions](.github/copilot-instructions.md) - Project-specific guidelines
 - [Performance Optimizations](PERFORMANCE_OPTIMIZATIONS.md) - Async/await patterns
-- [Security Implementation](SECURE_STORAGE_IMPLEMENTATION.md) - Encryption standards
+- [Security Implementation](docs/security/secure-storage-implementation.md) - Encryption standards
 
 ### External References
 - [Git Hooks Documentation](https://git-scm.com/docs/githooks)

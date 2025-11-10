@@ -54,44 +54,154 @@
   
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="/Styles/AnimationsAndTransitions.axaml"/>
 
-        <!-- Button Styles -->
+        <!-- Primary Button Styles -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinWidth" Value="100"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Hover}"/>
+            <Setter Property="RenderTransform" Value="scale(1.02)"/>
+        </Style>
+        <Style Selector="Button.primary:pressed">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Pressed}"/>
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+        </Style>
+        <Style Selector="Button.primary:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+        <Style Selector="Button.primary:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
+        <!-- Secondary Button Styles -->
         <Style Selector="Button.secondary">
             <Setter Property="Background" Value="#EBEAFB"/>
             <Setter Property="Foreground" Value="#4338CA"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.secondary:pointerover">
             <Setter Property="Background" Value="#DCD9F7"/>
+            <Setter Property="RenderTransform" Value="scale(1.02)"/>
         </Style>
         <Style Selector="Button.secondary:pressed">
             <Setter Property="Background" Value="#CEC9F3"/>
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
+        </Style>
+        <Style Selector="Button.secondary:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="Button.secondary:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
         </Style>
         
+        <!-- Outline Button Style -->
+        <Style Selector="Button.outline">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.outline:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        <Style Selector="Button.outline:pressed">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Pressed}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+        </Style>
+        <Style Selector="Button.outline:focus-visible">
+            <Setter Property="BorderThickness" Value="3"/>
+        </Style>
+        <Style Selector="Button.outline:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+
+        <!-- Ghost Button Style -->
+        <Style Selector="Button.ghost">
+            <Setter Property="Background" Value="{DynamicResource SMC-Muted}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Foreground}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="Padding" Value="8"/>
+            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Opacity" Value="1"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.ghost:pointerover">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        <Style Selector="Button.ghost:pressed">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        <Style Selector="Button.ghost:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+
         <!-- Destructive Button -->
         <Style Selector="Button.destructive">
             <Setter Property="Background" Value="{DynamicResource SMC-Destructive}"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SMC-Destructive}"/>
-            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="Cursor" Value="Hand"/>
         </Style>
         <Style Selector="Button.destructive:pointerover">
             <Setter Property="Background" Value="{DynamicResource SMC-Destructive-Hover}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Destructive-Hover}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
-            <Setter Property="RenderTransform" Value="scale(1.05)"/>
-            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="RenderTransform" Value="scale(1.02)"/>
         </Style>
         <Style Selector="Button.destructive:pressed">
             <Setter Property="Background" Value="{DynamicResource SMC-Destructive-Pressed}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Destructive-Foreground}"/>
-            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+            <Setter Property="RenderTransform" Value="scale(0.98)"/>
         </Style>
         <Style Selector="Button.destructive:focus-visible">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Destructive-Foreground}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="Button.destructive:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+        <Style Selector="Button:focus-visible">
             <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderThickness" Value="4"/>
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
         
         <!-- Tab Button -->
@@ -120,11 +230,41 @@
             <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="TextBox:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
         </Style>
         <Style Selector="TextBox:focus">
             <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
             <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="TextBox.modern">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+        </Style>
+
+        <!-- ComboBox Style -->
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource SMC-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+        <Style Selector="ComboBox:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        <Style Selector="ComboBox:focus">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="ComboBox.modern">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
         </Style>
 
         <!-- Card Styles -->

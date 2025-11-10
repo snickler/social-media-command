@@ -14,38 +14,78 @@
     <Window.Styles>
         <!-- Header Button Styles -->
         <Style Selector="Button.HeaderButton">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="#5a52d0"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Button.HeaderButton:pointerover">
             <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="RenderTransform" Value="scale(1.05)"/>
+        </Style>
+        <Style Selector="Button.HeaderButton:pressed">
+            <Setter Property="Background" Value="#f5f6fa"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="RenderTransform" Value="scale(0.95)"/>
+        </Style>
+        <Style Selector="Button.HeaderButton:focus-visible">
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
         </Style>
         
         <!-- Toggle Button Styles -->
         <Style Selector="ToggleButton.ViewToggle">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="#5a52d0"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="Padding" Value="16,10"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="CornerRadius" Value="6"/>
+            <Setter Property="CornerRadius" Value="8"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Opacity" Value="0.7"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
+                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="ToggleButton.ViewToggle:checked">
             <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Opacity" Value="1"/>
         </Style>
         <Style Selector="ToggleButton.ViewToggle:pointerover">
             <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
             <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
+            <Setter Property="Opacity" Value="1"/>
+        </Style>
+        <Style Selector="ToggleButton.ViewToggle:pressed">
+            <Setter Property="Background" Value="#e8e9f0"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+        <Style Selector="ToggleButton.ViewToggle:focus-visible">
+            <Setter Property="BorderThickness" Value="2"/>
         </Style>
         
         <!-- Card Styles -->
@@ -55,16 +95,48 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="24"/>
+            <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.Card:pointerover">
+            <Setter Property="BoxShadow" Value="0 4 16 0 #20000000"/>
         </Style>
         
         <!-- Success Message Styles -->
         <Style Selector="Border.SuccessMessage">
             <Setter Property="Background" Value="{DynamicResource SMC-Success-Background}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource SMC-Success-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="16"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
             <Setter Property="Margin" Value="0,0,0,24"/>
+            <Setter Property="BoxShadow" Value="0 2 12 0 #10059669"/>
+        </Style>
+        
+        <!-- Card with Hover Effect -->
+        <Style Selector="Border.InteractiveCard">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
+                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
+                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.InteractiveCard:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="BoxShadow" Value="0 4 20 0 #204338CA"/>
+            <Setter Property="RenderTransform" Value="translateY(-2px)"/>
         </Style>
     </Window.Styles>
 
@@ -124,8 +196,8 @@
                     </Grid.ColumnDefinitions>
 
                     <!-- View Mode Toggle -->
-                    <Border Grid.Column="0" Background="{DynamicResource SMC-Accent-Foreground}" 
-                            CornerRadius="8" Padding="4" Opacity="0.1">
+                    <Border Grid.Column="0" Background="Transparent" 
+                            CornerRadius="8" Padding="4">
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="Standard View" 
                                           Classes="ViewToggle"
@@ -139,8 +211,8 @@
                     </Border>
 
                     <!-- Workspace Mode Toggle -->
-                    <Border Grid.Column="2" Background="{DynamicResource SMC-Accent-Foreground}" 
-                            CornerRadius="8" Padding="4" Opacity="0.1">
+                    <Border Grid.Column="2" Background="Transparent" 
+                            CornerRadius="8" Padding="4">
                         <StackPanel Orientation="Horizontal">
                             <ToggleButton Content="Single/Thread Posts" 
                                           Classes="ViewToggle"

@@ -29,7 +29,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WithNoConfiguration_ShouldReturnFailure()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ReturnsAsync((OAuthConfig?)null);
 
@@ -47,7 +47,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WithInvalidConfiguration_ShouldReturnFailure()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var invalidConfig = new OAuthConfig
         {
             ClientId = "", // Invalid
@@ -79,7 +79,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WithValidConfiguration_ShouldReturnSuccess()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var validConfig = CreateValidOAuthConfig();
 
         var validationResult = new OAuthValidationResult { IsValid = true };
@@ -124,9 +124,8 @@ public class OAuthAuthenticationServiceTests : IDisposable
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X)]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.LinkedIn)]
+    // TODO: Add other platforms when implementations are ready
     public async Task StartAuthenticationAsync_WithDifferentPlatforms_ShouldCallCorrectConfiguration(SocialPlatform platform)
     {
         // Arrange
@@ -151,7 +150,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WhenConfigServiceThrows_ShouldReturnFailure()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
             .ThrowsAsync(new InvalidOperationException("Config service error"));
 
@@ -168,7 +167,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WhenValidationServiceThrows_ShouldReturnFailure()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var validConfig = CreateValidOAuthConfig();
 
         _mockConfigService.Setup(x => x.GetConfigurationAsync(platform))
@@ -189,7 +188,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_WithNullRedirectUri_ShouldUseDefaultRedirectUri()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var validConfig = CreateValidOAuthConfig();
         var validationResult = new OAuthValidationResult { IsValid = true };
 
@@ -210,7 +209,7 @@ public class OAuthAuthenticationServiceTests : IDisposable
     public async Task StartAuthenticationAsync_MultipleCallsWithSamePlatform_ShouldCallConfigServiceEachTime()
     {
         // Arrange
-        var platform = SocialPlatform.X;
+        var platform = SocialPlatform.BlueSky;
         var validConfig = CreateValidOAuthConfig();
         var validationResult = new OAuthValidationResult { IsValid = true };
 
@@ -235,10 +234,10 @@ public class OAuthAuthenticationServiceTests : IDisposable
         {
             ClientId = "test_client_id",
             ClientSecret = "test_client_secret",
-            AuthorizationEndpoint = "https://api.twitter.com/oauth2/authorize",
-            TokenEndpoint = "https://api.twitter.com/oauth2/token",
+            AuthorizationEndpoint = "https://bsky.social/oauth/authorize",
+            TokenEndpoint = "https://bsky.social/oauth/token",
             RedirectUri = "http://localhost:8080/oauth/callback",
-            Scopes = new[] { "read", "write" }
+            Scopes = new[] { "atproto", "transition:generic" }
         };
     }
 

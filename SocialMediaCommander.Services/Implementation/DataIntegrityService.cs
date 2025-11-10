@@ -458,7 +458,7 @@ public class DataIntegrityService : IDataIntegrityService
     {
         if (issue.RelatedData is OAuthConfig config && issue.Type == "Missing Redirect URI")
         {
-            config.RedirectUri = "http://localhost:8080/callback";
+            config.RedirectUri = "http://localhost:8080/oauth/callback";
             // Note: We'd need the platform to save this, but this is just an example
         }
 

@@ -154,10 +154,10 @@ Time: **2 hours**
 - [Pre-commit Framework](https://pre-commit.com/) (alternative approach)
 
 ### Related Social Media Commander Docs
-- [Copilot Instructions](.github/copilot-instructions.md) - AI agent guidelines
-- [Performance Optimizations](../PERFORMANCE_OPTIMIZATIONS.md) - Async patterns
-- [Secure Storage](../SECURE_STORAGE_IMPLEMENTATION.md) - Security practices
-- [Contributing Guidelines](../CONTRIBUTING.md) - How to contribute
+- [Copilot Instructions](../../.github/copilot-instructions.md) - AI agent guidelines
+- [Performance Optimizations](../../PERFORMANCE_OPTIMIZATIONS.md) - Async patterns
+- [Secure Storage](../security/secure-storage-implementation.md) - Security practices
+- [Contributing Guidelines](../../CONTRIBUTING.md) - How to contribute
 
 ---
 

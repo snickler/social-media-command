@@ -162,56 +162,7 @@ public class OAuthConfigurationService : IOAuthConfigurationService
                     ["code_challenge_method"] = "S256"
                 }
             },
-            SocialPlatform.X => new OAuthConfig
-            {
-                AuthorizationEndpoint = "https://twitter.com/i/oauth2/authorize",
-                TokenEndpoint = "https://api.twitter.com/2/oauth2/token",
-                UserInfoEndpoint = "https://api.twitter.com/2/users/me",
-                RevokeEndpoint = "https://api.twitter.com/2/oauth2/revoke",
-                RedirectUri = "http://localhost:8080/oauth/callback",
-                Scopes = new[] { "tweet.read", "tweet.write", "users.read", "offline.access" },
-                AdditionalParameters = new Dictionary<string, string>
-                {
-                    ["response_type"] = "code",
-                    ["code_challenge_method"] = "S256"
-                }
-            },
-            SocialPlatform.LinkedIn => new OAuthConfig
-            {
-                AuthorizationEndpoint = "https://www.linkedin.com/oauth/v2/authorization",
-                TokenEndpoint = "https://www.linkedin.com/oauth/v2/accessToken",
-                UserInfoEndpoint = "https://api.linkedin.com/v2/people/~",
-                RedirectUri = "http://localhost:8080/oauth/callback",
-                Scopes = new[] { "r_liteprofile", "r_emailaddress", "w_member_social" },
-                AdditionalParameters = new Dictionary<string, string>
-                {
-                    ["response_type"] = "code"
-                }
-            },
-            SocialPlatform.Threads => new OAuthConfig
-            {
-                AuthorizationEndpoint = "https://threads.net/oauth/authorize",
-                TokenEndpoint = "https://graph.threads.net/oauth/access_token",
-                UserInfoEndpoint = "https://graph.threads.net/v1.0/me",
-                RedirectUri = "http://localhost:8080/oauth/callback",
-                Scopes = new[] { "threads_basic", "threads_content_publish" },
-                AdditionalParameters = new Dictionary<string, string>
-                {
-                    ["response_type"] = "code"
-                }
-            },
-            SocialPlatform.Facebook => new OAuthConfig
-            {
-                AuthorizationEndpoint = "https://www.facebook.com/v18.0/dialog/oauth",
-                TokenEndpoint = "https://graph.facebook.com/v18.0/oauth/access_token",
-                UserInfoEndpoint = "https://graph.facebook.com/v18.0/me",
-                RedirectUri = "http://localhost:8080/oauth/callback",
-                Scopes = new[] { "pages_manage_posts", "pages_read_engagement", "public_profile" },
-                AdditionalParameters = new Dictionary<string, string>
-                {
-                    ["response_type"] = "code"
-                }
-            },
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
             _ => throw new ArgumentException($"Unsupported platform: {platform}")
         };
     }

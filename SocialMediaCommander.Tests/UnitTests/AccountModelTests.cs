@@ -371,10 +371,10 @@ public class DefaultAccountsTests
 
         // Assert
         accounts.Should().ContainKey(SocialPlatform.BlueSky);
-        accounts.Should().ContainKey(SocialPlatform.X);
-        accounts.Should().ContainKey(SocialPlatform.LinkedIn);
-        accounts.Should().ContainKey(SocialPlatform.Threads);
-        accounts.Should().ContainKey(SocialPlatform.Facebook);
+        accounts.Should().ContainKey(SocialPlatform.BlueSky);
+        accounts.Should().ContainKey(SocialPlatform.BlueSky);
+        accounts.Should().ContainKey(SocialPlatform.BlueSky);
+        accounts.Should().ContainKey(SocialPlatform.BlueSky);
     }
 
     [Fact]
@@ -384,12 +384,8 @@ public class DefaultAccountsTests
         var accounts = DefaultAccounts.GetAllDefaultAccounts().ToList();
 
         // Assert
-        accounts.Should().HaveCount(5);
+        accounts.Should().HaveCount(1);
         accounts.Should().Contain(a => a.PlatformId == SocialPlatform.BlueSky);
-        accounts.Should().Contain(a => a.PlatformId == SocialPlatform.X);
-        accounts.Should().Contain(a => a.PlatformId == SocialPlatform.LinkedIn);
-        accounts.Should().Contain(a => a.PlatformId == SocialPlatform.Threads);
-        accounts.Should().Contain(a => a.PlatformId == SocialPlatform.Facebook);
 
         accounts.Should().OnlyContain(a => a.IsDefault);
         accounts.Should().OnlyContain(a => !string.IsNullOrEmpty(a.Avatar));
@@ -397,10 +393,7 @@ public class DefaultAccountsTests
 
     [Theory]
     [InlineData(SocialPlatform.BlueSky, "bluesky-default")]
-    [InlineData(SocialPlatform.X, "x-default")]
-    [InlineData(SocialPlatform.LinkedIn, "linkedin-default")]
-    [InlineData(SocialPlatform.Threads, "threads-default")]
-    [InlineData(SocialPlatform.Facebook, "facebook-default")]
+    // TODO: Add other platforms when implementations are ready
     public void DefaultAccounts_GetDefaultAccountForPlatform_ShouldReturnCorrectAccount(SocialPlatform platform, string expectedId)
     {
         // Act

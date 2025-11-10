@@ -51,7 +51,11 @@ public class ScreenshotHelperTests
 
         try
         {
-            await ScreenshotHelper.Save(bitmap, filePath).ConfigureAwait(false);
+            // Save synchronously on UI thread to avoid nested dispatcher operations
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+            {
+                await ScreenshotHelper.Save(bitmap, filePath).ConfigureAwait(false);
+            });
 
             File.Exists(filePath).Should().BeTrue();
             // With Skia backend enabled, screenshots should contain actual pixel data
@@ -72,7 +76,7 @@ public class ScreenshotHelperTests
         }
         finally
         {
-            await Dispatcher.UIThread.InvokeAsync(() => window.Close());
+            window.Close();
 
             if (File.Exists(filePath))
             {

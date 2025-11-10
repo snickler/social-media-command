@@ -81,7 +81,7 @@ public partial class PostEditorViewModel : ObservableObject
                 Name = config.Name,
                 Color = config.Color,
                 CharacterLimit = config.CharacterLimit,
-                IsSelected = config.Id == SocialPlatform.BlueSky || config.Id == SocialPlatform.LinkedIn || config.Id == SocialPlatform.Facebook
+                IsSelected = config.Id == SocialPlatform.BlueSky // TODO: Add default selections for Twitter, LinkedIn, Facebook, Threads when implementations are ready
             };
 
             // Subscribe to property changes to update selected platforms
@@ -96,11 +96,7 @@ public partial class PostEditorViewModel : ObservableObject
             AvailablePlatforms.Add(platformViewModel);
         }
 
-        // Initialize default hashtags
-        foreach (var tag in new[] { "socialmedia", "digitalmarketing", "marketing", "socialmediamarketing", "somehashtag" })
-        {
-            Hashtags.Add(tag);
-        }
+
 
         // Update selected platforms collection
         UpdateSelectedPlatforms();
@@ -110,6 +106,9 @@ public partial class PostEditorViewModel : ObservableObject
         {
             AddThreadPost();
         }
+
+        // Load accounts for all platforms
+        _ = LoadAccountsForAllPlatformsAsync();
 
         PropertyChanged += OnPropertyChanged;
     }
@@ -296,9 +295,20 @@ public partial class PostEditorViewModel : ObservableObject
     [RelayCommand]
     private void RemoveHashtag(string hashtag)
     {
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] RemoveHashtag called with: {hashtag}");
+
         if (!string.IsNullOrEmpty(hashtag))
         {
-            Hashtags.Remove(hashtag);
+            var removed = Hashtags.Remove(hashtag);
+            System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Hashtag removed: {removed}. Remaining: {Hashtags.Count}");
+
+            // Force UI update
+            OnPropertyChanged(nameof(Hashtags));
+            _ = UpdatePreviewsAsync();
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] RemoveHashtag called with null or empty hashtag");
         }
     }
 
@@ -313,9 +323,94 @@ public partial class PostEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void UploadMedia()
+    private Task UploadMediaAsync()
     {
-        OnMediaUploadRequested?.Invoke();
+        System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] UploadMedia command called!");
+
+        try
+        {
+            // Check if we can add more media
+            if (Media.Count >= 4)
+            {
+                OnError?.Invoke("Maximum of 4 media files reached");
+                System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] Cannot upload - limit reached");
+                return Task.CompletedTask;
+            }
+
+            // Trigger event for UI to handle file dialog
+            // The view should subscribe to this and show Avalonia's OpenFileDialog
+            OnMediaUploadRequested?.Invoke();
+
+            System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] Media upload requested event fired");
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Upload media failed: {ex.Message}");
+            OnError?.Invoke($"Failed to upload media: {ex.Message}");
+        }
+
+        return Task.CompletedTask;
+    }
+
+    [RelayCommand]
+    private void RemoveMedia(Media media)
+    {
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] RemoveMedia called for: {media?.FileName}");
+
+        if (media != null && Media.Contains(media))
+        {
+            Media.Remove(media);
+            System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Media removed. Remaining: {Media.Count}");
+
+            // Force UI updates
+            OnPropertyChanged(nameof(Media));
+            OnPropertyChanged(nameof(MediaSupported));
+            _ = UpdatePreviewsAsync();
+        }
+        else
+        {
+            System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] RemoveMedia called with null or non-existent media");
+        }
+    }
+
+    /// <summary>
+    /// Called by the view after user selects files
+    /// </summary>
+    public async Task ProcessSelectedFilesAsync(string[] filePaths)
+    {
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Processing {filePaths.Length} selected files");
+
+        foreach (var filePath in filePaths)
+        {
+            try
+            {
+                if (Media.Count >= 4)
+                {
+                    OnError?.Invoke("Maximum of 4 media files reached");
+                    break;
+                }
+
+                System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Uploading file: {filePath}");
+
+                var media = await _mediaService.UploadMediaAsync(filePath).ConfigureAwait(false);
+
+                // Update UI on UI thread
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    Media.Add(media);
+                    OnPropertyChanged(nameof(Media));
+                    OnPropertyChanged(nameof(MediaSupported));
+                    _ = UpdatePreviewsAsync();
+
+                    System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Media added: {media.FileName}. Total: {Media.Count}");
+                });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Failed to upload {filePath}: {ex.Message}");
+                OnError?.Invoke($"Failed to upload {Path.GetFileName(filePath)}: {ex.Message}");
+            }
+        }
     }
 
     [RelayCommand]
@@ -334,9 +429,62 @@ public partial class PostEditorViewModel : ObservableObject
 
     #region Private Methods
 
+    /// <summary>
+    /// Loads accounts for all platforms and populates the account selection UI
+    /// </summary>
+    private async Task LoadAccountsForAllPlatformsAsync()
+    {
+        try
+        {
+            var allAccounts = await _accountService.GetAllAccountsAsync().ConfigureAwait(false);
+
+            // Update UI on UI thread
+            await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                foreach (var platformVM in AvailablePlatforms)
+                {
+                    // Get accounts for this platform
+                    var platformAccounts = allAccounts
+                        .Where(a => a.PlatformId == platformVM.Platform)
+                        .ToList();
+
+                    platformVM.AvailableAccounts.Clear();
+
+                    foreach (var account in platformAccounts)
+                    {
+                        var accountItem = new AccountSelectionItem
+                        {
+                            Id = account.Id,
+                            Username = account.Username,
+                            DisplayName = account.DisplayName ?? account.Username,
+                            IsDefault = account.IsDefault,
+                            IsAuthenticated = account.IsAuthenticated
+                        };
+
+                        platformVM.AvailableAccounts.Add(accountItem);
+                    }
+
+                    // Auto-select default account or first authenticated account
+                    if (platformVM.AvailableAccounts.Any())
+                    {
+                        platformVM.SelectedAccount = platformVM.AvailableAccounts.FirstOrDefault(a => a.IsDefault)
+                                                   ?? platformVM.AvailableAccounts.FirstOrDefault(a => a.IsAuthenticated)
+                                                   ?? platformVM.AvailableAccounts.First();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Loaded {platformVM.AvailableAccounts.Count} accounts for {platformVM.Name}");
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Failed to load accounts: {ex.Message}");
+        }
+    }
+
     private Post CreatePostFromViewModel()
     {
-        return new Post
+        var post = new Post
         {
             Id = Guid.NewGuid().ToString(),
             Content = this.Content,
@@ -353,6 +501,27 @@ public partial class PostEditorViewModel : ObservableObject
                 Media = new List<Media>(tp.Media)
             }).ToList()
         };
+
+        // Populate SelectedAccounts with the user's selected account for each platform
+        foreach (var platform in this.SelectedPlatforms)
+        {
+            var platformVM = AvailablePlatforms.FirstOrDefault(p => p.Platform == platform);
+            if (platformVM?.SelectedAccount != null)
+            {
+                post.SelectedAccounts[platform] = new List<string> { platformVM.SelectedAccount.Id };
+                System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Selected account for {platform}: {platformVM.SelectedAccount.Username}");
+            }
+            else
+            {
+                // Fallback to "default" if no account selected (shouldn't happen with auto-selection)
+                post.SelectedAccounts[platform] = new List<string> { "default" };
+                System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] WARNING: No account selected for {platform}, using default");
+            }
+        }
+
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Created post with {post.TargetPlatforms.Count} platforms and {post.SelectedAccounts.Count} account selections");
+
+        return post;
     }
 
     private void UpdateSelectedPlatforms()
@@ -648,13 +817,54 @@ public partial class PlatformViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSelected;
 
+    [ObservableProperty]
+    private ObservableCollection<AccountSelectionItem> _availableAccounts = new();
+
+    [ObservableProperty]
+    private AccountSelectionItem? _selectedAccount;
+
     public bool HasCharacterLimit => CharacterLimit.HasValue;
+    public bool HasMultipleAccounts => AvailableAccounts.Count > 1;
+    public bool HasAccounts => AvailableAccounts.Any();
+    public string AccountDisplayText => SelectedAccount != null
+        ? $"@{SelectedAccount.Username}"
+        : "No account selected";
 
     partial void OnIsSelectedChanged(bool value)
     {
         // This will be called when IsSelected changes
         // The parent ViewModel should handle the platform selection updates
     }
+
+    partial void OnSelectedAccountChanged(AccountSelectionItem? value)
+    {
+        OnPropertyChanged(nameof(AccountDisplayText));
+    }
+}
+
+/// <summary>
+/// Represents an account that can be selected for posting
+/// </summary>
+public partial class AccountSelectionItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _id = string.Empty;
+
+    [ObservableProperty]
+    private string _username = string.Empty;
+
+    [ObservableProperty]
+    private string _displayName = string.Empty;
+
+    [ObservableProperty]
+    private bool _isDefault = false;
+
+    [ObservableProperty]
+    private bool _isAuthenticated = false;
+
+    public string DisplayText => !string.IsNullOrEmpty(DisplayName)
+        ? $"{DisplayName} (@{Username}){(IsDefault ? " � Default" : "")}"
+        : $"@{Username}{(IsDefault ? " � Default" : "")}";
 }
 
 public partial class ThreadPostViewModel : ObservableObject

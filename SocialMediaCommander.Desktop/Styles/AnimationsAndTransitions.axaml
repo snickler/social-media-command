@@ -1,0 +1,236 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- Global Animation Styles -->
+    
+    <!-- Fade In Animation -->
+    <Style Selector="Border.FadeIn">
+        <Style.Animations>
+            <Animation Duration="0:0:0.3" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Slide In From Bottom Animation -->
+    <Style Selector="Border.SlideInBottom">
+        <Style.Animations>
+            <Animation Duration="0:0:0.4" Easing="CubicEaseOut" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.Y" Value="30"/>
+                    <Setter Property="Opacity" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.Y" Value="0"/>
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Pulse Animation for Loading States -->
+    <Style Selector="Border.Pulse">
+        <Style.Animations>
+            <Animation Duration="0:0:1.5" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Spin Animation for Loading Indicators -->
+    <Style Selector="Border.Spin">
+        <Style.Animations>
+            <Animation Duration="0:0:2" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="RotateTransform.Angle" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="RotateTransform.Angle" Value="360"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Scale Animation on Hover -->
+    <Style Selector="Button.ScaleHover">
+        <Setter Property="Transitions">
+            <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.ScaleHover:pointerover">
+        <Setter Property="RenderTransform" Value="scale(1.05)"/>
+    </Style>
+    <Style Selector="Button.ScaleHover:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.95)"/>
+    </Style>
+    
+    <!-- Smooth Color Transitions -->
+    <Style Selector="Border.SmoothTransitions">
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.3"/>
+                <BrushTransition Property="BorderBrush" Duration="0:0:0.3"/>
+                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.3"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <!-- Progress Bar Styles -->
+    <Style Selector="ProgressBar.Modern">
+        <Setter Property="Height" Value="8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Background" Value="#20000000"/>
+        <Setter Property="Foreground" Value="#4338CA"/>
+        <Setter Property="BorderThickness" Value="0"/>
+    </Style>
+    
+    <Style Selector="ProgressBar.ModernIndeterminate">
+        <Setter Property="Height" Value="4"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#4338CA"/>
+        <Setter Property="IsIndeterminate" Value="True"/>
+    </Style>
+    
+    <!-- Skeleton Loader Animation -->
+    <Style Selector="Border.SkeletonLoader">
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0%,50%" EndPoint="100%,50%">
+                <GradientStop Color="#E0E0E0" Offset="0"/>
+                <GradientStop Color="#F0F0F0" Offset="0.5"/>
+                <GradientStop Color="#E0E0E0" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Style.Animations>
+            <Animation Duration="0:0:1.5" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="0.6"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Success Checkmark Animation -->
+    <Style Selector="Border.SuccessCheckmark">
+        <Style.Animations>
+            <Animation Duration="0:0:0.6" Easing="CircularEaseOut" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="ScaleTransform.ScaleX" Value="0"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="0"/>
+                    <Setter Property="Opacity" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="ScaleTransform.ScaleX" Value="1.2"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="1.2"/>
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="ScaleTransform.ScaleX" Value="1"/>
+                    <Setter Property="ScaleTransform.ScaleY" Value="1"/>
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Shake Animation for Errors -->
+    <Style Selector="Border.ShakeError">
+        <Style.Animations>
+            <Animation Duration="0:0:0.5" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="TranslateTransform.X" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="10%">
+                    <Setter Property="TranslateTransform.X" Value="-10"/>
+                </KeyFrame>
+                <KeyFrame Cue="20%">
+                    <Setter Property="TranslateTransform.X" Value="10"/>
+                </KeyFrame>
+                <KeyFrame Cue="30%">
+                    <Setter Property="TranslateTransform.X" Value="-10"/>
+                </KeyFrame>
+                <KeyFrame Cue="40%">
+                    <Setter Property="TranslateTransform.X" Value="10"/>
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="TranslateTransform.X" Value="-5"/>
+                </KeyFrame>
+                <KeyFrame Cue="60%">
+                    <Setter Property="TranslateTransform.X" Value="5"/>
+                </KeyFrame>
+                <KeyFrame Cue="70%">
+                    <Setter Property="TranslateTransform.X" Value="-2"/>
+                </KeyFrame>
+                <KeyFrame Cue="80%">
+                    <Setter Property="TranslateTransform.X" Value="2"/>
+                </KeyFrame>
+                <KeyFrame Cue="90%">
+                    <Setter Property="TranslateTransform.X" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="TranslateTransform.X" Value="0"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Tooltip Styles -->
+    <Style Selector="ToolTip">
+        <Setter Property="Background" Value="#2E2D33"/>
+        <Setter Property="Foreground" Value="#F5F6FA"/>
+        <Setter Property="BorderBrush" Value="#4338CA"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+    
+    <!-- Badge Styles -->
+    <Style Selector="Border.Badge">
+        <Setter Property="Background" Value="#4338CA"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="Padding" Value="8,4"/>
+        <Setter Property="MinWidth" Value="24"/>
+    </Style>
+    
+    <Style Selector="Border.Badge.Success">
+        <Setter Property="Background" Value="#059669"/>
+    </Style>
+    
+    <Style Selector="Border.Badge.Warning">
+        <Setter Property="Background" Value="#F59E0B"/>
+    </Style>
+    
+    <Style Selector="Border.Badge.Error">
+        <Setter Property="Background" Value="#F04141"/>
+    </Style>
+    
+    <Style Selector="Border.Badge TextBlock">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    
+</Styles>

@@ -98,12 +98,12 @@ public class PostModelTests
             Content = "Short content",
             SelectedAccounts = new Dictionary<SocialPlatform, List<string>>
             {
-                { SocialPlatform.X, new List<string> { "account1" } }
+                { SocialPlatform.BlueSky, new List<string> { "account1" } }
             }
         };
 
         // Act
-        var result = post.ValidateForPlatform(SocialPlatform.X);
+        var result = post.ValidateForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.True(result.IsValid);
@@ -114,18 +114,18 @@ public class PostModelTests
     public void ValidateForPlatform_WithContentExceedingLimit_ShouldReturnInvalid()
     {
         // Arrange
-        var longContent = new string('x', 300); // Exceeds X's 280 limit
+        var longContent = new string('x', 301); // Exceeds BlueSky's 300 limit
         var post = new Post
         {
             Content = longContent,
             SelectedAccounts = new Dictionary<SocialPlatform, List<string>>
             {
-                { SocialPlatform.X, new List<string> { "account1" } }
+                { SocialPlatform.BlueSky, new List<string> { "account1" } }
             }
         };
 
         // Act
-        var result = post.ValidateForPlatform(SocialPlatform.X);
+        var result = post.ValidateForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.False(result.IsValid);
@@ -133,7 +133,7 @@ public class PostModelTests
     }
 
     [Fact]
-    public void ValidateForPlatform_WithThreadForNonThreadPlatform_ShouldReturnInvalid()
+    public void ValidateForPlatform_WithThreadForThreadPlatform_ShouldReturnValid()
     {
         // Arrange
         var post = new Post
@@ -142,16 +142,15 @@ public class PostModelTests
             IsThread = true,
             SelectedAccounts = new Dictionary<SocialPlatform, List<string>>
             {
-                { SocialPlatform.LinkedIn, new List<string> { "account1" } }
+                { SocialPlatform.BlueSky, new List<string> { "account1" } }
             }
         };
 
         // Act
-        var result = post.ValidateForPlatform(SocialPlatform.LinkedIn);
+        var result = post.ValidateForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        Assert.False(result.IsValid);
-        Assert.Contains(result.Errors, e => e.Contains("does not support thread"));
+        // Assert - BlueSky supports threads, so this should be valid
+        Assert.True(result.IsValid);
     }
 
     [Fact]
@@ -187,7 +186,7 @@ public class PostModelTests
         };
 
         // Act
-        var result = post.ValidateForPlatform(SocialPlatform.X);
+        var result = post.ValidateForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.False(result.IsValid);
@@ -201,7 +200,7 @@ public class PostModelTests
         var post = new Post { Content = "Hello world!" };
 
         // Act
-        var formatted = post.FormatForPlatform(SocialPlatform.X);
+        var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.Equal("Hello world!", formatted);
@@ -219,7 +218,7 @@ public class PostModelTests
         };
 
         // Act
-        var formatted = post.FormatForPlatform(SocialPlatform.X);
+        var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.Contains("Hello world!", formatted);
@@ -242,7 +241,7 @@ public class PostModelTests
         };
 
         // Act
-        var formatted = post.FormatForPlatform(SocialPlatform.X);
+        var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.Contains("Post with media", formatted);
@@ -265,7 +264,7 @@ public class PostModelTests
         };
 
         // Act
-        var formatted = post.FormatForPlatform(SocialPlatform.X);
+        var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
         // Assert
         Assert.Contains("Thread starter", formatted);
@@ -276,23 +275,20 @@ public class PostModelTests
     public void FormatForPlatform_WithContentExceedingLimit_ShouldTruncate()
     {
         // Arrange
-        var longContent = new string('x', 290); // Exceeds X's 280 limit
+        var longContent = new string('x', 310); // Exceeds BlueSky's 300 limit
         var post = new Post { Content = longContent };
 
         // Act
-        var formatted = post.FormatForPlatform(SocialPlatform.X);
+        var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
         // Assert
-        Assert.True(formatted.Length <= 280);
+        Assert.True(formatted.Length <= 300);
         Assert.EndsWith("...", formatted);
     }
 
     [Theory]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.Facebook)]
-    [InlineData(SocialPlatform.LinkedIn)]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.Threads)]
+    // TODO: Add Twitter, Facebook, LinkedIn, Threads when implementations are ready
     public void FormatForPlatform_WithDifferentPlatforms_ShouldHandleAllPlatforms(SocialPlatform platform)
     {
         // Arrange
