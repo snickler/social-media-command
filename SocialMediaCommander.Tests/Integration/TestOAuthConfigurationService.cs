@@ -95,46 +95,6 @@ public class TestOAuthConfigurationService : IOAuthConfigurationService
                 UserInfoEndpoint = "https://bsky.social/oauth/userinfo",
                 RedirectUri = "http://localhost:8080/callback",
                 Scopes = ["read", "write", "follow"]
-            },
-            [SocialPlatform.X] = new OAuthConfig
-            {
-                ClientId = "test_twitter_client_id",
-                ClientSecret = "test_twitter_client_secret",
-                AuthorizationEndpoint = "https://twitter.com/i/oauth2/authorize",
-                TokenEndpoint = "https://api.twitter.com/2/oauth2/token",
-                UserInfoEndpoint = "https://api.twitter.com/2/users/me",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["tweet.read", "tweet.write", "users.read", "offline.access"]
-            },
-            [SocialPlatform.LinkedIn] = new OAuthConfig
-            {
-                ClientId = "test_linkedin_client_id",
-                ClientSecret = "test_linkedin_client_secret",
-                AuthorizationEndpoint = "https://www.linkedin.com/oauth/v2/authorization",
-                TokenEndpoint = "https://www.linkedin.com/oauth/v2/accessToken",
-                UserInfoEndpoint = "https://api.linkedin.com/v2/people/~",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["r_liteprofile", "w_member_social"]
-            },
-            [SocialPlatform.Threads] = new OAuthConfig
-            {
-                ClientId = "test_threads_client_id",
-                ClientSecret = "test_threads_client_secret",
-                AuthorizationEndpoint = "https://threads.net/oauth/authorize",
-                TokenEndpoint = "https://graph.threads.net/oauth/access_token",
-                UserInfoEndpoint = "https://graph.threads.net/v1.0/me",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["threads_basic", "threads_content_publish"]
-            },
-            [SocialPlatform.Facebook] = new OAuthConfig
-            {
-                ClientId = "test_facebook_client_id",
-                ClientSecret = "test_facebook_client_secret",
-                AuthorizationEndpoint = "https://www.facebook.com/v18.0/dialog/oauth",
-                TokenEndpoint = "https://graph.facebook.com/v18.0/oauth/access_token",
-                UserInfoEndpoint = "https://graph.facebook.com/v18.0/me",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["pages_manage_posts", "pages_read_engagement", "pages_read_user_content"]
             }
         };
     }

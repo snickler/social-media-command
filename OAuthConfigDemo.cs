@@ -31,20 +31,20 @@ public class OAuthConfigDemo
         }
 
         // Demo 2: Save a custom configuration
-        Console.WriteLine("2. Saving custom OAuth configuration for Twitter/X:");
+        Console.WriteLine("2. Saving custom OAuth configuration for BlueSky:");
         var customConfig = new OAuthConfig
         {
-            ClientId = "your-twitter-client-id",
-            ClientSecret = "your-twitter-client-secret",
-            AuthorizationEndpoint = "https://twitter.com/i/oauth2/authorize",
-            TokenEndpoint = "https://api.twitter.com/2/oauth2/token",
-            UserInfoEndpoint = "https://api.twitter.com/2/users/me",
+            ClientId = "your-bluesky-client-id",
+            ClientSecret = "your-bluesky-client-secret",
+            AuthorizationEndpoint = "https://bsky.social/oauth/authorize",
+            TokenEndpoint = "https://bsky.social/oauth/token",
+            UserInfoEndpoint = "https://bsky.social/xrpc/com.atproto.server.getSession",
             RedirectUri = "http://localhost:8080/oauth/callback",
-            Scopes = new[] { "tweet.read", "tweet.write", "users.read" }
+            Scopes = new[] { "atproto", "transition:generic" }
         };
 
-        await configService.SaveConfigurationAsync(SocialPlatform.X, customConfig);
-        Console.WriteLine("   Custom configuration saved for Twitter/X!");
+        await configService.SaveConfigurationAsync(SocialPlatform.BlueSky, customConfig);
+        Console.WriteLine("   Custom configuration saved for BlueSky!");
 
         // Demo 3: Validate configuration
         Console.WriteLine("\n3. Validating configurations:");
@@ -79,26 +79,15 @@ public class OAuthConfigDemo
             var httpClient = new System.Net.Http.HttpClient();
             var authService = new OAuthAuthenticationService(httpClient, configService);
 
-            // Try to start authentication for Twitter/X (which has a configuration)
-            var result = await authService.StartAuthenticationAsync(SocialPlatform.X);
+            // Try to start authentication for BlueSky (which has a configuration)
+            var result = await authService.StartAuthenticationAsync(SocialPlatform.BlueSky);
             if (result.IsSuccess)
             {
-                Console.WriteLine($"   ✓ Authentication URL generated for Twitter/X: {result.AuthorizationUrl}");
+                Console.WriteLine($"   ✓ Authentication URL generated for BlueSky: {result.AuthorizationUrl}");
             }
             else
             {
-                Console.WriteLine($"   ✗ Authentication failed for Twitter/X: {result.ErrorMessage}");
-            }
-
-            // Try to start authentication for BlueSky (which doesn't have a configuration)
-            var blueSkyResult = await authService.StartAuthenticationAsync(SocialPlatform.BlueSky);
-            if (blueSkyResult.IsSuccess)
-            {
-                Console.WriteLine($"   ✓ Authentication URL generated for BlueSky: {blueSkyResult.AuthorizationUrl}");
-            }
-            else
-            {
-                Console.WriteLine($"   ✗ Authentication failed for BlueSky: {blueSkyResult.ErrorMessage}");
+                Console.WriteLine($"   ✗ Authentication failed for BlueSky: {result.ErrorMessage}");
             }
         }
         catch (Exception ex)

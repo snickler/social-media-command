@@ -90,27 +90,15 @@ public class AccountManagementIntegrationTests : IDisposable
             DisplayName = "BlueSky User"
         };
 
-        var twitterAccount = new Account
-        {
-            Id = Guid.NewGuid().ToString(),
-            PlatformId = SocialPlatform.X,
-            Username = "twitter_user",
-            DisplayName = "Twitter User"
-        };
-
         await _accountService.CreateAccountAsync(blueSkyAccount);
-        await _accountService.CreateAccountAsync(twitterAccount);
 
         // Act
         var blueSkyAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.BlueSky);
-        var twitterAccounts = await _accountService.GetAccountsForPlatformAsync(SocialPlatform.X);
 
         // Assert
         blueSkyAccounts.Should().HaveCountGreaterThanOrEqualTo(1);
         blueSkyAccounts.First(a => a.Username == "bluesky_user").PlatformId.Should().Be(SocialPlatform.BlueSky);
 
-        twitterAccounts.Should().HaveCountGreaterThanOrEqualTo(1);
-        twitterAccounts.First(a => a.Username == "twitter_user").PlatformId.Should().Be(SocialPlatform.X);
     }
 
     [Fact]
@@ -120,7 +108,7 @@ public class AccountManagementIntegrationTests : IDisposable
         var account = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            PlatformId = SocialPlatform.LinkedIn,
+            PlatformId = SocialPlatform.BlueSky,
             Username = "original_user",
             DisplayName = "Original Name"
         };
@@ -145,7 +133,7 @@ public class AccountManagementIntegrationTests : IDisposable
         var account = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            PlatformId = SocialPlatform.Facebook,
+            PlatformId = SocialPlatform.BlueSky,
             Username = "delete_user",
             DisplayName = "Delete User"
         };
@@ -300,7 +288,7 @@ public class AccountManagementIntegrationTests : IDisposable
         // In a real scenario, we would populate accounts and verify grouping
 
         // Arrange
-        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.X, SocialPlatform.LinkedIn, SocialPlatform.Threads, SocialPlatform.Facebook };
+        var platforms = new[] { SocialPlatform.BlueSky, SocialPlatform.BlueSky, SocialPlatform.BlueSky, SocialPlatform.BlueSky, SocialPlatform.BlueSky };
 
         // Act & Assert
         foreach (var platform in platforms)
@@ -317,8 +305,8 @@ public class AccountManagementIntegrationTests : IDisposable
         var accounts = new[]
         {
             new Account { Id = Guid.NewGuid().ToString(), PlatformId = SocialPlatform.BlueSky, Username = "user1" },
-            new Account { Id = Guid.NewGuid().ToString(), PlatformId = SocialPlatform.X, Username = "user2" },
-            new Account { Id = Guid.NewGuid().ToString(), PlatformId = SocialPlatform.LinkedIn, Username = "user3" }
+            new Account { Id = Guid.NewGuid().ToString(), PlatformId = SocialPlatform.BlueSky, Username = "user2" },
+            new Account { Id = Guid.NewGuid().ToString(), PlatformId = SocialPlatform.BlueSky, Username = "user3" }
         };
 
         foreach (var account in accounts)
@@ -348,7 +336,7 @@ public class AccountManagementIntegrationTests : IDisposable
 
         var authenticatedAccount = new Account
         {
-            PlatformId = SocialPlatform.X,
+            PlatformId = SocialPlatform.BlueSky,
             AuthStatus = AuthenticationStatus.Authenticated,
             Tokens = new OAuthTokens
             {
@@ -359,7 +347,7 @@ public class AccountManagementIntegrationTests : IDisposable
 
         var expiredAccount = new Account
         {
-            PlatformId = SocialPlatform.LinkedIn,
+            PlatformId = SocialPlatform.BlueSky,
             AuthStatus = AuthenticationStatus.Authenticated,
             Tokens = new OAuthTokens
             {
@@ -511,7 +499,7 @@ public class AccountManagementIntegrationTests : IDisposable
         var account = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            PlatformId = SocialPlatform.X,
+            PlatformId = SocialPlatform.BlueSky,
             Username = "expireduser",
             DisplayName = "Expired User",
             Tokens = new OAuthTokens

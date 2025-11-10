@@ -86,10 +86,6 @@ public class AccountManagerIntegrationTests : IDisposable
 
     [Theory]
     [InlineData(SocialPlatform.BlueSky)]
-    [InlineData(SocialPlatform.X)]
-    [InlineData(SocialPlatform.LinkedIn)]
-    [InlineData(SocialPlatform.Threads)]
-    [InlineData(SocialPlatform.Facebook)]
     public void ConnectAccountCommand_ShouldBeAvailableForAllPlatforms(SocialPlatform platform)
     {
         // Arrange & Act
@@ -342,7 +338,7 @@ public class AccountManagerIntegrationTests : IDisposable
         var account = new Account
         {
             Id = Guid.NewGuid().ToString(),
-            PlatformId = SocialPlatform.X,
+            PlatformId = SocialPlatform.BlueSky,
             Username = "expireduser",
             DisplayName = "Expired User",
             Tokens = new OAuthTokens
@@ -376,15 +372,13 @@ public class AccountManagerIntegrationTests : IDisposable
     {
         // Arrange
         var blueSkyAccount = await CreateTestAccount(SocialPlatform.BlueSky, "bluesky_user");
-        var twitterAccount = await CreateTestAccount(SocialPlatform.X, "twitter_user");
 
         // Act
         var platformGroups = _viewModel.PlatformGroups.ToList();
 
         // Assert
-        platformGroups.Should().HaveCount(2, "Should have groups for BlueSky and X");
+        platformGroups.Should().HaveCount(1, "Should have group for BlueSky");
         platformGroups.Should().Contain(g => g.Platform == SocialPlatform.BlueSky, "Should have BlueSky group");
-        platformGroups.Should().Contain(g => g.Platform == SocialPlatform.X, "Should have X group");
 
         var blueSkyGroup = platformGroups.First(g => g.Platform == SocialPlatform.BlueSky);
         blueSkyGroup.Accounts.Should().HaveCount(1, "BlueSky group should have 1 account");
