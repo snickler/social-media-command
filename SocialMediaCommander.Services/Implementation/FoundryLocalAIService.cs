@@ -304,8 +304,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
         var request = new AIContentRequest
         {
             Prompt = prompt,
-            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.X }, // Default platform
-            MaxLength = 280,
+            TargetPlatforms = new List<SocialPlatform> { SocialPlatform.BlueSky }, // Default platform
+            MaxLength = 250,
             Tone = AITone.Professional
         };
 
@@ -492,8 +492,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 Factors = new List<string> { "Unable to analyze" },
                 PlatformPerformance = new Dictionary<SocialPlatform, double>
                 {
-                    { SocialPlatform.X, 0.6 },
-                    { SocialPlatform.LinkedIn, 0.4 }
+                    // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
+                    { SocialPlatform.BlueSky, 0.6 }
                 }
             };
         }
@@ -523,7 +523,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                     Content = content,
                     ConfidenceScore = 0.5,
                     Hashtags = new List<string> { "content" },
-                    Platform = SocialPlatform.X
+                    Platform = SocialPlatform.BlueSky
                 }
             };
         }
@@ -549,11 +549,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
             var now = DateTime.UtcNow;
             return new Dictionary<SocialPlatform, DateTime>
             {
-                { SocialPlatform.X, now.AddHours(2) },
-                { SocialPlatform.LinkedIn, now.AddHours(1) },
-                { SocialPlatform.Facebook, now.AddHours(3) },
-                { SocialPlatform.BlueSky, now.AddHours(1.5) },
-                { SocialPlatform.Threads, now.AddHours(2.5) }
+                // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
+                { SocialPlatform.BlueSky, now.AddHours(1.5) }
             };
         }
     }
@@ -765,11 +762,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
         {
             info.Add(platform switch
             {
-                SocialPlatform.X => "X/Twitter: 280 characters, casual tone",
-                SocialPlatform.LinkedIn => "LinkedIn: 3000 characters, professional tone",
-                SocialPlatform.Facebook => "Facebook: No strict limit, conversational tone",
+                // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
                 SocialPlatform.BlueSky => "BlueSky: 300 characters, community-focused",
-                SocialPlatform.Threads => "Threads: 500 characters, visual-friendly",
                 _ => $"{platform}: Standard social media format"
             });
         }
@@ -781,12 +775,9 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         return platform switch
         {
-            SocialPlatform.X => new PlatformLimits { CharacterLimit = 280, MaxMediaCount = 4 },
-            SocialPlatform.LinkedIn => new PlatformLimits { CharacterLimit = 3000, MaxMediaCount = 9 },
-            SocialPlatform.Facebook => new PlatformLimits { CharacterLimit = 63206, MaxMediaCount = 10 },
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
             SocialPlatform.BlueSky => new PlatformLimits { CharacterLimit = 300, MaxMediaCount = 4 },
-            SocialPlatform.Threads => new PlatformLimits { CharacterLimit = 500, MaxMediaCount = 10 },
-            _ => new PlatformLimits { CharacterLimit = 280, MaxMediaCount = 4 }
+            _ => new PlatformLimits { CharacterLimit = 300, MaxMediaCount = 4 }
         };
     }
 
@@ -1036,7 +1027,7 @@ public class FoundryLocalAIService : IAIService, IDisposable
                 Content = lines[i].Trim(),
                 CharacterCount = lines[i].Length,
                 ConfidenceScore = 0.8 - (i * 0.1),
-                Platform = SocialPlatform.X
+                Platform = SocialPlatform.BlueSky
             });
         }
 
@@ -1051,11 +1042,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
         var currentTime = DateTime.Now;
         return new Dictionary<SocialPlatform, DateTime>
         {
-            [SocialPlatform.X] = currentTime.AddHours(2),
-            [SocialPlatform.LinkedIn] = currentTime.AddHours(1),
-            [SocialPlatform.Facebook] = currentTime.AddHours(3),
-            [SocialPlatform.BlueSky] = currentTime.AddHours(4),
-            [SocialPlatform.Threads] = currentTime.AddHours(2.5)
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
+            [SocialPlatform.BlueSky] = currentTime.AddHours(4)
         };
     }
 
@@ -1089,11 +1077,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
     {
         return platform switch
         {
-            SocialPlatform.X => "2:00 PM",
-            SocialPlatform.LinkedIn => "10:00 AM",
-            SocialPlatform.Facebook => "1:00 PM",
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
             SocialPlatform.BlueSky => "3:00 PM",
-            SocialPlatform.Threads => "2:30 PM",
             _ => "12:00 PM"
         };
     }

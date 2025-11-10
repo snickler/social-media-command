@@ -174,16 +174,7 @@ public class MediaService : IMediaService
         // Platform-specific limits
         return Task.FromResult(platform switch
         {
-            SocialPlatform.X => new MediaFormats
-            {
-                SupportedImageFormats = new List<string> { "jpg", "jpeg", "png", "gif", "webp" },
-                SupportedVideoFormats = new List<string> { "mp4", "mov" },
-                MaxFileSize = 5 * 1024 * 1024, // 5MB for images
-                MaxWidth = 4096,
-                MaxHeight = 4096,
-                MaxDuration = TimeSpan.FromMinutes(2.2),
-                SupportsGifs = true
-            },
+            // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
             SocialPlatform.BlueSky => new MediaFormats
             {
                 SupportedImageFormats = new List<string> { "jpg", "jpeg", "png", "gif", "webp" },

@@ -47,10 +47,7 @@ public static class ServiceCollectionExtensions
 
         // Platform Services
         services.AddScoped<IBlueSkyService, BlueSkyService>();
-        services.AddScoped<ITwitterService, TwitterService>();
-        services.AddScoped<ILinkedInService, LinkedInService>();
-        services.AddScoped<IThreadsService, ThreadsService>();
-        services.AddScoped<IFacebookService, FacebookService>();
+        // TODO: Add Twitter, LinkedIn, Threads, Facebook services when implementations are ready
 
         // Application Services
         services.AddScoped<IPostService, PostService>();

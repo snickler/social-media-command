@@ -11,25 +11,14 @@ public class PostService : IPostService
 {
     private readonly ConcurrentDictionary<string, Post> _posts = new();
     private readonly IBlueSkyService _blueSkyService;
-    private readonly ITwitterService _twitterService;
-    private readonly ILinkedInService _linkedInService;
-    private readonly IThreadsService _threadsService;
-    private readonly IFacebookService _facebookService;
+    // TODO: Add Twitter, LinkedIn, Threads, Facebook services when implementations are ready
     private readonly IAccountService _accountService;
 
     public PostService(
         IBlueSkyService blueSkyService,
-        ITwitterService twitterService,
-        ILinkedInService linkedInService,
-        IThreadsService threadsService,
-        IFacebookService facebookService,
         IAccountService accountService)
     {
         _blueSkyService = blueSkyService ?? throw new ArgumentNullException(nameof(blueSkyService));
-        _twitterService = twitterService ?? throw new ArgumentNullException(nameof(twitterService));
-        _linkedInService = linkedInService ?? throw new ArgumentNullException(nameof(linkedInService));
-        _threadsService = threadsService ?? throw new ArgumentNullException(nameof(threadsService));
-        _facebookService = facebookService ?? throw new ArgumentNullException(nameof(facebookService));
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
     }
 
@@ -315,10 +304,7 @@ public class PostService : IPostService
         return platform switch
         {
             SocialPlatform.BlueSky => _blueSkyService,
-            SocialPlatform.X => _twitterService,
-            SocialPlatform.LinkedIn => _linkedInService,
-            SocialPlatform.Threads => _threadsService,
-            SocialPlatform.Facebook => _facebookService,
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             _ => null
         };
     }
