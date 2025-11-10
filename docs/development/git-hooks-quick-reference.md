@@ -157,7 +157,7 @@ Before committing, ensure:
 - Full documentation: [docs/development/git-hooks.md](docs/development/git-hooks.md)
 - Project guidelines: [.github/copilot-instructions.md](../.github/copilot-instructions.md)
 - Performance patterns: [PERFORMANCE_OPTIMIZATIONS.md](../PERFORMANCE_OPTIMIZATIONS.md)
-- Security: [SECURE_STORAGE_IMPLEMENTATION.md](../SECURE_STORAGE_IMPLEMENTATION.md)
+- Security: [secure-storage-implementation.md](../security/secure-storage-implementation.md)
 
 ## 🚨 When to Bypass (Use Sparingly!)
 
