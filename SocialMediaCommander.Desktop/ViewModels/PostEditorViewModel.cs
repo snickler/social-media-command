@@ -323,7 +323,7 @@ public partial class PostEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task UploadMediaAsync()
+    private Task UploadMediaAsync()
     {
         System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] UploadMedia command called!");
 
@@ -334,7 +334,7 @@ public partial class PostEditorViewModel : ObservableObject
             {
                 OnError?.Invoke("Maximum of 4 media files reached");
                 System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] Cannot upload - limit reached");
-                return;
+                return Task.CompletedTask;
             }
 
             // Trigger event for UI to handle file dialog
@@ -348,6 +348,8 @@ public partial class PostEditorViewModel : ObservableObject
             System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Upload media failed: {ex.Message}");
             OnError?.Invoke($"Failed to upload media: {ex.Message}");
         }
+
+        return Task.CompletedTask;
     }
 
     [RelayCommand]

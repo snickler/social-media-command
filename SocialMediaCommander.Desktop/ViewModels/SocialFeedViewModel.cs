@@ -330,11 +330,11 @@ public partial class SocialFeedViewModel : ObservableObject
         };
     }
 
-    private async Task<List<SocialFeedPostViewModel>> GenerateMockFeedData()
+    private Task<List<SocialFeedPostViewModel>> GenerateMockFeedData()
     {
         // Old mock method - no longer used
         // Kept for reference but replaced by LoadFeedAsync
-        return new List<SocialFeedPostViewModel>();
+        return Task.FromResult(new List<SocialFeedPostViewModel>());
     }
 
     private void ApplyPlatformFilter()
