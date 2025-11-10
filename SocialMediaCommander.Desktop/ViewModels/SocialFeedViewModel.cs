@@ -19,10 +19,7 @@ public partial class SocialFeedViewModel : ObservableObject
     private readonly IFeedService _feedService;
     private readonly IAccountService _accountService;
     private readonly IBlueSkyService _blueSkyService;
-    private readonly ITwitterService _twitterService;
-    private readonly ILinkedInService _linkedInService;
-    private readonly IThreadsService _threadsService;
-    private readonly IFacebookService _facebookService;
+    // TODO: Add Twitter, LinkedIn, Threads, Facebook services when implementations are ready
 
     [ObservableProperty]
     private bool _isLoading = false;
@@ -45,19 +42,12 @@ public partial class SocialFeedViewModel : ObservableObject
     public SocialFeedViewModel(
         IFeedService feedService,
         IAccountService accountService,
-        IBlueSkyService blueSkyService,
-        ITwitterService twitterService,
-        ILinkedInService linkedInService,
-        IThreadsService threadsService,
-        IFacebookService facebookService)
+        IBlueSkyService blueSkyService)
     {
         _feedService = feedService ?? throw new ArgumentNullException(nameof(feedService));
         _accountService = accountService ?? throw new ArgumentNullException(nameof(accountService));
         _blueSkyService = blueSkyService ?? throw new ArgumentNullException(nameof(blueSkyService));
-        _twitterService = twitterService ?? throw new ArgumentNullException(nameof(twitterService));
-        _linkedInService = linkedInService ?? throw new ArgumentNullException(nameof(linkedInService));
-        _threadsService = threadsService ?? throw new ArgumentNullException(nameof(threadsService));
-        _facebookService = facebookService ?? throw new ArgumentNullException(nameof(facebookService));
+        // TODO: Add Twitter, LinkedIn, Threads, Facebook services when implementations are ready
 
         // Initialize collections
         FeedPosts = new ObservableCollection<SocialFeedPostViewModel>();
@@ -251,18 +241,7 @@ public partial class SocialFeedViewModel : ObservableObject
                         case SocialPlatform.BlueSky:
                             feedItems = await _blueSkyService.GetTimelineAsync(account, 20).ConfigureAwait(false);
                             break;
-                        case SocialPlatform.X:
-                            feedItems = await _twitterService.GetTimelineAsync(account, 20).ConfigureAwait(false);
-                            break;
-                        case SocialPlatform.LinkedIn:
-                            feedItems = await _linkedInService.GetTimelineAsync(account, 20).ConfigureAwait(false);
-                            break;
-                        case SocialPlatform.Threads:
-                            feedItems = await _threadsService.GetTimelineAsync(account, 20).ConfigureAwait(false);
-                            break;
-                        case SocialPlatform.Facebook:
-                            feedItems = await _facebookService.GetTimelineAsync(account, 20).ConfigureAwait(false);
-                            break;
+                            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
                     }
 
                     if (feedItems != null && feedItems.Any())

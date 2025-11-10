@@ -81,7 +81,7 @@ public partial class PostEditorViewModel : ObservableObject
                 Name = config.Name,
                 Color = config.Color,
                 CharacterLimit = config.CharacterLimit,
-                IsSelected = config.Id == SocialPlatform.BlueSky || config.Id == SocialPlatform.LinkedIn || config.Id == SocialPlatform.Facebook
+                IsSelected = config.Id == SocialPlatform.BlueSky // TODO: Add default selections for Twitter, LinkedIn, Facebook, Threads when implementations are ready
             };
 
             // Subscribe to property changes to update selected platforms
@@ -861,8 +861,8 @@ public partial class AccountSelectionItem : ObservableObject
     private bool _isAuthenticated = false;
 
     public string DisplayText => !string.IsNullOrEmpty(DisplayName)
-        ? $"{DisplayName} (@{Username}){(IsDefault ? " • Default" : "")}"
-        : $"@{Username}{(IsDefault ? " • Default" : "")}";
+        ? $"{DisplayName} (@{Username}){(IsDefault ? " ï¿½ Default" : "")}"
+        : $"@{Username}{(IsDefault ? " ï¿½ Default" : "")}";
 }
 
 public partial class ThreadPostViewModel : ObservableObject

@@ -1183,10 +1183,7 @@ public partial class AccountManagerViewModel : ObservableObject
         return platform switch
         {
             SocialPlatform.BlueSky => "BS",
-            SocialPlatform.X => "𝕏",
-            SocialPlatform.LinkedIn => "in",
-            SocialPlatform.Threads => "T",
-            SocialPlatform.Facebook => "f",
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             _ => "?"
         };
     }
@@ -1196,10 +1193,7 @@ public partial class AccountManagerViewModel : ObservableObject
         return platform switch
         {
             SocialPlatform.BlueSky => "1. Go to BlueSky Developer Portal\n2. Create new App\n3. Copy Client ID & Secret to OAuth Config",
-            SocialPlatform.X => "1. Visit developer.twitter.com\n2. Create Project & App\n3. Generate OAuth 2.0 Client ID & Secret\n4. Add to OAuth Config",
-            SocialPlatform.LinkedIn => "1. Go to LinkedIn Developer Console\n2. Create new Application\n3. Get Client ID & Client Secret\n4. Configure OAuth settings",
-            SocialPlatform.Threads => "1. Visit developers.facebook.com\n2. Create Threads App\n3. Get App ID & App Secret\n4. Configure OAuth redirect",
-            SocialPlatform.Facebook => "1. Go to developers.facebook.com\n2. Create App for Pages\n3. Get App ID & App Secret\n4. Add OAuth settings",
+            // TODO: Add Twitter, LinkedIn, Threads, Facebook when implementations are ready
             _ => "Check platform's developer documentation for OAuth setup instructions."
         };
     }
