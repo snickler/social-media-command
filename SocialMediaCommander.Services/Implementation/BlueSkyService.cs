@@ -411,17 +411,17 @@ public class BlueSkyService : IBlueSkyService
 
                         if (uploadResponse.Succeeded && uploadResponse.Result != null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Successfully uploaded media: {media.FileName}");
+                            _logger.Information("Successfully uploaded media: {FileName}", media.FileName);
                             embeddedImages.Add(uploadResponse.Result);
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Failed to upload media: {media.FileName}. Error: {uploadResponse.AtErrorDetail?.Message}");
+                            _logger.Error("Failed to upload media: {FileName}. Error: {ErrorMessage}", media.FileName, uploadResponse.AtErrorDetail?.Message);
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Exception uploading media {media.FileName}: {ex.Message}");
+                        _logger.Error(ex, "Exception uploading media {FileName}", media.FileName);
                     }
                 }
 
