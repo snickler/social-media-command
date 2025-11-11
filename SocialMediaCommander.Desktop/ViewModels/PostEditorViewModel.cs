@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Core.Services;
+using SocialMediaCommander.Desktop.Helpers;
 using Serilog;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
@@ -723,58 +724,7 @@ public partial class PostEditorViewModel : ObservableObject
 
     public void AddMediaFile(string filePath)
     {
-        if (Media.Count >= 4)
-        {
-            // Max 4 media files per post
-            return;
-        }
-
-        var fileName = System.IO.Path.GetFileName(filePath);
-        var fileInfo = new System.IO.FileInfo(filePath);
-
-        var media = new Media
-        {
-            Id = Guid.NewGuid().ToString(),
-            FileName = fileName,
-            FilePath = filePath,
-            Type = GetMediaType(filePath),
-            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
-            MimeType = GetMimeType(filePath),
-            CreatedAt = DateTime.UtcNow
-        };
-
-        Media.Add(media);
-    }
-
-    private MediaType GetMediaType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
-            ".gif" => MediaType.Gif,
-            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
-            _ => MediaType.Image
-        };
-    }
-
-    private string GetMimeType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            ".bmp" => "image/bmp",
-            ".mp4" => "video/mp4",
-            ".mov" => "video/quicktime",
-            ".avi" => "video/x-msvideo",
-            ".webm" => "video/webm",
-            ".mkv" => "video/x-matroska",
-            _ => "application/octet-stream"
-        };
+        MediaHelper.AddMediaFile(Media, filePath);
     }
 
     #endregion
@@ -974,58 +924,7 @@ public partial class ThreadPostViewModel : ObservableObject
 
     public void AddMediaFile(string filePath)
     {
-        if (Media.Count >= 4)
-        {
-            // Max 4 media files per post
-            return;
-        }
-
-        var fileName = System.IO.Path.GetFileName(filePath);
-        var fileInfo = new System.IO.FileInfo(filePath);
-
-        var media = new Media
-        {
-            Id = Guid.NewGuid().ToString(),
-            FileName = fileName,
-            FilePath = filePath,
-            Type = GetMediaType(filePath),
-            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
-            MimeType = GetMimeType(filePath),
-            CreatedAt = DateTime.UtcNow
-        };
-
-        Media.Add(media);
-    }
-
-    private MediaType GetMediaType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
-            ".gif" => MediaType.Gif,
-            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
-            _ => MediaType.Image
-        };
-    }
-
-    private string GetMimeType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            ".bmp" => "image/bmp",
-            ".mp4" => "video/mp4",
-            ".mov" => "video/quicktime",
-            ".avi" => "video/x-msvideo",
-            ".webm" => "video/webm",
-            ".mkv" => "video/x-matroska",
-            _ => "application/octet-stream"
-        };
+        MediaHelper.AddMediaFile(Media, filePath);
     }
 
     partial void OnContentChanged(string value)
