@@ -19,6 +19,9 @@ namespace SocialMediaCommander.Services.Serialization;
 [JsonSerializableAttribute(typeof(JsonElement))]
 [JsonSerializableAttribute(typeof(OpenAIChatRequest))]
 [JsonSerializableAttribute(typeof(OpenAIMessage))]
+[JsonSerializableAttribute(typeof(OpenAIModelsResponse))]
+[JsonSerializableAttribute(typeof(OpenAIModelData))]
+[JsonSerializableAttribute(typeof(List<OpenAIModelData>))]
 [JsonSerializableAttribute(typeof(BlueSkySessionData))]
 [JsonSerializableAttribute(typeof(BlueSkyPostData))]
 [JsonSerializableAttribute(typeof(BlueSkyPostRecord))]
@@ -64,6 +67,32 @@ public class OpenAIMessage
     public string Role { get; set; } = string.Empty;
     public string Content { get; set; } = string.Empty;
 }
+
+// OpenAI /v1/models endpoint response types
+public class OpenAIModelsResponse
+{
+    [JsonPropertyName("object")]
+    public string Object { get; set; } = "list";
+
+    [JsonPropertyName("data")]
+    public List<OpenAIModelData> Data { get; set; } = new();
+}
+
+public class OpenAIModelData
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("object")]
+    public string Object { get; set; } = "model";
+
+    [JsonPropertyName("created")]
+    public long Created { get; set; }
+
+    [JsonPropertyName("owned_by")]
+    public string OwnedBy { get; set; } = string.Empty;
+}
+
 public class BlueSkySessionData
 {
     public string Identifier { get; set; } = string.Empty;

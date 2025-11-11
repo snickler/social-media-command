@@ -52,6 +52,14 @@ public class FoundryLocalAIService : IAIService, IDisposable
         };
 
         _httpClient.Timeout = TimeSpan.FromMinutes(5); // AI generation can take time
+
+        // Set default base address from config to prevent "invalid URI" errors
+        if (!string.IsNullOrEmpty(_config.BaseUrl))
+        {
+            _httpClient.BaseAddress = new Uri(_config.BaseUrl);
+            _serviceEndpoint = _config.BaseUrl;
+            _logger.LogInformation("AI Service initialized with base URL: {BaseUrl}", _config.BaseUrl);
+        }
     }
 
     /// <summary>
@@ -154,7 +162,8 @@ public class FoundryLocalAIService : IAIService, IDisposable
 
                                 if (Uri.TryCreate(endpoint, UriKind.Absolute, out _))
                                 {
-                                    return endpoint.EndsWith("/v1") ? endpoint : $"{endpoint}/v1";
+                                    // Don't append /v1 - let the API calls use the correct paths
+                                    return endpoint.TrimEnd('/');
                                 }
                             }
                         }
@@ -620,9 +629,9 @@ public class FoundryLocalAIService : IAIService, IDisposable
             if (string.IsNullOrEmpty(_serviceEndpoint))
                 return false;
 
-            // Quick health check with timeout
+            // Try OpenAI-compatible models endpoint first
             var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-            using var response = await _httpClient.GetAsync("/health", HttpCompletionOption.ResponseHeadersRead, cts.Token)
+            using var response = await _httpClient.GetAsync("v1/models", HttpCompletionOption.ResponseHeadersRead, cts.Token)
                 .ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
@@ -657,8 +666,84 @@ public class FoundryLocalAIService : IAIService, IDisposable
         }
     }
 
+    public void SetModel(string modelName)
+    {
+        if (string.IsNullOrWhiteSpace(modelName))
+        {
+            _logger.LogWarning("Attempted to set empty model name");
+            return;
+        }
+
+        _config.ModelName = modelName;
+        _logger.LogInformation("AI model updated to: {ModelName}", modelName);
+    }
+
+    /// <summary>
+    /// Gets the list of available models from Foundry Local.
+    /// Queries the OpenAI-compatible /v1/models endpoint.
+    /// </summary>
+    /// <returns>A list of available model names.</returns>
+    public async Task<List<string>> GetAvailableModelsAsync()
+    {
+        try
+        {
+            await InitializeServiceAsync().ConfigureAwait(false);
+
+            _logger.LogInformation("Querying available models from Foundry Local: {BaseUrl}v1/models", _httpClient.BaseAddress);
+
+            // Call OpenAI-compatible /v1/models endpoint
+            using var response = await _httpClient.GetAsync("v1/models").ConfigureAwait(false);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                _logger.LogWarning("Failed to get models list: HTTP {StatusCode} - {Error}", response.StatusCode, errorContent);
+                return new List<string>();
+            }
+
+            // Parse JSON response
+            using var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            var modelsResponse = await JsonSerializer.DeserializeAsync(
+                stream,
+                ServicesJsonContext.Default.OpenAIModelsResponse
+            ).ConfigureAwait(false);
+
+            if (modelsResponse?.Data == null || modelsResponse.Data.Count == 0)
+            {
+                _logger.LogWarning("No models returned from Foundry Local");
+                return new List<string>();
+            }
+
+            // Extract model IDs and return sorted list
+            var modelNames = modelsResponse.Data
+                .Select(m => m.Id)
+                .Where(id => !string.IsNullOrWhiteSpace(id))
+                .OrderBy(id => id)
+                .ToList();
+
+            _logger.LogInformation("Found {Count} available models from Foundry Local", modelNames.Count);
+            return modelNames;
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogError(ex, "HTTP error querying Foundry Local models endpoint. Is the service running?");
+            return new List<string>();
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to parse models response from Foundry Local");
+            return new List<string>();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error getting available models");
+            return new List<string>();
+        }
+    }
+
     /// <summary>
     /// Optimized HTTP call to Foundry Local using efficient JSON serialization
+    /// Uses OpenAI-compatible API: POST {baseUrl}/v1/chat/completions
     /// </summary>
     private async ValueTask<string> CallFoundryLocalAsync(string prompt)
     {
@@ -675,32 +760,42 @@ public class FoundryLocalAIService : IAIService, IDisposable
             Stream = false
         };
 
-        // Use ArrayPool for JSON serialization buffer
-        var buffer = _bytePool.Rent(8192);
+        // Serialize request to JSON string (avoids buffer issues with null bytes)
+        var jsonString = JsonSerializer.Serialize(requestBody, ServicesJsonContext.Default.OpenAIChatRequest);
+
+        _logger.LogDebug("Sending request to Foundry Local: {Json}", jsonString);
+
+        using var content = new StringContent(jsonString, System.Text.Encoding.UTF8, "application/json");
+
         try
         {
-            using var stream = new MemoryStream(buffer);
-            await JsonSerializer.SerializeAsync(stream, requestBody, ServicesJsonContext.Default.OpenAIChatRequest).ConfigureAwait(false);
-
-            using var content = new ByteArrayContent(buffer, 0, (int)stream.Length);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
-
-            using var response = await _httpClient.PostAsync("/chat/completions", content).ConfigureAwait(false);
+            // OpenAI-compatible API standard: /v1/chat/completions
+            using var response = await _httpClient.PostAsync("v1/chat/completions", content).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-                throw new HttpRequestException($"HTTP error {response.StatusCode}: {errorContent}");
+                var errorMessage = $"HTTP {response.StatusCode}: {errorContent}\nEndpoint: {_httpClient.BaseAddress}v1/chat/completions\nModel: {_config.ModelName}";
+                _logger.LogError("AI API call failed: {Error}", errorMessage);
+                throw new HttpRequestException(errorMessage);
             }
 
             var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            _logger.LogDebug("Received response from Foundry Local: {Response}", responseContent.Length > 500 ? responseContent.Substring(0, 500) + "..." : responseContent);
+
             var chatResponse = JsonSerializer.Deserialize(responseContent, SocialMediaCommanderJsonContext.Default.OpenAIChatResponse);
 
             return chatResponse?.Choices?.FirstOrDefault()?.Message?.Content ?? string.Empty;
         }
-        finally
+        catch (HttpRequestException ex)
         {
-            _bytePool.Return(buffer);
+            _logger.LogError(ex, "HTTP request failed when calling Foundry Local");
+            throw;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize response from Foundry Local");
+            throw new HttpRequestException($"Invalid JSON response from Foundry Local: {ex.Message}", ex);
         }
     }
 

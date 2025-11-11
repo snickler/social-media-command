@@ -68,6 +68,18 @@ public interface IAIService
     Task<AIModelConfig> GetModelInfoAsync();
 
     /// <summary>
+    /// Update the AI model to use for generation
+    /// </summary>
+    void SetModel(string modelName);
+
+    /// <summary>
+    /// Get the list of available models from the AI service.
+    /// For Foundry Local, this queries the /v1/models endpoint.
+    /// </summary>
+    /// <returns>A list of available model names.</returns>
+    Task<List<string>> GetAvailableModelsAsync();
+
+    /// <summary>
     /// Generate content using AI based on simple prompt
     /// </summary>
     Task<string> GenerateContentAsync(string prompt);
