@@ -33,6 +33,11 @@ public class Media
     public DateTime CreatedAt { get; set; } = Post.GetSafeUtcNow();
 
     /// <summary>
+    /// Alt text for accessibility (especially important for BlueSky)
+    /// </summary>
+    public string? AltText { get; set; }
+
+    /// <summary>
     /// Gets a formatted file size string
     /// </summary>
     public string FileSizeFormatted
