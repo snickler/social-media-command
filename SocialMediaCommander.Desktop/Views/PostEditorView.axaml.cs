@@ -93,7 +93,7 @@ public partial class PostEditorView : UserControl
         System.Diagnostics.Debug.WriteLine("[PostEditorView] Drag leave");
     }
 
-    private async void Drop(object? sender, DragEventArgs e)
+    private void Drop(object? sender, DragEventArgs e)
     {
         System.Diagnostics.Debug.WriteLine("[PostEditorView] Drop event triggered");
 

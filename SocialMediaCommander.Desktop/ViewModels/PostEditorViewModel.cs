@@ -919,7 +919,7 @@ public partial class ThreadPostViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task UploadMedia()
+    private void UploadMedia()
     {
         // Trigger event for file picker (handled in code-behind)
         OnMediaUploadRequested?.Invoke();
