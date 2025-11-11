@@ -213,7 +213,7 @@ public class BlueSkyService : IBlueSkyService
                         var uploadResponse = await agent.UploadImage(
                             imageBytes,
                             media.MimeType,
-                            media.FileName ?? "Image",
+                            media.AltText ?? media.FileName ?? "Image",
                             new AspectRatio(1000, 1000)).ConfigureAwait(false);
 
                         if (uploadResponse.Succeeded && uploadResponse.Result != null)
