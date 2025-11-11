@@ -1,6 +1,8 @@
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
 using System.Collections.Concurrent;
+using SocialMediaCommander.Core.Services;
+using Serilog;
 
 namespace SocialMediaCommander.Services.Implementation;
 
@@ -9,6 +11,7 @@ namespace SocialMediaCommander.Services.Implementation;
 /// </summary>
 public class PostService : IPostService
 {
+    private readonly ILogger _logger = LoggingService.ForContext<PostService>();
     private readonly ConcurrentDictionary<string, Post> _posts = new();
     private readonly IBlueSkyService _blueSkyService;
     // TODO: Add Twitter, LinkedIn, Threads, Facebook services when implementations are ready
@@ -197,7 +200,18 @@ public class PostService : IPostService
                     continue;
                 }
 
-                System.Diagnostics.Debug.WriteLine($"[PostService] Calling platform service for {platform}...");
+                _logger.Information("Calling platform service for {Platform}...", platform);
+
+                // Debug logging for thread posts
+                _logger.Information("Post.IsThread={IsThread}, Post.ThreadPosts.Count={ThreadPostsCount}", post.IsThread, post.ThreadPosts.Count);
+                if (post.IsThread && post.ThreadPosts.Any())
+                {
+                    for (int i = 0; i < post.ThreadPosts.Count; i++)
+                    {
+                        var tp = post.ThreadPosts[i];
+                        _logger.Information("  ThreadPost[{Index}]: Content length={ContentLength}, Media count={MediaCount}", i, tp.Content?.Length ?? 0, tp.Media.Count);
+                    }
+                }
 
                 // Post to the platform
                 PublishResult publishResult;
