@@ -729,52 +729,8 @@ public partial class PostEditorViewModel : ObservableObject
             return;
         }
 
-        var fileName = System.IO.Path.GetFileName(filePath);
-        var fileInfo = new System.IO.FileInfo(filePath);
-
-        var media = new Media
-        {
-            Id = Guid.NewGuid().ToString(),
-            FileName = fileName,
-            FilePath = filePath,
-            Type = GetMediaType(filePath),
-            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
-            MimeType = GetMimeType(filePath),
-            CreatedAt = DateTime.UtcNow
-        };
-
+        var media = Helpers.MediaHelper.CreateMediaFromFile(filePath);
         Media.Add(media);
-    }
-
-    private MediaType GetMediaType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
-            ".gif" => MediaType.Gif,
-            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
-            _ => MediaType.Image
-        };
-    }
-
-    private string GetMimeType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            ".bmp" => "image/bmp",
-            ".mp4" => "video/mp4",
-            ".mov" => "video/quicktime",
-            ".avi" => "video/x-msvideo",
-            ".webm" => "video/webm",
-            ".mkv" => "video/x-matroska",
-            _ => "application/octet-stream"
-        };
     }
 
     #endregion
@@ -980,52 +936,8 @@ public partial class ThreadPostViewModel : ObservableObject
             return;
         }
 
-        var fileName = System.IO.Path.GetFileName(filePath);
-        var fileInfo = new System.IO.FileInfo(filePath);
-
-        var media = new Media
-        {
-            Id = Guid.NewGuid().ToString(),
-            FileName = fileName,
-            FilePath = filePath,
-            Type = GetMediaType(filePath),
-            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
-            MimeType = GetMimeType(filePath),
-            CreatedAt = DateTime.UtcNow
-        };
-
+        var media = Helpers.MediaHelper.CreateMediaFromFile(filePath);
         Media.Add(media);
-    }
-
-    private MediaType GetMediaType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
-            ".gif" => MediaType.Gif,
-            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
-            _ => MediaType.Image
-        };
-    }
-
-    private string GetMimeType(string filePath)
-    {
-        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
-        return extension switch
-        {
-            ".jpg" or ".jpeg" => "image/jpeg",
-            ".png" => "image/png",
-            ".gif" => "image/gif",
-            ".webp" => "image/webp",
-            ".bmp" => "image/bmp",
-            ".mp4" => "video/mp4",
-            ".mov" => "video/quicktime",
-            ".avi" => "video/x-msvideo",
-            ".webm" => "video/webm",
-            ".mkv" => "video/x-matroska",
-            _ => "application/octet-stream"
-        };
     }
 
     partial void OnContentChanged(string value)
