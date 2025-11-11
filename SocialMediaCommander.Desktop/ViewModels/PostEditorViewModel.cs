@@ -8,6 +8,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Core.Services;
+using Serilog;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
 
@@ -17,6 +19,7 @@ namespace SocialMediaCommander.Desktop.ViewModels;
 /// </summary>
 public partial class PostEditorViewModel : ObservableObject
 {
+    private readonly ILogger _logger = LoggingService.ForContext<PostEditorViewModel>();
     private readonly IPostService _postService;
     private readonly IAccountService _accountService;
     private readonly IMediaService _mediaService;
@@ -171,20 +174,20 @@ public partial class PostEditorViewModel : ObservableObject
     [RelayCommand]
     private async Task PostAsync()
     {
-        System.Diagnostics.Debug.WriteLine("PostAsync command called!");
-        Console.WriteLine("PostAsync command called!");
+        _logger.Information("PostAsync command called");
 
         if (IsPosting) return;
 
         try
         {
             IsPosting = true;
-            System.Diagnostics.Debug.WriteLine("Starting post publishing...");
+            _logger.Information("Starting post publishing...");
 
             var post = CreatePostFromViewModel();
+            _logger.Information("Calling PublishPostAsync with {PlatformCount} platforms", post.TargetPlatforms.Count);
             var result = await _postService.PublishPostAsync(post);
 
-            System.Diagnostics.Debug.WriteLine($"Post published successfully! Results: {result.Count} platforms");
+            _logger.Information("Post published successfully! Results: {ResultCount} platforms", result.Count);
 
             // Reset form after successful post
             Content = string.Empty;
@@ -203,7 +206,7 @@ public partial class PostEditorViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Post publishing failed: {ex.Message}");
+            _logger.Error(ex, "Post publishing failed: {Message}", ex.Message);
             OnError?.Invoke($"Failed to publish post: {ex.Message}");
         }
         finally
@@ -502,6 +505,15 @@ public partial class PostEditorViewModel : ObservableObject
             }).ToList()
         };
 
+        // Debug logging
+        _logger.Information("CreatePostFromViewModel: IsThread={IsThread}, ThreadPosts.Count={ThreadPostsCount}", post.IsThread, post.ThreadPosts.Count);
+        _logger.Information("  Main post: Content length={ContentLength}, Media count={MediaCount}", post.Content?.Length ?? 0, post.Media.Count);
+        for (int i = 0; i < post.ThreadPosts.Count; i++)
+        {
+            var tp = post.ThreadPosts[i];
+            _logger.Information("  ThreadPost[{Index}]: Content length={ContentLength}, Media count={MediaCount}", i, tp.Content?.Length ?? 0, tp.Media.Count);
+        }
+
         // Populate SelectedAccounts with the user's selected account for each platform
         foreach (var platform in this.SelectedPlatforms)
         {
@@ -709,6 +721,62 @@ public partial class PostEditorViewModel : ObservableObject
         }
     }
 
+    public void AddMediaFile(string filePath)
+    {
+        if (Media.Count >= 4)
+        {
+            // Max 4 media files per post
+            return;
+        }
+
+        var fileName = System.IO.Path.GetFileName(filePath);
+        var fileInfo = new System.IO.FileInfo(filePath);
+
+        var media = new Media
+        {
+            Id = Guid.NewGuid().ToString(),
+            FileName = fileName,
+            FilePath = filePath,
+            Type = GetMediaType(filePath),
+            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
+            MimeType = GetMimeType(filePath),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        Media.Add(media);
+    }
+
+    private MediaType GetMediaType(string filePath)
+    {
+        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
+            ".gif" => MediaType.Gif,
+            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
+            _ => MediaType.Image
+        };
+    }
+
+    private string GetMimeType(string filePath)
+    {
+        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".bmp" => "image/bmp",
+            ".mp4" => "video/mp4",
+            ".mov" => "video/quicktime",
+            ".avi" => "video/x-msvideo",
+            ".webm" => "video/webm",
+            ".mkv" => "video/x-matroska",
+            _ => "application/octet-stream"
+        };
+    }
+
     #endregion
 }
 
@@ -896,11 +964,68 @@ public partial class ThreadPostViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void UploadMedia()
+    private async Task UploadMedia()
     {
-        // This would typically open a file dialog and handle the upload
-        // For this view model, we can simulate adding a media item
-        // OnMediaUploadRequested?.Invoke(this);
+        // Trigger event for file picker (handled in code-behind)
+        OnMediaUploadRequested?.Invoke();
+    }
+
+    public event Action? OnMediaUploadRequested;
+
+    public void AddMediaFile(string filePath)
+    {
+        if (Media.Count >= 4)
+        {
+            // Max 4 media files per post
+            return;
+        }
+
+        var fileName = System.IO.Path.GetFileName(filePath);
+        var fileInfo = new System.IO.FileInfo(filePath);
+
+        var media = new Media
+        {
+            Id = Guid.NewGuid().ToString(),
+            FileName = fileName,
+            FilePath = filePath,
+            Type = GetMediaType(filePath),
+            FileSize = fileInfo.Exists ? fileInfo.Length : 0,
+            MimeType = GetMimeType(filePath),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        Media.Add(media);
+    }
+
+    private MediaType GetMediaType(string filePath)
+    {
+        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" or ".png" or ".webp" or ".bmp" => MediaType.Image,
+            ".gif" => MediaType.Gif,
+            ".mp4" or ".mov" or ".avi" or ".webm" or ".mkv" => MediaType.Video,
+            _ => MediaType.Image
+        };
+    }
+
+    private string GetMimeType(string filePath)
+    {
+        var extension = System.IO.Path.GetExtension(filePath)?.ToLowerInvariant();
+        return extension switch
+        {
+            ".jpg" or ".jpeg" => "image/jpeg",
+            ".png" => "image/png",
+            ".gif" => "image/gif",
+            ".webp" => "image/webp",
+            ".bmp" => "image/bmp",
+            ".mp4" => "video/mp4",
+            ".mov" => "video/quicktime",
+            ".avi" => "video/x-msvideo",
+            ".webm" => "video/webm",
+            ".mkv" => "video/x-matroska",
+            _ => "application/octet-stream"
+        };
     }
 
     partial void OnContentChanged(string value)

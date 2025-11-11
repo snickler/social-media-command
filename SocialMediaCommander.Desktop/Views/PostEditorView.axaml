@@ -252,22 +252,65 @@
                             </Border>
                         </Grid>
                         
-                        <TextBox Text="{Binding Content}" 
-                                 Watermark="What would you like to share today?"
-                                 AcceptsReturn="True" 
-                                 TextWrapping="Wrap" 
-                                 MinHeight="120"
-                                 MaxHeight="300"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <Border Grid.Row="0"
+                                    BorderBrush="{DynamicResource SMC-Card-Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    DragDrop.AllowDrop="True">
+                                <Grid>
+                                    <TextBox Text="{Binding Content}" 
+                                             Watermark="What would you like to share today?"
+                                             AcceptsReturn="True" 
+                                             TextWrapping="Wrap" 
+                                             MinHeight="120"
+                                             MaxHeight="300"
+                                             BorderThickness="0"
+                                             Background="Transparent"/>
+                                    
+                                    <!-- Drag-and-drop overlay -->
+                                    <Border Background="{DynamicResource SMC-Accent}"
+                                            Opacity="0.9"
+                                            CornerRadius="8"
+                                            IsVisible="False"
+                                            Name="DragOverlay">
+                                        <StackPanel Spacing="8" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="📁" FontSize="48" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Drop media files here" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Images, videos, or GIFs" 
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                       Opacity="0.8"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Upload Media Button -->
+                            <Button Grid.Row="1"
+                                    Content="📷 Upload Media"
+                                    Classes="outline"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,8,0,0"
+                                    Command="{Binding UploadMediaCommand}"
+                                    IsVisible="{Binding MediaSupported}"/>
+                        </Grid>
                         
                         <!-- Media Section -->
                         <StackPanel Spacing="8" IsVisible="{Binding MediaSupported}">
                             <TextBlock Text="Media" FontSize="14" FontWeight="Medium"/>
-                            <TextBlock Text="Add up to 4 images or videos to your post" 
+                            <TextBlock Text="Add up to 4 images or videos (click Upload Media or drag &amp; drop onto text box)" 
                                        FontSize="12" Opacity="0.7"/>
-                            <Button Content="📷 Upload Media" 
-                                    Classes="outline" 
-                                    Command="{Binding UploadMediaCommand}"
-                                    IsEnabled="{Binding !#MediaGrid.IsVisible}"/>
                             
                             <!-- Media Preview Grid -->
                             <Grid Name="MediaGrid" 
@@ -385,11 +428,124 @@
                                                 </StackPanel>
                                             </Grid>
 
-                                            <TextBox Text="{Binding Content}" 
-                                                     Watermark="Thread post content..."
-                                                     AcceptsReturn="True" 
-                                                     TextWrapping="Wrap" 
-                                                     MinHeight="80"/>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <Border Grid.Row="0"
+                                                        BorderBrush="{DynamicResource SMC-Card-Border}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        DragDrop.AllowDrop="True">
+                                                    <Grid>
+                                                        <TextBox Text="{Binding Content}" 
+                                                                 Watermark="Thread post content..."
+                                                                 AcceptsReturn="True" 
+                                                                 TextWrapping="Wrap" 
+                                                                 MinHeight="80"
+                                                                 BorderThickness="0"
+                                                                 Background="Transparent"/>
+                                                        
+                                                        <!-- Drag-and-drop overlay -->
+                                                        <Border Background="{DynamicResource SMC-Accent}"
+                                                                Opacity="0.9"
+                                                                CornerRadius="8"
+                                                                IsVisible="False"
+                                                                Name="ThreadDragOverlay">
+                                                            <StackPanel Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                <TextBlock Text="📁" FontSize="32" HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="Drop media here" 
+                                                                           FontSize="14" 
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                                           HorizontalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                                
+                                                <!-- Upload Media Button for thread post -->
+                                                <Button Grid.Row="1"
+                                                        Content="📷 Upload Media"
+                                                        Classes="outline"
+                                                        HorizontalAlignment="Right"
+                                                        Margin="0,8,0,0"
+                                                        FontSize="12"
+                                                        Padding="8,4"
+                                                        Command="{Binding UploadMediaCommand}"/>
+                                            </Grid>
+
+                                            <!-- Thread Post Media Section -->
+                                            <StackPanel Spacing="8" IsVisible="{Binding Media.Count}">
+                                                <TextBlock Text="{Binding Media.Count, StringFormat='Media ({0})'}" 
+                                                           FontSize="12" 
+                                                           FontWeight="Medium"/>
+                                                
+                                                <!-- Media Preview Grid -->
+                                                <ItemsControl ItemsSource="{Binding Media}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal" ItemWidth="120" ItemHeight="120"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="120" Height="120" 
+                                                                    CornerRadius="6" 
+                                                                    Margin="0,0,8,8"
+                                                                    BorderBrush="{DynamicResource SMC-Card-Border}" 
+                                                                    BorderThickness="1"
+                                                                    ClipToBounds="True">
+                                                                <Grid>
+                                                                    <!-- Image Preview -->
+                                                                    <Border Background="{DynamicResource SMC-Muted}">
+                                                                        <Image Source="{Binding FilePath}" 
+                                                                               Stretch="UniformToFill"
+                                                                               Width="120" 
+                                                                               Height="120"/>
+                                                                    </Border>
+                                                                    
+                                                                    <!-- File Info Overlay (Bottom) -->
+                                                                    <Border Background="#AA000000" 
+                                                                            VerticalAlignment="Bottom"
+                                                                            Padding="6,3">
+                                                                        <TextBlock Text="{Binding FileName}" 
+                                                                                   Foreground="White"
+                                                                                   FontSize="9"
+                                                                                   TextTrimming="CharacterEllipsis"/>
+                                                                    </Border>
+                                                                    
+                                                                    <!-- Delete Button Overlay (Top Right) -->
+                                                                    <Button Background="#AAFF0000" 
+                                                                            Foreground="White"
+                                                                            Width="20" 
+                                                                            Height="20" 
+                                                                            Padding="0"
+                                                                            VerticalAlignment="Top" 
+                                                                            HorizontalAlignment="Right"
+                                                                            Margin="3"
+                                                                            CornerRadius="10"
+                                                                            Command="{Binding $parent[ItemsControl].DataContext.RemoveMediaCommand}"
+                                                                            CommandParameter="{Binding}">
+                                                                        <TextBlock Text="✕" 
+                                                                                   FontSize="11" 
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Center" 
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                
+                                                <!-- Media Count Info -->
+                                                <TextBlock Text="{Binding Media.Count, StringFormat='{}{0} of 4 media files'}" 
+                                                           FontSize="11" 
+                                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
