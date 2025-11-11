@@ -167,7 +167,7 @@ public class FoundryLocalAIServiceTests : IDisposable
         // Assert
         Assert.False(result.Success);
         Assert.Empty(result.GeneratedContent);
-        Assert.Contains("HTTP error", result.ErrorMessage);
+        Assert.Contains("HTTP InternalServerError", result.ErrorMessage); // Updated to match actual error format
         Assert.Equal(0, result.Metrics.TokensUsed);
     }
 

@@ -381,12 +381,12 @@ public class AIModelsTests
         // Act
         var config = new AIModelConfig();
 
-        // Assert
-        Assert.Equal("llama3.2", config.ModelName);
-        Assert.Equal("http://localhost:11434", config.BaseUrl);
+        // Assert - Updated for Foundry Local defaults
+        Assert.Equal(string.Empty, config.ModelName); // Model selected by user in UI
+        Assert.Equal("http://localhost:5273", config.BaseUrl); // Foundry Local default port
         Assert.Equal(0.7, config.Temperature);
         Assert.Equal(2048, config.MaxTokens);
-        Assert.Equal(string.Empty, config.SystemPrompt);
+        Assert.NotEmpty(config.SystemPrompt); // Has default system prompt now
         Assert.NotNull(config.Parameters);
         Assert.Empty(config.Parameters);
     }

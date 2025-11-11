@@ -298,17 +298,8 @@ public class BackupServiceTests : IDisposable
         {
             [SocialPlatform.BlueSky] = new OAuthConfig
             {
-                ClientId = "test_x_client",
-                ClientSecret = "test_x_secret",
-                AuthorizationEndpoint = "https://api.x.com/oauth/authorize",
-                TokenEndpoint = "https://api.x.com/oauth/token",
-                RedirectUri = "http://localhost:8080/callback",
-                Scopes = ["read", "write"]
-            },
-            [SocialPlatform.BlueSky] = new OAuthConfig
-            {
-                ClientId = "test_bluesky_client",
-                ClientSecret = "test_bluesky_secret",
+                ClientId = "YOUR_BLUESKY_CLIENT_ID_HERE",
+                ClientSecret = "YOUR_BLUESKY_CLIENT_SECRET_HERE",
                 AuthorizationEndpoint = "https://bsky.social/oauth/authorize",
                 TokenEndpoint = "https://bsky.social/oauth/token",
                 RedirectUri = "http://localhost:8080/callback",
