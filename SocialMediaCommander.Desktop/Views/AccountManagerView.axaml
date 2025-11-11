@@ -6,112 +6,73 @@
              x:Class="SocialMediaCommander.Desktop.Views.AccountManagerView"
              x:DataType="vm:AccountManagerViewModel">
 
-    <UserControl.Styles>
-        <!-- Account Card Styles -->
-        <Style Selector="Border.AccountCard">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="Margin" Value="0,0,0,12"/>
-        </Style>
-        
-        <Style Selector="Border.AccountCard:pointerover">
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="Background" Value="{DynamicResource SMC-Muted}"/>
-        </Style>
-        
-        <!-- Platform Header Styles -->
-        <Style Selector="Border.PlatformHeader">
-            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Margin" Value="0,16,0,12"/>
-        </Style>
-        
-        <!-- Status Badge Styles -->
-        <Style Selector="Border.StatusBadge">
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="8,4"/>
-            <Setter Property="Margin" Value="0,0,8,0"/>
-        </Style>
-        
-        <!-- Action Button Styles -->
-        <Style Selector="Button.AccountAction">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="6"/>
-            <Setter Property="Padding" Value="8"/>
-            <Setter Property="Width" Value="36"/>
-            <Setter Property="Height" Value="36"/>
-        </Style>
-    </UserControl.Styles>
+    <!-- No custom UserControl.Styles needed - using global App.axaml styles -->
 
-    <Border Classes="card" Padding="24">
-        <Grid RowDefinitions="Auto,*">
-            
-            <!-- Header -->
-            <Grid Grid.Row="0" Margin="0,0,0,24">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                
-                <StackPanel Grid.Column="0" Spacing="4">
-                    <TextBlock Text="Account Manager" 
-                               FontSize="24" 
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource SMC-Foreground}"/>
-                    <TextBlock Text="Manage your social media accounts and connections" 
-                               FontSize="14" 
-                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
-                </StackPanel>
-                
-                <!-- Test Button (temporary for debugging) -->
-                <Button Grid.Column="1" 
-                        Content="TEST" 
-                        Command="{Binding TestButtonCommand}"
-                        Classes="secondary"
-                        Margin="0,0,12,0"
-                        MinWidth="80">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="🔧" FontWeight="Bold"/>
-                            <TextBlock Text="TEST"/>
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="24">
+            <StackPanel Spacing="24" MaxWidth="1000">
+                <!-- Page Header -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Grid.Column="0" Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="12">
+                            <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).CloseAccountManagerCommand}" 
+                                    Classes="ghost"
+                                    Width="36" Height="36"
+                                    HorizontalContentAlignment="Center"
+                                    VerticalContentAlignment="Center"
+                                    ToolTip.Tip="Back to Home">
+                                <TextBlock Text="←" FontSize="16" FontWeight="Bold"/>
+                            </Button>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Account Manager" 
+                                           FontSize="24" 
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource SMC-Foreground}"/>
+                                <TextBlock Text="Manage your social media accounts and connections" 
+                                           FontSize="14" 
+                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                            </StackPanel>
                         </StackPanel>
-                    </Button.Content>
-                </Button>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                        <Button Content="TEST" 
+                                Command="{Binding TestButtonCommand}"
+                                Classes="outline"
+                                Padding="12,8"
+                                IsVisible="False"
+                                ToolTip.Tip="Test account functionality">
+                            <Button.Content>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <TextBlock Text="🔧" FontSize="12" VerticalAlignment="Center"/>
+                                    <TextBlock Text="TEST" FontSize="12" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </Button.Content>
+                        </Button>
+                        <Button Command="{Binding AddAccountCommand}"
+                                Classes="primary"
+                                Padding="16,10"
+                                ToolTip.Tip="Connect a new social media account">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="+" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                                <TextBlock Text="Add Account" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                    </StackPanel>
+                </Grid>
                 
-                <!-- Add Account Button -->
-                <Button Grid.Column="2" 
-                        Content="Add Account" 
-                        Command="{Binding AddAccountCommand}"
-                        Classes="primary"
-                        MinWidth="120">
-                    <Button.Content>
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <TextBlock Text="+" FontWeight="Bold"/>
-                            <TextBlock Text="Add Account"/>
-                        </StackPanel>
-                    </Button.Content>
-                </Button>
-            </Grid>
-            
-            <!-- Main Content -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
                 <StackPanel Spacing="16">
                     
                     <!-- Loading State -->
                     <StackPanel IsVisible="{Binding IsLoading}"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Spacing="16">
+                               Spacing="12"
+                               Classes="FadeIn">
                         <Border Background="{DynamicResource SMC-Accent}" 
-                                CornerRadius="50" 
-                                Width="60" Height="60"
-                                HorizontalAlignment="Center">
+                                CornerRadius="40" 
+                                Width="48" Height="48"
+                                HorizontalAlignment="Center"
+                                Classes="Pulse">
                             <TextBlock Text="⏳" 
                                        FontSize="24" 
                                        HorizontalAlignment="Center" 
@@ -126,20 +87,20 @@
                     <!-- Empty State -->
                     <StackPanel HorizontalAlignment="Center"
                                VerticalAlignment="Center"
-                               Spacing="16"
+                               Spacing="12"
                                IsVisible="{Binding !HasAccounts}">
                         <Border Background="{DynamicResource SMC-Muted}" 
-                                CornerRadius="50" 
-                                Width="80" Height="80"
+                                CornerRadius="40" 
+                                Width="64" Height="64"
                                 HorizontalAlignment="Center">
                             <TextBlock Text="👤" 
                                        FontSize="32" 
                                        HorizontalAlignment="Center" 
                                        VerticalAlignment="Center"/>
                         </Border>
-                        <StackPanel Spacing="8" HorizontalAlignment="Center">
+                        <StackPanel Spacing="6" HorizontalAlignment="Center">
                             <TextBlock Text="No accounts connected" 
-                                       FontSize="20" 
+                                       FontSize="18" 
                                        FontWeight="SemiBold"
                                        HorizontalAlignment="Center"
                                        Foreground="{DynamicResource SMC-Foreground}"/>
@@ -212,17 +173,17 @@
                     </StackPanel>
                     
                     <!-- Authentication Status -->
-                    <Border Background="{DynamicResource SMC-Card}"
-                            BorderBrush="{DynamicResource SMC-Card-Border}"
+                    <Border Background="{DynamicResource SMC-Card-Background}"
+                            BorderBrush="{DynamicResource SMC-Accent}"
                             BorderThickness="1"
-                            CornerRadius="12"
+                            CornerRadius="8"
                             Padding="16"
-                            Margin="0,0,0,16"
+                            Classes="Pulse"
                             IsVisible="{Binding IsAuthenticating}">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
+                        <StackPanel Orientation="Horizontal" Spacing="10">
                             <Border Background="{DynamicResource SMC-Accent}" 
-                                    CornerRadius="50" 
-                                    Width="40" Height="40">
+                                    CornerRadius="40" 
+                                    Width="36" Height="36">
                                 <TextBlock Text="🔐" 
                                            FontSize="16" 
                                            HorizontalAlignment="Center" 
@@ -245,18 +206,17 @@
 
                     
                     <!-- Edit/Add Account Form -->
-                    <Border Background="{DynamicResource SMC-Card}"
+                    <Border Background="{DynamicResource SMC-Card-Background}"
                             BorderBrush="{DynamicResource SMC-Card-Border}"
                             BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="24"
-                            Margin="0,0,0,16"
+                            CornerRadius="8"
+                            Padding="20"
                             IsVisible="{Binding IsEditingAccount}">
-                        <StackPanel Spacing="20">
+                        <StackPanel Spacing="16">
                             <!-- Form Header -->
-                            <StackPanel Spacing="8">
+                            <StackPanel Spacing="6">
                                 <TextBlock Text="{Binding IsAddingAccount, Converter={x:Static converters:BooleanToStringConverter.Instance}, ConverterParameter='Add New Account|Edit Account'}" 
-                                           FontSize="20"
+                                           FontSize="18"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource SMC-Foreground}"/>
                                 <TextBlock Text="{Binding IsAddingAccount, Converter={x:Static converters:BooleanToStringConverter.Instance}, ConverterParameter='Configure your social media account and OAuth settings|Update your account information'}" 
@@ -316,10 +276,10 @@
                             <Border Background="{DynamicResource SMC-Muted}"
                                     BorderBrush="{DynamicResource SMC-Card-Border}"
                                     BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="16"
+                                    CornerRadius="6"
+                                    Padding="12"
                                     IsVisible="{Binding IsOAuthAuthMethod}">
-                                <StackPanel Spacing="16">
+                                <StackPanel Spacing="12">
                                     <StackPanel Spacing="4">
                                         <TextBlock Text="OAuth Configuration" 
                                                    FontWeight="SemiBold"
@@ -334,7 +294,7 @@
                                     <!-- OAuth Fields Grid -->
                                     <Grid ColumnDefinitions="1*,1*" RowDefinitions="Auto,Auto,Auto">
                                         <!-- Client ID -->
-                                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,8,12">
+                                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,6,10">
                                             <TextBlock Text="Client ID" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -345,7 +305,7 @@
                                         </StackPanel>
                                         
                                         <!-- Client Secret -->
-                                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4" Margin="8,0,0,12">
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4" Margin="6,0,0,10">
                                             <TextBlock Text="Client Secret" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -357,7 +317,7 @@
                                         </StackPanel>
                                         
                                         <!-- Redirect URI -->
-                                        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,0,0,12">
+                                        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,0,0,10">
                                             <TextBlock Text="Redirect URI" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -370,17 +330,19 @@
                                         <!-- Test OAuth Button -->
                                         <StackPanel Grid.Column="0" Grid.Row="2" Grid.ColumnSpan="2" 
                                                    Orientation="Horizontal" 
-                                                   Spacing="12"
+                                                   Spacing="8"
                                                    HorizontalAlignment="Center">
                                             <Button Content="🔐 Test OAuth Configuration" 
                                                     Command="{Binding TestOAuthConfigCommand}"
                                                     Classes="secondary"
-                                                    MinWidth="200"/>
+                                                    MinWidth="200"
+                                                    ToolTip.Tip="Verify OAuth settings are valid"/>
                                             <Button Content="🚀 Start OAuth Flow" 
                                                     Command="{Binding StartOAuthFlowCommand}"
                                                     Classes="primary"
                                                     IsEnabled="{Binding CanTestOAuthConfig}"
-                                                    MinWidth="200"/>
+                                                    MinWidth="200"
+                                                    ToolTip.Tip="Begin OAuth authentication process"/>
                                         </StackPanel>
                                     </Grid>
                                 </StackPanel>
@@ -390,10 +352,10 @@
                             <Border Background="{DynamicResource SMC-Muted}"
                                     BorderBrush="{DynamicResource SMC-Card-Border}"
                                     BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="16"
+                                    CornerRadius="6"
+                                    Padding="12"
                                     IsVisible="{Binding IsAppPasswordAuthMethod}">
-                                <StackPanel Spacing="16">
+                                <StackPanel Spacing="12">
                                     <StackPanel Spacing="4">
                                         <TextBlock Text="BlueSky App Password" 
                                                    FontWeight="SemiBold"
@@ -435,7 +397,8 @@
                                                 Command="{Binding TestAppPasswordCommand}"
                                                 Classes="secondary"
                                                 IsEnabled="{Binding CanSaveAppPasswordAccount}"
-                                                MinWidth="200"/>
+                                                MinWidth="200"
+                                                ToolTip.Tip="Verify app password authentication"/>
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
@@ -456,7 +419,7 @@
                                     <Grid ColumnDefinitions="1*,1*" RowDefinitions="Auto,Auto,Auto">
                                         
                                         <!-- Username Field -->
-                                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,8,12">
+                                        <StackPanel Grid.Column="0" Grid.Row="0" Spacing="4" Margin="0,0,6,10">
                                             <TextBlock Text="Username" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -467,7 +430,7 @@
                                         </StackPanel>
                                         
                                         <!-- Display Name Field -->
-                                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4" Margin="8,0,0,12">
+                                        <StackPanel Grid.Column="1" Grid.Row="0" Spacing="4" Margin="6,0,0,10">
                                             <TextBlock Text="Display Name" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -478,7 +441,7 @@
                                         </StackPanel>
                                         
                                         <!-- Avatar URL Field -->
-                                        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,0,0,12">
+                                        <StackPanel Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2" Spacing="4" Margin="0,0,0,10">
                                             <TextBlock Text="Avatar URL (Optional)" 
                                                        FontWeight="Medium"
                                                        FontSize="14"
@@ -489,7 +452,7 @@
                                         </StackPanel>
                                         
                                         <!-- Platform Display (edit mode only) -->
-                                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" Margin="0,0,0,12"
+                                        <StackPanel Grid.Column="0" Grid.Row="2" Spacing="4" Margin="0,0,0,10"
                                                    IsVisible="{Binding !IsAddingAccount}">
                                             <TextBlock Text="Platform" 
                                                        FontWeight="Medium"
@@ -511,16 +474,18 @@
                             
                             <!-- Action Buttons -->
                             <StackPanel Orientation="Horizontal" 
-                                       Spacing="12" 
+                                       Spacing="8" 
                                        HorizontalAlignment="Right">
                                 <Button Content="Cancel" 
                                         Command="{Binding CancelAccountOperationCommand}"
                                         Classes="secondary"
-                                        MinWidth="100"/>
+                                        MinWidth="100"
+                                        ToolTip.Tip="Cancel and discard changes"/>
                                 <Button Content="{Binding IsAddingAccount, Converter={x:Static converters:BooleanToStringConverter.Instance}, ConverterParameter='Create Account|Save Changes'}" 
                                         Command="{Binding SaveAccountCommand}"
                                         Classes="primary"
-                                        MinWidth="120"/>
+                                        MinWidth="120"
+                                        ToolTip.Tip="Save account configuration"/>
                             </StackPanel>
                         </StackPanel>
                     </Border>
@@ -531,15 +496,20 @@
                                  x:Name="AccountsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Classes="AccountCard">
+                                <Border Background="{DynamicResource SMC-Card-Background}"
+                                        BorderBrush="{DynamicResource SMC-Card-Border}" 
+                                        BorderThickness="1"
+                                        CornerRadius="8" 
+                                        Padding="16" 
+                                        Margin="0,0,0,12">
                                     <Grid ColumnDefinitions="Auto,*,Auto">
                                         
                                         <!-- Account Avatar -->
                                         <Border Grid.Column="0" 
-                                                Width="48" Height="48" 
-                                                CornerRadius="24"
+                                                Width="40" Height="40" 
+                                                CornerRadius="20"
                                                 Background="#0085FF"
-                                                Margin="0,0,16,0">
+                                                Margin="0,0,12,0">
                                             <TextBlock Text="{Binding DisplayName}" 
                                                        Foreground="White"
                                                        FontSize="16"
@@ -549,9 +519,9 @@
                                         </Border>
                                         
                                         <!-- Account Details -->
-                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="6">
+                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
                                             <TextBlock Text="{Binding DisplayName}" 
-                                                       FontSize="16"
+                                                       FontSize="15"
                                                        FontWeight="SemiBold"
                                                        Foreground="{DynamicResource SMC-Foreground}"/>
                                             <TextBlock Text="{Binding Username, StringFormat='@{0}'}" 
@@ -588,8 +558,8 @@
                                                    VerticalAlignment="Center">
                                             
                                             <!-- Edit Button -->
-                                            <Button Classes="AccountAction"
-                                                   BorderBrush="{DynamicResource SMC-Card-Border}"
+                                            <Button Classes="ghost"
+                                                   Width="32" Height="32"
                                                    Command="{Binding $parent[UserControl].((vm:AccountManagerViewModel)DataContext).EditAccountCommand}"
                                                    CommandParameter="{Binding}"
                                                    ToolTip.Tip="Edit Account">
@@ -597,12 +567,12 @@
                                             </Button>
                                             
                                             <!-- Delete Button -->
-                                            <Button Classes="AccountAction"
-                                                   BorderBrush="{DynamicResource SMC-Warning-Border}"
+                                            <Button Classes="ghost"
+                                                   Width="32" Height="32"
                                                    Command="{Binding $parent[UserControl].((vm:AccountManagerViewModel)DataContext).RemoveAccountCommand}"
                                                    CommandParameter="{Binding}"
                                                    ToolTip.Tip="Delete Account">
-                                                <TextBlock Text="🗑️" FontSize="14"/>
+                                                <TextBlock Text="🗑️" FontSize="16"/>
                                             </Button>
                                         </StackPanel>
                                     </Grid>
@@ -611,7 +581,7 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-            </ScrollViewer>
-        </Grid>
-    </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl>
