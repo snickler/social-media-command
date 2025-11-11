@@ -48,6 +48,9 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private bool isAIAssistantVisible = false;
 
     [ObservableProperty]
+    private bool isSchedulerVisible = false;
+
+    [ObservableProperty]
     private bool isDocumentationVisible = false;
 
     [ObservableProperty]
@@ -172,6 +175,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     {
         Console.WriteLine("CloseAIAssistant command executed!");
         IsAIAssistantVisible = false;
+    }
+
+    #endregion
+
+    #region Scheduler Commands - Memory efficient
+
+    [RelayCommand]
+    private void ToggleScheduler()
+    {
+        Console.WriteLine("ToggleScheduler command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling Scheduler");
+
+        IsSchedulerVisible = !IsSchedulerVisible;
+    }
+
+    [RelayCommand]
+    private void CloseScheduler()
+    {
+        Console.WriteLine("CloseScheduler command executed!");
+        IsSchedulerVisible = false;
     }
 
     #endregion

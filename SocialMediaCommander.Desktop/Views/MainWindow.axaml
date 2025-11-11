@@ -179,6 +179,10 @@
 
                     <!-- Action Buttons -->
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" Margin="0,0,120,0">
+                        <Button Content="🤖" Classes="HeaderButton" ToolTip.Tip="AI Assistant"
+                                Command="{Binding ToggleAIAssistantCommand}"/>
+                        <Button Content="📅" Classes="HeaderButton" ToolTip.Tip="Schedule Posts"
+                                Command="{Binding ToggleSchedulerCommand}"/>
                         <Button Content="📖" Classes="HeaderButton" ToolTip.Tip="Documentation"
                                 Command="{Binding ToggleDocumentationCommand}"/>
                         <Button Content="⚙️" Classes="HeaderButton" ToolTip.Tip="Settings"/>
@@ -286,6 +290,90 @@
         <Border Grid.Row="1" Grid.RowSpan="2"
                 IsVisible="{Binding IsAccountManagerVisible}">
             <views:AccountManagerView DataContext="{Binding AccountManager}"/>
+        </Border>
+
+        <!-- AI Assistant Overlay -->
+        <Border Grid.Row="1" Grid.RowSpan="2"
+                IsVisible="{Binding IsAIAssistantVisible}"
+                Background="{DynamicResource SMC-Background}">
+            <Grid>
+                <!-- Header with close button -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource SMC-Accent}" 
+                        BorderBrush="{DynamicResource SMC-Accent}" 
+                        BorderThickness="0,0,0,1"
+                        Padding="24,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock Text="🤖" FontSize="20" Foreground="{DynamicResource SMC-Accent-Foreground}"/>
+                            <TextBlock Text="AI Assistant" 
+                                       Foreground="{DynamicResource SMC-Accent-Foreground}" 
+                                       FontWeight="Bold" FontSize="18"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Button Grid.Column="1" 
+                                Content="✕" 
+                                Classes="HeaderButton"
+                                Command="{Binding CloseAIAssistantCommand}"
+                                ToolTip.Tip="Close AI Assistant"/>
+                    </Grid>
+                </Border>
+                
+                <views:AIAssistantView Grid.Row="1" DataContext="{Binding AIAssistant}"/>
+            </Grid>
+        </Border>
+
+        <!-- Scheduler Overlay -->
+        <Border Grid.Row="1" Grid.RowSpan="2"
+                IsVisible="{Binding IsSchedulerVisible}"
+                Background="{DynamicResource SMC-Background}">
+            <Grid>
+                <!-- Header with close button -->
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" 
+                        Background="{DynamicResource SMC-Accent}" 
+                        BorderBrush="{DynamicResource SMC-Accent}" 
+                        BorderThickness="0,0,0,1"
+                        Padding="24,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <TextBlock Text="📅" FontSize="20" Foreground="{DynamicResource SMC-Accent-Foreground}"/>
+                            <TextBlock Text="Post Scheduler" 
+                                       Foreground="{DynamicResource SMC-Accent-Foreground}" 
+                                       FontWeight="Bold" FontSize="18"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                        
+                        <Button Grid.Column="1" 
+                                Content="✕" 
+                                Classes="HeaderButton"
+                                Command="{Binding CloseSchedulerCommand}"
+                                ToolTip.Tip="Close Scheduler"/>
+                    </Grid>
+                </Border>
+                
+                <views:SchedulerView Grid.Row="1" DataContext="{Binding Scheduler}"/>
+            </Grid>
         </Border>
 
         <!-- Documentation Overlay -->

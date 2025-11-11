@@ -29,6 +29,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
     private bool _includeEmojis = false;
     private string _brandVoice = string.Empty;
     private string _keywords = string.Empty;
+    private string _selectedModel = "phi-3.5-mini";
     private AIContentResponse? _lastResponse;
 
     public AIAssistantViewModel(IAIService aiService, ILogger<AIAssistantViewModel> logger)
@@ -41,12 +42,22 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         GenerateVariationsCommand = new AsyncRelayCommand(GenerateVariationsAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
         GenerateHashtagsCommand = new AsyncRelayCommand(GenerateHashtagsAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
         GenerateThreadCommand = new AsyncRelayCommand(GenerateThreadAsync, () => !IsGenerating && !string.IsNullOrWhiteSpace(GeneratedContent));
+        RefreshAvailableModelsCommand = new AsyncRelayCommand(LoadAvailableModelsAsync);
 
         TargetPlatforms = new ObservableCollection<PlatformSelectionItem>
         {
             // TODO: Add Twitter, LinkedIn, Facebook, Threads when implementations are ready
             new() { Platform = SocialPlatform.BlueSky, IsSelected = true }
         };
+
+        // Available Foundry Local models - loaded from service
+        AvailableModels = new ObservableCollection<string>
+        {
+            "Loading models..."
+        };
+
+        // Load available models from Foundry Local asynchronously
+        _ = LoadAvailableModelsAsync();
 
         ContentVariations = new ObservableCollection<AIGeneratedContent>();
         GeneratedHashtags = new ObservableCollection<string>();
@@ -156,6 +167,18 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         }
     }
 
+    public string SelectedModel
+    {
+        get => _selectedModel;
+        set
+        {
+            _selectedModel = value;
+            OnPropertyChanged();
+            _logger.LogInformation("Model changed to: {Model}", value);
+        }
+    }
+
+    public ObservableCollection<string> AvailableModels { get; }
     public ObservableCollection<PlatformSelectionItem> TargetPlatforms { get; }
     public ObservableCollection<AIGeneratedContent> ContentVariations { get; }
     public ObservableCollection<string> GeneratedHashtags { get; }
@@ -174,6 +197,7 @@ public class AIAssistantViewModel : INotifyPropertyChanged
     public AsyncRelayCommand GenerateVariationsCommand { get; }
     public AsyncRelayCommand GenerateHashtagsCommand { get; }
     public AsyncRelayCommand GenerateThreadCommand { get; }
+    public AsyncRelayCommand RefreshAvailableModelsCommand { get; }
 
     #endregion
 
@@ -184,6 +208,10 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         try
         {
             IsGenerating = true;
+
+            // Update AI service model configuration before generating
+            _aiService.SetModel(SelectedModel);
+            _logger.LogInformation("Using model: {Model}", SelectedModel);
 
             var request = new AIContentRequest
             {
@@ -329,6 +357,70 @@ public class AIAssistantViewModel : INotifyPropertyChanged
         finally
         {
             IsGenerating = false;
+        }
+    }
+
+    private async Task LoadAvailableModelsAsync()
+    {
+        try
+        {
+            _logger.LogInformation("Loading available models from Foundry Local");
+
+            // Get available models from AI service
+            var models = await _aiService.GetAvailableModelsAsync();
+
+            AvailableModels.Clear();
+
+            if (models?.Any() == true)
+            {
+                foreach (var model in models.OrderBy(m => m))
+                {
+                    AvailableModels.Add(model);
+                    _logger.LogDebug("Found model: {Model}", model);
+                }
+
+                // Select first model if none selected
+                if (string.IsNullOrEmpty(SelectedModel) || SelectedModel == "Loading models...")
+                {
+                    SelectedModel = AvailableModels.First();
+                }
+
+                _logger.LogInformation("Loaded {Count} models from Foundry Local", models.Count);
+            }
+            else
+            {
+                // Fallback to common models if service doesn't return any
+                _logger.LogWarning("No models returned from service, using fallback list");
+                AvailableModels.Add("phi-3.5-mini");
+                AvailableModels.Add("llama-3.2-1b");
+                AvailableModels.Add("llama-3.2-3b");
+                AvailableModels.Add("llama-3.1-8b");
+                AvailableModels.Add("mistral-7b");
+                AvailableModels.Add("gemma-2b");
+
+                if (string.IsNullOrEmpty(SelectedModel) || SelectedModel == "Loading models...")
+                {
+                    SelectedModel = "phi-3.5-mini";
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading available models");
+
+            // Fallback to common models on error
+            AvailableModels.Clear();
+            AvailableModels.Add("phi-3.5-mini");
+            AvailableModels.Add("llama-3.2-1b");
+            AvailableModels.Add("llama-3.2-3b");
+            AvailableModels.Add("llama-3.1-8b");
+            AvailableModels.Add("mistral-7b");
+            AvailableModels.Add("gemma-2b");
+
+            if (string.IsNullOrEmpty(SelectedModel) || SelectedModel == "Loading models...")
+            {
+                SelectedModel = "phi-3.5-mini";
+            }
         }
     }
 

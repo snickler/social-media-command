@@ -1,0 +1,377 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             xmlns:converters="using:SocialMediaCommander.Desktop.Converters"
+             x:Class="SocialMediaCommander.Desktop.Views.AIAssistantView"
+             x:DataType="vm:AIAssistantViewModel">
+
+    <UserControl.Styles>
+        <!-- Card Styles -->
+        <Style Selector="Border.AICard">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+        </Style>
+
+        <!-- Section Header -->
+        <Style Selector="TextBlock.SectionHeader">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Foreground}"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <!-- Label Style -->
+        <Style Selector="TextBlock.Label">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource SMC-Muted-Foreground}"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <!-- Generated Content Display -->
+        <Style Selector="Border.GeneratedContent">
+            <Setter Property="Background" Value="{DynamicResource SMC-Muted}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16"/>
+            <Setter Property="MinHeight" Value="120"/>
+        </Style>
+
+        <!-- Variation Item -->
+        <Style Selector="Border.VariationItem">
+            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style Selector="Border.VariationItem:pointerover">
+            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
+        </Style>
+
+        <!-- Hashtag Chip -->
+        <Style Selector="Border.HashtagChip">
+            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer>
+        <StackPanel Spacing="24" MaxWidth="1200" Margin="24">
+            <!-- AI Assistant Header -->
+            <StackPanel>
+                <TextBlock Text="🤖 AI Content Assistant" 
+                           FontSize="24" 
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource SMC-Foreground}"/>
+                <TextBlock Text="Generate, optimize, and enhance your social media content with AI" 
+                           FontSize="14"
+                           Foreground="{DynamicResource SMC-Muted-Foreground}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
+
+            <!-- Content Generation Section -->
+            <Border Classes="AICard">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="✨ Generate Content" Classes="SectionHeader"/>
+
+                    <!-- Prompt Input -->
+                    <StackPanel>
+                        <TextBlock Text="What would you like to create?" Classes="Label"/>
+                        <TextBox Text="{Binding Prompt}"
+                                 Watermark="Describe the content you want to create... (e.g., 'A post about productivity tips for remote workers')"
+                                 MinHeight="80"
+                                 TextWrapping="Wrap"
+                                 AcceptsReturn="True"/>
+                    </StackPanel>
+
+                    <!-- Configuration Grid -->
+                    <Grid ColumnDefinitions="*,16,*,16,*,16,*">
+                        <!-- AI Model Selection -->
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="AI Model" Classes="Label"/>
+                            <DockPanel>
+                                <Button Content="🔄"
+                                        DockPanel.Dock="Right"
+                                        Width="36"
+                                        Height="36"
+                                        Margin="4,0,0,0"
+                                        Command="{Binding RefreshAvailableModelsCommand}"
+                                        ToolTip.Tip="Refresh available models from Foundry Local"
+                                        Classes="SecondaryButton"/>
+                                <ComboBox ItemsSource="{Binding AvailableModels}"
+                                          SelectedItem="{Binding SelectedModel}"
+                                          IsEditable="True"
+                                          HorizontalAlignment="Stretch">
+                                    <ComboBox.Styles>
+                                        <Style Selector="ComboBox">
+                                            <Setter Property="ToolTip.Tip" Value="Select or type a Foundry Local model name. Click 🔄 to refresh."/>
+                                        </Style>
+                                    </ComboBox.Styles>
+                                </ComboBox>
+                            </DockPanel>
+                        </StackPanel>
+                        
+                        <!-- Tone Selection -->
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="Tone" Classes="Label"/>
+                            <ComboBox ItemsSource="{Binding AITones}"
+                                      SelectedItem="{Binding SelectedTone}"
+                                      HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <!-- Content Type -->
+                        <StackPanel Grid.Column="4">
+                            <TextBlock Text="Content Type" Classes="Label"/>
+                            <ComboBox ItemsSource="{Binding AIContentTypes}"
+                                      SelectedItem="{Binding SelectedContentType}"
+                                      HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+
+                        <!-- Options -->
+                        <StackPanel Grid.Column="6" VerticalAlignment="Center">
+                            <CheckBox IsChecked="{Binding IncludeHashtags}"
+                                      Content="Include Hashtags"
+                                      Margin="0,0,0,8"/>
+                            <CheckBox IsChecked="{Binding IncludeEmojis}"
+                                      Content="Include Emojis"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <!-- Advanced Options -->
+                    <Expander Header="Advanced Options" IsExpanded="False">
+                        <StackPanel Spacing="12" Margin="0,12,0,0">
+                            <!-- Brand Voice -->
+                            <StackPanel>
+                                <TextBlock Text="Brand Voice (Optional)" Classes="Label"/>
+                                <TextBox Text="{Binding BrandVoice}"
+                                         Watermark="Describe your brand's voice (e.g., 'Professional tech company')"/>
+                            </StackPanel>
+
+                            <!-- Keywords -->
+                            <StackPanel>
+                                <TextBlock Text="Keywords (Optional)" Classes="Label"/>
+                                <TextBox Text="{Binding Keywords}"
+                                         Watermark="Comma-separated keywords to include (e.g., 'productivity, remote work, tips')"/>
+                            </StackPanel>
+
+                            <!-- Target Platforms -->
+                            <StackPanel>
+                                <TextBlock Text="Target Platforms" Classes="Label"/>
+                                <ItemsControl ItemsSource="{Binding TargetPlatforms}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsSelected}"
+                                                      Content="{Binding Platform}"
+                                                      Margin="0,0,16,8"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+                    </Expander>
+
+                    <!-- Generate Button -->
+                    <Button Command="{Binding GenerateContentCommand}"
+                            Classes="PrimaryButton"
+                            HorizontalAlignment="Stretch"
+                            IsEnabled="{Binding !IsGenerating}">
+                        <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
+                            <TextBlock Text="✨"/>
+                            <TextBlock Text="{Binding IsGenerating, Converter={x:Static converters:BooleanToStringConverter.Instance}, ConverterParameter='Generating...|Generate Content'}"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+            </Border>
+
+            <!-- Generated Content Display -->
+            <Border Classes="AICard">
+                <StackPanel Spacing="16">
+                    <TextBlock Text="📝 Generated Content" Classes="SectionHeader"/>
+
+                    <!-- Main Generated Content -->
+                    <Border Classes="GeneratedContent">
+                        <ScrollViewer MaxHeight="200">
+                            <TextBlock Text="{Binding GeneratedContent}"
+                                       TextWrapping="Wrap"
+                                       FontSize="14"/>
+                        </ScrollViewer>
+                    </Border>
+
+                    <!-- Action Buttons -->
+                    <Grid ColumnDefinitions="*,8,*,8,*,8,*">
+                        <Button Grid.Column="0"
+                                Command="{Binding OptimizeContentCommand}"
+                                Classes="SecondaryButton"
+                                IsEnabled="{Binding !IsGenerating}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="🔧"/>
+                                <TextBlock Text="Optimize"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Grid.Column="2"
+                                Command="{Binding GenerateVariationsCommand}"
+                                Classes="SecondaryButton"
+                                IsEnabled="{Binding !IsGenerating}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="🔄"/>
+                                <TextBlock Text="Variations"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Grid.Column="4"
+                                Command="{Binding GenerateHashtagsCommand}"
+                                Classes="SecondaryButton"
+                                IsEnabled="{Binding !IsGenerating}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="#️⃣"/>
+                                <TextBlock Text="Hashtags"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button Grid.Column="6"
+                                Command="{Binding GenerateThreadCommand}"
+                                Classes="SecondaryButton"
+                                IsEnabled="{Binding !IsGenerating}">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBlock Text="🧵"/>
+                                <TextBlock Text="Thread"/>
+                            </StackPanel>
+                        </Button>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Content Variations -->
+            <Border Classes="AICard" IsVisible="{Binding ContentVariations.Count}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="🔄 Content Variations" Classes="SectionHeader"/>
+                    <ItemsControl ItemsSource="{Binding ContentVariations}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="VariationItem">
+                                    <Grid ColumnDefinitions="Auto,*,Auto">
+                                        <TextBlock Grid.Column="0" 
+                                                   Text="{Binding Platform}" 
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Top"
+                                                   Margin="0,0,12,0"/>
+                                        <TextBlock Grid.Column="1"
+                                                   Text="{Binding Content}"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="14"/>
+                                        <Button Grid.Column="2"
+                                                Content="📋"
+                                                Classes="ghost"
+                                                ToolTip.Tip="Copy to clipboard"
+                                                VerticalAlignment="Top"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Generated Hashtags -->
+            <Border Classes="AICard" IsVisible="{Binding GeneratedHashtags.Count}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="#️⃣ Generated Hashtags" Classes="SectionHeader"/>
+                    <ItemsControl ItemsSource="{Binding GeneratedHashtags}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="HashtagChip">
+                                    <TextBlock Text="{Binding}"
+                                               Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                               FontWeight="Medium"
+                                               FontSize="13"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Thread Posts -->
+            <Border Classes="AICard" IsVisible="{Binding ThreadPosts.Count}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="🧵 Thread Posts" Classes="SectionHeader"/>
+                    <ItemsControl ItemsSource="{Binding ThreadPosts}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Classes="VariationItem">
+                                    <TextBlock Text="{Binding}"
+                                               TextWrapping="Wrap"
+                                               FontSize="14"/>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Optimization Suggestions -->
+            <Border Classes="AICard" IsVisible="{Binding OptimizationSuggestions.Count}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="💡 Optimization Suggestions" Classes="SectionHeader"/>
+                    <ItemsControl ItemsSource="{Binding OptimizationSuggestions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{DynamicResource SMC-Muted}"
+                                        BorderBrush="{DynamicResource SMC-Card-Border}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="12"
+                                        Margin="0,0,0,8">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="{Binding Type}"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource SMC-Accent}"/>
+                                        <TextBlock Text="{Binding Suggestion}"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="14"/>
+                                        <TextBlock Text="{Binding Reason}"
+                                                   TextWrapping="Wrap"
+                                                   FontSize="12"
+                                                   Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <!-- Loading Indicator -->
+            <Border Classes="AICard" IsVisible="{Binding IsGenerating}">
+                <StackPanel Spacing="16" HorizontalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="200"/>
+                    <TextBlock Text="Generating content with AI..."
+                               FontSize="14"
+                               Foreground="{DynamicResource SMC-Muted-Foreground}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
