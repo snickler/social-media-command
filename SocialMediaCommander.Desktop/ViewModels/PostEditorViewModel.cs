@@ -9,6 +9,7 @@ using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
 using SocialMediaCommander.Core.Services;
+using SocialMediaCommander.Desktop.Helpers;
 using Serilog;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
@@ -326,7 +327,7 @@ public partial class PostEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task UploadMediaAsync()
+    private void UploadMedia()
     {
         System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] UploadMedia command called!");
 
@@ -337,7 +338,7 @@ public partial class PostEditorViewModel : ObservableObject
             {
                 OnError?.Invoke("Maximum of 4 media files reached");
                 System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] Cannot upload - limit reached");
-                return Task.CompletedTask;
+                return;
             }
 
             // Trigger event for UI to handle file dialog
@@ -351,8 +352,6 @@ public partial class PostEditorViewModel : ObservableObject
             System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Upload media failed: {ex.Message}");
             OnError?.Invoke($"Failed to upload media: {ex.Message}");
         }
-
-        return Task.CompletedTask;
     }
 
     [RelayCommand]
