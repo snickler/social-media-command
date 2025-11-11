@@ -546,17 +546,17 @@ public class BlueSkyService : IBlueSkyService
                     {
                         System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Posting thread reply with {embeddedImages.Count} embedded image(s)");
                         replyResponse = embeddedImages.Count == 1
-                            ? await agent.ReplyTo(previousRef, threadPost.Content, embeddedImages[0]).ConfigureAwait(false)
-                            : await agent.ReplyTo(previousRef, threadPost.Content, embeddedImages).ConfigureAwait(false);
+                            ? await agent.ReplyTo(previousRef, threadPost.Content ?? string.Empty, embeddedImages[0]).ConfigureAwait(false)
+                            : await agent.ReplyTo(previousRef, threadPost.Content ?? string.Empty, embeddedImages).ConfigureAwait(false);
                     }
                     else
                     {
-                        replyResponse = await agent.ReplyTo(previousRef, threadPost.Content).ConfigureAwait(false);
+                        replyResponse = await agent.ReplyTo(previousRef, threadPost.Content ?? string.Empty).ConfigureAwait(false);
                     }
                 }
                 else
                 {
-                    replyResponse = await agent.ReplyTo(previousRef, threadPost.Content).ConfigureAwait(false);
+                    replyResponse = await agent.ReplyTo(previousRef, threadPost.Content ?? string.Empty).ConfigureAwait(false);
                 }
 
                 if (!replyResponse.Succeeded || replyResponse.Result == null)

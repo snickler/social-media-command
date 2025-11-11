@@ -66,7 +66,9 @@ public partial class PostEditorView : UserControl
     private void DragOver(object? sender, DragEventArgs e)
     {
         // Only allow file drops
+#pragma warning disable CS0618 // Type or member is obsolete
         var dataTransfer = e.Data;
+#pragma warning restore CS0618
         if (dataTransfer.GetFiles() != null && dataTransfer.GetFiles()?.Any() == true)
         {
             e.DragEffects = DragDropEffects.Copy;
@@ -81,7 +83,9 @@ public partial class PostEditorView : UserControl
 
     private void DragEnter(object? sender, DragEventArgs e)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         var dataTransfer = e.Data;
+#pragma warning restore CS0618
         if (dataTransfer.GetFiles() != null && dataTransfer.GetFiles()?.Any() == true)
         {
             // Show visual feedback (handled in XAML via triggers)
@@ -100,7 +104,9 @@ public partial class PostEditorView : UserControl
 
         try
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var dataTransfer = e.Data;
+#pragma warning restore CS0618
             var files = dataTransfer.GetFiles();
 
             if (files != null && files.Any())
