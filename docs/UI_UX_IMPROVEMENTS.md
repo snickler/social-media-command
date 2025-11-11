@@ -3,6 +3,112 @@
 ## Overview
 This document outlines the comprehensive UI/UX improvements implemented for the Social Media Commander application, following Avalonia best practices inspired by production applications like StabilityMatrix.
 
+**Last Updated**: 2025-11-10  
+**Status**: Fully Implemented and Standardized
+
+## Recent Improvements (2025-11-11)
+
+### 🎨 Complete 2025 Modern UI/UX Redesign
+**Major Milestone**: Comprehensive modernization following 2025 design trends and best practices
+
+#### **Navigation Consistency**
+- **Back navigation everywhere**: All overlay pages (Settings, Account Manager) now have prominent back buttons
+- **Consistent header pattern**: [← Back] [Icon + Title] [✕ Close] across all pages
+- **Visual breadcrumbs**: Clear page hierarchy (Home > Settings, Home > Accounts)
+- **Active page indicators**: Sidebar shows active page with indigo badge and icon
+- **Smooth transitions**: 400ms slide-in animations for page changes
+
+#### **Modern Design System**
+- **Surface elevation tokens**: SMC-Surface-0/1/2/3 for layered UI depth
+- **Text hierarchy**: Primary/Secondary/Tertiary/Disabled text colors
+- **Border variants**: Subtle/Default/Strong/Active for clear visual structure
+- **Consistent spacing rhythm**: 4px/8px/12px/16px/24px system throughout
+- **Modern typography scale**: 11-24px with proper weights (Regular/Medium/SemiBold/Bold)
+
+#### **Account Manager Modernization**
+- **Indigo accent header**: Professional branding with back button and actions
+- **Icon badge system**: Page icon (👤) in white circle for visual identity
+- **Two-line headers**: Title + descriptive subtitle for context
+- **Modern button layout**: TEST and Add Account with proper hierarchy
+- **No more trapped users**: Can now navigate back to home screen
+
+#### **Settings Modernization**
+- **Matching header design**: Consistent with Account Manager pattern
+- **Easy exit options**: Both back button (←) and close button (✕)
+- **Settings icon badge**: ⚙️ in white circle
+- **TabControl preserved**: All existing functionality maintained
+
+#### **Sidebar Enhancements**
+- **Home button added**: Missing home navigation now available (🏠)
+- **Active state indicators**: Current page shows icon in indigo badge (28x28px)
+- **Hover effects**: Secondary background with smooth transitions
+- **Consistent sizing**: All buttons 44px height for easy clicking
+- **Icon states**: Active = badge, Inactive = plain emoji
+
+#### **Inspiration Sources**
+Applied patterns from modern apps:
+- **Discord**: Clean sidebar, modern overlays, consistent navigation
+- **Figma**: Floating panels, clear hierarchy, professional spacing
+- **Linear**: Minimalist aesthetic, fast interactions
+- **Notion**: Organized sections, smooth transitions
+
+### 🌙 Dark Mode Implementation
+- **Complete dark theme**: Added comprehensive dark mode color palette with proper contrast ratios
+- **Dark slate background**: Professional dark theme (#1a1b26) with elevated surfaces (#24283b)
+- **High contrast text**: Light foreground (#e0e0e6) ensuring excellent readability
+- **Brighter accent colors**: Adjusted indigo accent (#7c73e6) for better visibility in dark mode
+- **Softer destructive colors**: Red (#f87171) toned down for comfortable viewing
+- **Theme-aware buttons**: All button styles (primary, secondary, ghost, destructive) now use dynamic resources
+- **Consistent borders**: Card borders (#414868) provide subtle separation without harsh contrast
+- **Status colors adapted**: Success/warning colors adjusted for dark backgrounds
+
+### 🎯 SplitView Navigation & Layout Redesign
+- **SplitView sidebar**: Replaced title bar buttons with collapsible left sidebar navigation (60px compact, 220px expanded)
+- **Clean title bar**: Removed action buttons from title bar, now only shows app title and window controls
+- **Vertical navigation**: All navigation buttons (AI Assistant, Scheduler, Settings, etc.) moved to sidebar for better UX
+- **Button alignment fixes**: Added HorizontalContentAlignment and VerticalContentAlignment for proper content centering
+- **ToggleButton visibility**: Added custom ToggleButton styles with proper colors, checked states, and hover effects
+- **Icon-only mode**: Sidebar buttons show only icons when collapsed (with tooltips), full text when expanded
+
+### 🎯 UI Modernization & Refinement
+- **Compact design**: Reduced spacing and padding by ~30% throughout the application for a more modern, less bulky appearance
+- **Refined measurements**: Button padding (12,6), card padding (16px), corner radius (4-8px), lighter shadows
+- **Window dragging fixed**: Added drag region to title bar - you can now drag the window from the title area and center header
+- **Better proportions**: Font sizes aligned with Avalonia standards (13px body, 16-18px headers)
+
+### 🎯 Settings Functionality Fixes
+- **Browse button now functional**: Implemented folder picker dialog using Avalonia's StorageProvider API
+- **Theme changing now works**: Added `OnSelectedThemeChanged` and `OnIsDarkModeChanged` partial methods to apply theme changes immediately
+- **Theme switching**: Light, Dark, System, and Auto themes now properly update the application's RequestedThemeVariant
+
+## Recent Improvements (2025-11-10)
+
+### 🎯 Global Style Consolidation & Color Consistency
+- **Fixed color inconsistencies**: ToggleButton styles now use indigo accent color (#4338CA) instead of cyan/teal
+- **Added global ToggleButton styles** with proper checked/unchecked states matching the overall theme
+- **Settings button functionality**: Added `ToggleSettingsCommand` and `CloseSettingsCommand` with full overlay support
+- **Removed all duplicate styles** across views (MainWindow, SettingsView, AccountManagerView, PostEditorView, AIAssistantView)
+- **Centralized all styling** in `App.axaml` for consistency and maintainability
+- **Fixed broken class references** (e.g., `PrimaryButton` → `primary`, `SecondaryButton` → `secondary`, `danger` → `destructive`)
+- **Added comprehensive tooltips** to all interactive elements for improved accessibility
+- **Integrated animations** (FadeIn, SlideInBottom, Pulse) throughout the application
+
+### ✅ Fixed Issues
+1. **SettingsView**: Replaced all `StaticResource` references with `DynamicResource SMC-*` colors
+2. **MainWindow**: Removed 150+ lines of duplicate button and card styles
+3. **AIAssistantView**: Fixed undefined button class references
+4. **AccountManagerView**: Standardized card styling and removed duplicates
+5. **PostEditorView**: Removed duplicate platform toggle, tab, and card styles
+6. **App.axaml**: Added global `.card`, `.card-interactive`, and `.badge` variants
+
+### 📐 Standardization Achieved
+- **Corner Radius**: 8px (controls), 12px (cards), 16px (badges)
+- **Padding**: 8px (compact), 16px (standard), 24px (cards)
+- **Spacing**: 8px, 16px, 24px grid system
+- **Colors**: All using `DynamicResource SMC-*` color system
+- **Shadows**: Consistent `BoxShadow` values across all cards
+- **Animations**: Centralized in `AnimationsAndTransitions.axaml`
+
 ## Key Improvements
 
 ### 1. **Enhanced Button Styles**
@@ -81,24 +187,56 @@ Created `AnimationsAndTransitions.axaml` with reusable animation styles:
 - Duration: 500ms
 - Use: Form validation errors
 
-### 4. **Card Components**
+### 4. **Card Components** (Global Styles in App.axaml)
 
-#### Standard Card (`.Card`)
+#### Standard Card (`.card`)
+```xml
+<Border Classes="card">
+    <!-- Content here -->
+</Border>
+```
+- Background: `SMC-Card-Background` (#f7f8fc)
+- Border: `SMC-Card-Border` (#dedce3), 1px
 - Rounded corners: 12px
 - Padding: 24px
-- Box shadow: Subtle elevation
-- Hover: Increased shadow
+- Box shadow: `0 2 8 0 #10000000`
+- Hover: Enhanced shadow `0 4 16 0 #20000000`
+- Transitions: Smooth shadow and border color changes
 
-#### Interactive Card (`.InteractiveCard`)
-- All Card features plus:
+#### Interactive Card (`.card-interactive`)
+```xml
+<Border Classes="card-interactive">
+    <!-- Clickable content -->
+</Border>
+```
+- All `.card` features plus:
   - Hover: Border color change to accent
-  - Hover: 2px upward translation
-  - Hover: Enhanced shadow
-  - Cursor: Hand
+  - Hover: 2px upward translation (`translateY(-2px)`)
+  - Hover: Enhanced shadow with accent tint
+  - Cursor: Hand pointer
+  - Use for: Selectable items, navigation cards
 
-#### Thread Post Card (`.ThreadPostCard`)
-- Padding: 20px
-- Margin bottom: 16px
+#### Status Cards
+```xml
+<Border Classes="status-info">     <!-- Info messages -->
+<Border Classes="status-warning">  <!-- Warnings -->
+<Border Classes="status-success">  <!-- Success messages -->
+```
+- Pre-configured with appropriate background and border colors
+- Corner radius: 8px
+- Padding: 12px
+
+#### Badges (`.badge`)
+```xml
+<Border Classes="badge success">
+    <TextBlock Text="Connected"/>
+</Border>
+```
+- **Variants**: `.success`, `.warning`, `.error`, `.accent`
+- Corner radius: 16px (pill shape)
+- Padding: 8px horizontal, 4px vertical
+- White text, semibold, 11px font size
+- Use for: Status indicators, tags, counts
 - Hover effects with border color change
 
 ### 5. **Platform Toggles**
