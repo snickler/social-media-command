@@ -72,7 +72,7 @@ jobs:
             rid: linux-arm64
           - os: macos
             arch: x64
-            runner: macos-13
+            runner: macos-latest
             rid: osx-x64
           - os: macos
             arch: arm64

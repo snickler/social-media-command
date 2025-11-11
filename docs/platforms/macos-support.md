@@ -186,7 +186,7 @@ chmod +x setup-hooks.sh
 
 The GitHub Actions workflow automatically builds and tests macOS binaries:
 
-- **Intel (x64)**: Built on `macos-13` runners
+- **Intel (x64)**: Built on `macos-latest` runners
 - **Apple Silicon (ARM64)**: Built on `macos-latest` runners (Apple Silicon)
 
 Each commit triggers:
