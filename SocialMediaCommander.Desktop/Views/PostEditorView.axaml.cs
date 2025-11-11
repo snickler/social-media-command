@@ -67,11 +67,11 @@ public partial class PostEditorView : UserControl
     {
         // Only allow file drops
 #pragma warning disable CS0618 // Type or member is obsolete
+        var dataTransfer = e.Data;
+#pragma warning restore CS0618
         e.DragEffects = (dataTransfer.GetFiles() != null && dataTransfer.GetFiles()?.Any() == true)
             ? DragDropEffects.Copy
             : DragDropEffects.None;
-            e.DragEffects = DragDropEffects.None;
-        }
 
         e.Handled = true;
     }
