@@ -193,9 +193,29 @@ npm run dev
 **When modifying UI**:
 1. Use existing button styles via `Classes="PrimaryButton"`, `Classes="SecondaryButton"`, etc.
 2. Apply animations via `Classes="FadeIn SlideInBottom"` or similar
-3. Maintain consistent spacing (8px/16px/24px increments)
-4. Test keyboard navigation and focus states
-5. Run visual regression tests (see "Test infrastructure" section)
+3. Maintain consistent modern spacing (4px/8px/12px/16px increments) — use spacing constants from App.axaml resources: SpacingTiny (4), SpacingSmall (8), SpacingMedium (12), SpacingLarge (16)
+4. Use compact padding: buttons (12,6), cards (16), borders (10-12), corner radius (4-8px)
+5. Test keyboard navigation and focus states
+6. Run visual regression tests (see "Test infrastructure" section)
+
+### Clipboard & Image Handling
+**Clipboard image paste** (PostEditorView.axaml.cs):
+- Wire up TextBox handlers in `OnTextBoxLoaded` using `AddHandler(InputElement.KeyDownEvent, handler, RoutingStrategies.Tunnel)`
+- **CRITICAL**: Mark `e.Handled = true` IMMEDIATELY before async clipboard checks to prevent default paste
+- **Ctrl+V detection**: `OnTextBoxKeyDown` checks `KeyModifiers.Control` and `Key.V`, marks handled, then checks clipboard
+- **Context menu paste**: Custom `MenuFlyout` with `MenuItem` that calls `HandleContextMenuPasteAsync`
+- **Both main and thread posts**: Add `Loaded="OnTextBoxLoaded"` attribute to ALL TextBoxes needing paste support
+- **Clipboard formats**: Check `image/png`, `image/bmp`, `Bitmap`, `PNG`, `DeviceIndependentBitmap`, `CF_DIB`, `CF_DIBV5`
+- **SkiaSharp fallback**: Use `SKImage.FromEncodedData()` for byte[] and Stream clipboard data
+- **Temp storage**: `%TEMP%\SocialMediaCommander\ClipboardImages\clipboard_YYYYMMDD_HHmmss_<guid>.png`
+
+**Alt text for images** (Media model):
+- `Media.AltText` property stores accessibility descriptions
+- **+ALT button overlays**: Indigo background (#AA4338CA), top-left corner of image previews
+- **Dialog pattern**: Create modal `Window` with `TextBox` for alt text input, Save/Cancel buttons
+- **Command binding**: `EditAltTextCommand` in both `PostEditorViewModel` and `ThreadPostViewModel`
+- **Logging**: Use `_logger.Information()` (not `Debug.WriteLine`) for alt text save operations
+- **Important**: Alt text especially critical for BlueSky accessibility compliance
 
 ---
 
