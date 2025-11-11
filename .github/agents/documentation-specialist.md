@@ -143,6 +143,13 @@ dotnet build
 - Diagnostic steps
 - Support resources
 
+**Accessibility Documentation:**
+- WCAG compliance patterns (e.g., Alt Text for images)
+- Platform-specific accessibility requirements (e.g., BlueSky Alt Text)
+- Keyboard navigation documentation
+- Screen reader compatibility notes
+- Accessibility testing procedures
+
 **Documentation Consolidation Strategy:**
 
 **Identify Duplicates:**
