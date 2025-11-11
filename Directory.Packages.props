@@ -97,6 +97,9 @@
     <PackageVersion Include="FluentValidation" Version="12.0.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     
+    <!-- Image Processing -->
+    <PackageVersion Include="SkiaSharp" Version="2.88.9" />
+    
     <!-- Markdown Processing -->
     <PackageVersion Include="Markdig.Signed" Version="0.41.3" />
     

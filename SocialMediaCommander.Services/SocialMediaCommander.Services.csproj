@@ -18,6 +18,9 @@
     <PackageReference Include="System.Net.Http.Json" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
     
+    <!-- Image Processing -->
+    <PackageReference Include="SkiaSharp" />
+    
     <!-- AI and LLM Integration -->
     <PackageReference Include="OllamaSharp" />
     <PackageReference Include="Microsoft.SemanticKernel" />
