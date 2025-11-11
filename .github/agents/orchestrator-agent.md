@@ -134,6 +134,8 @@ You are an **orchestrator agent** specialized in analyzing complex user requests
 - GPU-accelerated animations (opacity, transform only)
 - Keyboard navigation functional
 - Visual regression baselines captured and approved
+- Clipboard paste support if applicable (use AddHandler with RoutingStrategies.Tunnel)
+- Alt text support for images (Media.AltText property, +ALT button overlays)
 
 ---
 
@@ -540,7 +542,50 @@ public class AccountMetadataCache
 
 ---
 
-### Scenario 3: "App crashes when clicking Post button"
+### Scenario 3: "Add clipboard image paste and Alt Text support to post editor"
+
+**Analysis**:
+- Primary: UI/UX (custom event handlers, XAML overlays, accessibility)
+- Secondary: Testing (visual regression for +ALT buttons, context menu tests)
+- Tertiary: Documentation (copilot-instructions, accessibility patterns)
+
+**Orchestration Plan**:
+```
+1. ui-ux-avalonia-specialist:
+   - Implement clipboard paste (Ctrl+V with AddHandler + RoutingStrategies.Tunnel)
+   - Implement context menu paste (custom MenuFlyout)
+   - Add Media.AltText property
+   - Design +ALT button overlays (indigo background, top-left positioning)
+   - Create Alt Text modal dialog
+   
+2. ui-ux-avalonia-specialist (refinement):
+   - Fix e.Handled = true timing (must be immediate before async)
+   - Add SkiaSharp fallback for byte[]/Stream clipboard data
+   - Apply paste support to both main and thread posts
+   - Switch from Debug.WriteLine to structured Serilog logging
+   
+3. testing-tdd-specialist:
+   - Visual regression tests for +ALT button overlays
+   - Context menu integration tests
+   - Alt Text dialog interaction tests
+   
+4. documentation-specialist:
+   - Update copilot-instructions with clipboard & Alt Text patterns
+   - Update ui-ux-avalonia-specialist with detailed code examples
+   - Document BlueSky accessibility compliance
+```
+
+**Checkpoints**:
+- Ctrl+V paste intercepts before default paste behavior
+- Context menu paste works alongside keyboard shortcut
+- +ALT buttons visible on all image attachments
+- Alt Text modal accepts and saves input correctly
+- Visual regression baselines capture button overlays
+- Documentation includes critical timing requirements (e.Handled = true)
+
+---
+
+### Scenario 4: "App crashes when clicking Post button"
 
 **Analysis**:
 - Primary: Testing (reproduce bug, write regression test)
@@ -694,6 +739,8 @@ As workflows are executed, update this orchestrator agent with:
 | "Optimize async..." | performance-specialist | → testing-tdd-specialist (benchmarks) |
 | "Write tests for..." | testing-tdd-specialist | → documentation-specialist (test docs) |
 | "Create view for..." | ui-ux-avalonia-specialist | → testing-tdd-specialist (visual regression) |
+| "Add clipboard paste..." | ui-ux-avalonia-specialist | → testing-tdd-specialist (context menu tests) |
+| "Add Alt Text for images..." | ui-ux-avalonia-specialist | → testing-tdd-specialist (overlay visual regression) |
 | "Add CI workflow..." | cicd-release-specialist | → documentation-specialist (workflow docs) |
 | "Add pre-commit check..." | git-hooks-quality-specialist | → testing-tdd-specialist (hook tests) |
 | "Document..." | documentation-specialist | None (terminal task) |

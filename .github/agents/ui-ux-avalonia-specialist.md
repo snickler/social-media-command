@@ -127,6 +127,232 @@ public partial class MyViewModel : ObservableObject
 - Constructor signature changes require updating composition site
 - All child VMs registered as `Transient` in DI
 
+**Clipboard & Image Handling:**
+
+**Clipboard Image Paste Implementation:**
+PostEditorView demonstrates the complete pattern for image paste support:
+
+1. **Event Handler Registration** (in `Loaded` event):
+```csharp
+private void OnTextBoxLoaded(object? sender, RoutedEventArgs e)
+{
+    if (sender is TextBox textBox)
+    {
+        // Use AddHandler with Tunneling for Ctrl+V interception
+        textBox.AddHandler(InputElement.KeyDownEvent, OnTextBoxKeyDown, RoutingStrategies.Tunnel);
+        
+        // Custom context menu for right-click paste
+        textBox.ContextFlyout = CreateCustomContextMenu(textBox);
+    }
+}
+```
+
+2. **Ctrl+V Handler** (CRITICAL pattern):
+```csharp
+private async void OnTextBoxKeyDown(object? sender, KeyEventArgs e)
+{
+    if ((e.KeyModifiers.HasFlag(KeyModifiers.Control) || e.KeyModifiers.HasFlag(KeyModifiers.Meta)) && e.Key == Key.V)
+    {
+        // CRITICAL: Mark handled IMMEDIATELY before async operations
+        e.Handled = true;
+        
+        if (sender is not TextBox textBox) return;
+        
+        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+        if (clipboard != null)
+        {
+            var formats = await clipboard.GetFormatsAsync();
+            var hasImage = formats.Any(f => 
+                f.Contains("image", StringComparison.OrdinalIgnoreCase) ||
+                f.Contains("Bitmap", StringComparison.OrdinalIgnoreCase) ||
+                f.Contains("PNG", StringComparison.OrdinalIgnoreCase) ||
+                f.Contains("DIB", StringComparison.OrdinalIgnoreCase));
+            
+            if (hasImage)
+            {
+                await HandleClipboardPasteAsync(textBox);
+            }
+            else
+            {
+                // No image, manually paste text
+                textBox.Paste();
+            }
+        }
+    }
+}
+```
+
+3. **Context Menu Paste**:
+```csharp
+private MenuFlyout CreateCustomContextMenu(TextBox textBox)
+{
+    var menu = new MenuFlyout();
+    
+    var pasteItem = new MenuItem { Header = "Paste" };
+    pasteItem.Click += async (s, e) =>
+    {
+        await HandleContextMenuPasteAsync(textBox);
+    };
+    menu.Items.Add(pasteItem);
+    
+    var cutItem = new MenuItem { Header = "Cut" };
+    cutItem.Click += (s, e) => textBox.Cut();
+    menu.Items.Add(cutItem);
+    
+    var copyItem = new MenuItem { Header = "Copy" };
+    copyItem.Click += (s, e) => textBox.Copy();
+    menu.Items.Add(copyItem);
+    
+    return menu;
+}
+```
+
+4. **Image Processing** (with SkiaSharp fallback):
+```csharp
+private async Task HandleClipboardPasteAsync(object? sender)
+{
+    var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+    var formats = await clipboard.GetFormatsAsync();
+    
+    // Try multiple formats
+    foreach (var format in new[] { "image/png", "image/bmp", "Bitmap", "PNG", "DeviceIndependentBitmap", "CF_DIB", "CF_DIBV5" })
+    {
+        if (formats.Contains(format))
+        {
+            var data = await clipboard.GetDataAsync(format);
+            
+            if (data is Bitmap bitmap)
+            {
+                await SaveAndAddMedia(bitmap);
+                return;
+            }
+            else if (data is byte[] bytes)
+            {
+                // Use SkiaSharp fallback
+                using var skImage = SKImage.FromEncodedData(bytes);
+                using var ms = new MemoryStream();
+                skImage.Encode(SKEncodedImageFormat.Png, 100).SaveTo(ms);
+                ms.Position = 0;
+                var avaloniaBitmap = new Bitmap(ms);
+                await SaveAndAddMedia(avaloniaBitmap);
+                return;
+            }
+        }
+    }
+}
+```
+
+5. **XAML Configuration**:
+```xml
+<TextBox Name="MainContentTextBox"
+         Text="{Binding Content}"
+         Loaded="OnTextBoxLoaded"/>
+```
+
+**Key Points:**
+- Use `AddHandler` with `RoutingStrategies.Tunnel` for Ctrl+V (not regular `+=` event subscription)
+- Mark `e.Handled = true` IMMEDIATELY before async clipboard checks
+- Manually call `textBox.Paste()` if no image found
+- Custom context menu for right-click paste support
+- SkiaSharp fallback for byte[] and Stream clipboard data
+- Save to temp storage: `%TEMP%\SocialMediaCommander\ClipboardImages\clipboard_YYYYMMDD_HHmmss_<guid>.png`
+
+**Alt Text for Images:**
+
+The `Media` model includes `AltText` property for accessibility (critical for BlueSky):
+
+1. **Model Property**:
+```csharp
+public class Media
+{
+    // ... other properties
+    public string? AltText { get; set; }
+}
+```
+
+2. **UI Button Overlay** (on image previews):
+```xml
+<!-- +ALT Button Overlay (Top Left) -->
+<Button Background="#AA4338CA" 
+        Foreground="White"
+        Width="40" 
+        Height="24" 
+        Padding="0"
+        VerticalAlignment="Top" 
+        HorizontalAlignment="Left"
+        Margin="4"
+        CornerRadius="4"
+        Command="{Binding $parent[UserControl].DataContext.EditAltTextCommand}"
+        CommandParameter="{Binding}"
+        ToolTip.Tip="Add alt text for accessibility">
+    <TextBlock Text="+ALT" 
+               FontSize="10" 
+               FontWeight="Bold"
+               HorizontalAlignment="Center" 
+               VerticalAlignment="Center"/>
+</Button>
+```
+
+3. **Edit Alt Text Command** (in ViewModel):
+```csharp
+[RelayCommand]
+private async Task EditAltText(Media media)
+{
+    if (media == null) return;
+
+    var dialog = new Window
+    {
+        Title = "Add Alt Text",
+        Width = 500,
+        Height = 300,
+        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+        CanResize = false
+    };
+
+    var textBox = new TextBox
+    {
+        Text = media.AltText ?? string.Empty,
+        Watermark = "Describe this image for accessibility...",
+        AcceptsReturn = true,
+        TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+        Height = 150,
+        Margin = new Avalonia.Thickness(0, 0, 0, 12)
+    };
+
+    var saveButton = new Button
+    {
+        Content = "Save",
+        Classes = { "primary" },
+        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+        Margin = new Avalonia.Thickness(0, 0, 8, 0)
+    };
+
+    saveButton.Click += (s, e) =>
+    {
+        var newAltText = textBox.Text?.Trim() ?? string.Empty;
+        _logger.Information("Saving alt text for {FileName}: {AltText}", media.FileName, newAltText);
+        media.AltText = newAltText;
+        dialog.Close();
+    };
+
+    // ... add cancel button and layout
+    
+    var parentWindow = GetParentWindow();
+    if (parentWindow != null)
+    {
+        await dialog.ShowDialog(parentWindow);
+    }
+}
+```
+
+**Alt Text Best Practices:**
+- Indigo button background (#AA4338CA) for consistency
+- Top-left corner placement (doesn't obscure image)
+- Modal dialog for alt text input
+- Log alt text saves with structured logging (_logger, not Debug.WriteLine)
+- Smaller buttons for thread posts (36x20px vs 40x24px)
+- Required for BlueSky accessibility compliance
+
 **Common UI Tasks:**
 
 **1. Creating a New View:**

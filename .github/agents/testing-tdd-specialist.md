@@ -190,10 +190,61 @@ dotnet test --collect:"XPlat Code Coverage"
 - [ ] **CRITICAL**: Tests removed when production code is deleted
 - [ ] **CRITICAL**: New tests added for new code paths
 
+**UI Overlay Testing Patterns:**
+
+For testing button overlays (e.g., +ALT buttons on images):
+```csharp
+[AvaloniaFact]
+public async Task ImageAttachment_ShouldShowAltButton_WhenImageAdded()
+{
+    var viewModel = new PostEditorViewModel();
+    var view = new PostEditorView { DataContext = viewModel };
+    var window = new Window { Content = view, Width = 800, Height = 600 };
+    window.Show();
+    
+    // Add image attachment
+    await viewModel.AddMediaFileAsync("test-image.png");
+    
+    AvaloniaHeadlessPlatform.ForceRenderTimerTick();
+    await Task.Delay(100);
+    
+    // Capture screenshot with overlay
+    var bitmap = await ScreenshotHelper.Capture(view, 800, 600);
+    await ScreenshotHelper.Save(bitmap, "ImageWithAltButton_Baseline.png");
+    
+    // Verify overlay appears in visual regression
+    var isMatch = await ScreenshotHelper.Compare(bitmap, "ImageWithAltButton_Baseline.png", tolerance: 0.01);
+    isMatch.Should().BeTrue("Alt button overlay should match baseline");
+    
+    window.Close();
+}
+```
+
+**Custom Context Menu Testing:**
+
+For testing custom MenuFlyout implementations:
+```csharp
+[AvaloniaFact]
+public async Task TextBox_ShouldShowCustomContextMenu_OnRightClick()
+{
+    var view = new PostEditorView();
+    var textBox = view.FindControl<TextBox>("PostContentTextBox");
+    
+    textBox.Should().NotBeNull();
+    textBox.ContextFlyout.Should().NotBeNull("Custom context menu should be attached");
+    
+    // Verify menu items
+    var menuFlyout = textBox.ContextFlyout as MenuFlyout;
+    menuFlyout.Should().NotBeNull();
+    menuFlyout.Items.Should().HaveCount(3, "Should have Paste, Cut, Copy menu items");
+}
+```
+
 **Known UI Test Limitations:**
 - ToggleSwitch controls require `PART_MovingKnobs` (not available in headless)
 - Platform-specific font rendering may cause pixel differences
 - Tests skipped with `[Fact(Skip = "reason")]` and documented reasons
+- Custom event handlers with RoutingStrategies.Tunnel may require integration testing in full app
 
 **Key Test Files:**
 - `TestAppBuilder.cs` — Headless platform configuration
