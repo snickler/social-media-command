@@ -277,7 +277,7 @@ public class PostTests
     }
 
     [Fact]
-    public void FormatForPlatform_ShouldAddMediaIndicator_WhenMediaPresent()
+    public void FormatForPlatform_ShouldReturnContentOnly_WhenMediaPresent()
     {
         // Arrange
         var post = new Post
@@ -292,12 +292,13 @@ public class PostTests
         // Act
         var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        formatted.Should().Contain("[1 media attachment]");
+        // Assert - Media indicator removed from content
+        formatted.Should().Be("Test");
+        formatted.Should().NotContain("media attachment");
     }
 
     [Fact]
-    public void FormatForPlatform_ShouldPluralizeMediaIndicator_WhenMultipleMedia()
+    public void FormatForPlatform_ShouldReturnContentOnly_WhenMultipleMedia()
     {
         // Arrange
         var post = new Post
@@ -313,12 +314,13 @@ public class PostTests
         // Act
         var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        formatted.Should().Contain("[2 media attachments]");
+        // Assert - Media indicator removed from content
+        formatted.Should().Be("Test");
+        formatted.Should().NotContain("media attachments");
     }
 
     [Fact]
-    public void FormatForPlatform_ShouldAddThreadIndicator_WhenThreadPost()
+    public void FormatForPlatform_ShouldReturnContentOnly_WhenThreadPost()
     {
         // Arrange
         var post = new Post
@@ -335,8 +337,9 @@ public class PostTests
         // Act
         var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        formatted.Should().Contain("[Thread with 3 posts]");
+        // Assert - Thread indicator removed from content
+        formatted.Should().Be("Test");
+        formatted.Should().NotContain("Thread with");
     }
 
     [Fact]
@@ -563,8 +566,9 @@ public class PostTests
         // Assert
         validation.IsValid.Should().BeTrue();
         formatted.Should().Contain("#test #social #media");
-        formatted.Should().Contain("[1 media attachment]");
-        formatted.Should().Contain("[Thread with 3 posts]");
+        // Media and thread indicators removed from FormatForPlatform
+        formatted.Should().NotContain("media attachment");
+        formatted.Should().NotContain("Thread with");
         charCount.Should().BeGreaterThan(0);
     }
 
