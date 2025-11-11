@@ -31,7 +31,7 @@ public class BlueSkyService : IBlueSkyService
     /// <summary>
     /// Gets the aspect ratio from an image file by reading its dimensions
     /// </summary>
-    private static (int width, int height) GetImageDimensions(byte[] imageBytes)
+    private (int width, int height) GetImageDimensions(byte[] imageBytes)
     {
         try
         {
@@ -91,7 +91,7 @@ public class BlueSkyService : IBlueSkyService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Error reading image dimensions: {ex.Message}");
+            _logger.Warning(ex, "Error reading image dimensions");
         }
 
         // Default fallback
@@ -411,17 +411,17 @@ public class BlueSkyService : IBlueSkyService
 
                         if (uploadResponse.Succeeded && uploadResponse.Result != null)
                         {
-                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Successfully uploaded media: {media.FileName}");
+                            _logger.Information("Successfully uploaded media: {FileName}", media.FileName);
                             embeddedImages.Add(uploadResponse.Result);
                         }
                         else
                         {
-                            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Failed to upload media: {media.FileName}. Error: {uploadResponse.AtErrorDetail?.Message}");
+                            _logger.Error("Failed to upload media: {FileName}. Error: {ErrorMessage}", media.FileName, uploadResponse.AtErrorDetail?.Message);
                         }
                     }
                     catch (Exception ex)
                     {
-                        System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Exception uploading media {media.FileName}: {ex.Message}");
+                        _logger.Error(ex, "Exception uploading media {FileName}", media.FileName);
                     }
                 }
 
