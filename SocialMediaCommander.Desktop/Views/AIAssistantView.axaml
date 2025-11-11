@@ -14,6 +14,7 @@
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="24"/>
             <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
         </Style>
 
         <!-- Section Header -->
@@ -80,7 +81,7 @@
             </StackPanel>
 
             <!-- Content Generation Section -->
-            <Border Classes="AICard">
+            <Border Classes="AICard SlideInBottom">
                 <StackPanel Spacing="16">
                     <TextBlock Text="✨ Generate Content" Classes="SectionHeader"/>
 
@@ -107,7 +108,7 @@
                                         Margin="4,0,0,0"
                                         Command="{Binding RefreshAvailableModelsCommand}"
                                         ToolTip.Tip="Refresh available models from Foundry Local"
-                                        Classes="SecondaryButton"/>
+                                        Classes="ghost"/>
                                 <ComboBox ItemsSource="{Binding AvailableModels}"
                                           SelectedItem="{Binding SelectedModel}"
                                           IsEditable="True"
@@ -187,7 +188,7 @@
 
                     <!-- Generate Button -->
                     <Button Command="{Binding GenerateContentCommand}"
-                            Classes="PrimaryButton"
+                            Classes="primary"
                             HorizontalAlignment="Stretch"
                             IsEnabled="{Binding !IsGenerating}">
                         <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center">
@@ -199,7 +200,7 @@
             </Border>
 
             <!-- Generated Content Display -->
-            <Border Classes="AICard">
+            <Border Classes="AICard SlideInBottom">
                 <StackPanel Spacing="16">
                     <TextBlock Text="📝 Generated Content" Classes="SectionHeader"/>
 
@@ -216,8 +217,9 @@
                     <Grid ColumnDefinitions="*,8,*,8,*,8,*">
                         <Button Grid.Column="0"
                                 Command="{Binding OptimizeContentCommand}"
-                                Classes="SecondaryButton"
-                                IsEnabled="{Binding !IsGenerating}">
+                                Classes="secondary"
+                                IsEnabled="{Binding !IsGenerating}"
+                                ToolTip.Tip="Optimize content for engagement">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <TextBlock Text="🔧"/>
                                 <TextBlock Text="Optimize"/>
@@ -226,8 +228,9 @@
 
                         <Button Grid.Column="2"
                                 Command="{Binding GenerateVariationsCommand}"
-                                Classes="SecondaryButton"
-                                IsEnabled="{Binding !IsGenerating}">
+                                Classes="secondary"
+                                IsEnabled="{Binding !IsGenerating}"
+                                ToolTip.Tip="Generate alternative versions">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <TextBlock Text="🔄"/>
                                 <TextBlock Text="Variations"/>
@@ -236,8 +239,9 @@
 
                         <Button Grid.Column="4"
                                 Command="{Binding GenerateHashtagsCommand}"
-                                Classes="SecondaryButton"
-                                IsEnabled="{Binding !IsGenerating}">
+                                Classes="secondary"
+                                IsEnabled="{Binding !IsGenerating}"
+                                ToolTip.Tip="Generate relevant hashtags">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <TextBlock Text="#️⃣"/>
                                 <TextBlock Text="Hashtags"/>
@@ -246,8 +250,9 @@
 
                         <Button Grid.Column="6"
                                 Command="{Binding GenerateThreadCommand}"
-                                Classes="SecondaryButton"
-                                IsEnabled="{Binding !IsGenerating}">
+                                Classes="secondary"
+                                IsEnabled="{Binding !IsGenerating}"
+                                ToolTip.Tip="Convert to thread format">
                             <StackPanel Orientation="Horizontal" Spacing="4">
                                 <TextBlock Text="🧵"/>
                                 <TextBlock Text="Thread"/>
@@ -258,7 +263,7 @@
             </Border>
 
             <!-- Content Variations -->
-            <Border Classes="AICard" IsVisible="{Binding ContentVariations.Count}">
+            <Border Classes="AICard SlideInBottom" IsVisible="{Binding ContentVariations.Count}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="🔄 Content Variations" Classes="SectionHeader"/>
                     <ItemsControl ItemsSource="{Binding ContentVariations}">
@@ -278,6 +283,7 @@
                                         <Button Grid.Column="2"
                                                 Content="📋"
                                                 Classes="ghost"
+                                                Width="32" Height="32"
                                                 ToolTip.Tip="Copy to clipboard"
                                                 VerticalAlignment="Top"/>
                                     </Grid>
@@ -289,7 +295,7 @@
             </Border>
 
             <!-- Generated Hashtags -->
-            <Border Classes="AICard" IsVisible="{Binding GeneratedHashtags.Count}">
+            <Border Classes="AICard SlideInBottom" IsVisible="{Binding GeneratedHashtags.Count}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="#️⃣ Generated Hashtags" Classes="SectionHeader"/>
                     <ItemsControl ItemsSource="{Binding GeneratedHashtags}">
@@ -313,7 +319,7 @@
             </Border>
 
             <!-- Thread Posts -->
-            <Border Classes="AICard" IsVisible="{Binding ThreadPosts.Count}">
+            <Border Classes="AICard SlideInBottom" IsVisible="{Binding ThreadPosts.Count}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="🧵 Thread Posts" Classes="SectionHeader"/>
                     <ItemsControl ItemsSource="{Binding ThreadPosts}">
@@ -331,7 +337,7 @@
             </Border>
 
             <!-- Optimization Suggestions -->
-            <Border Classes="AICard" IsVisible="{Binding OptimizationSuggestions.Count}">
+            <Border Classes="AICard SlideInBottom" IsVisible="{Binding OptimizationSuggestions.Count}">
                 <StackPanel Spacing="12">
                     <TextBlock Text="💡 Optimization Suggestions" Classes="SectionHeader"/>
                     <ItemsControl ItemsSource="{Binding OptimizationSuggestions}">
@@ -363,7 +369,7 @@
             </Border>
 
             <!-- Loading Indicator -->
-            <Border Classes="AICard" IsVisible="{Binding IsGenerating}">
+            <Border Classes="AICard Pulse" IsVisible="{Binding IsGenerating}">
                 <StackPanel Spacing="16" HorizontalAlignment="Center">
                     <ProgressBar IsIndeterminate="True" Width="200"/>
                     <TextBlock Text="Generating content with AI..."
