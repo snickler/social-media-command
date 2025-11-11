@@ -99,6 +99,10 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private bool _enableTikTokIntegration = false;
 
+    // Navigation
+    [ObservableProperty]
+    private string _selectedSection = "Appearance";
+
     // Advanced Settings
     [ObservableProperty]
     private int _maxConcurrentUploads = 3;
@@ -181,6 +185,47 @@ public partial class SettingsViewModel : ObservableObject
 
         _ = LoadSettingsAsync(); // Fire-and-forget with discard to suppress CS4014
         _ = LoadStatisticsAsync(); // Fire-and-forget with discard to suppress CS4014
+    }
+
+    partial void OnSelectedThemeChanged(string value)
+    {
+        ApplyTheme(value);
+    }
+
+    partial void OnIsDarkModeChanged(bool value)
+    {
+        ApplyTheme(value ? "Dark" : "Light");
+    }
+
+    private void ApplyTheme(string theme)
+    {
+        try
+        {
+            if (Avalonia.Application.Current != null)
+            {
+                var themeVariant = theme switch
+                {
+                    "Light" => Avalonia.Styling.ThemeVariant.Light,
+                    "Dark" => Avalonia.Styling.ThemeVariant.Dark,
+                    "System" => Avalonia.Styling.ThemeVariant.Default,
+                    "Auto" => Avalonia.Styling.ThemeVariant.Default,
+                    _ => Avalonia.Styling.ThemeVariant.Light
+                };
+
+                Avalonia.Application.Current.RequestedThemeVariant = themeVariant;
+                System.Diagnostics.Debug.WriteLine($"Theme changed to: {theme} (ThemeVariant: {themeVariant})");
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Error applying theme: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void NavigateToSection(string sectionName)
+    {
+        SelectedSection = sectionName;
     }
 
     [RelayCommand]
@@ -368,16 +413,44 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void SelectMediaFolder()
+    private async Task SelectMediaFolderAsync()
     {
-        // In a real implementation, this would open a folder picker dialog
-        DefaultMediaFolder = "/Users/Documents/SocialMedia";
-        StatusMessage = "Media folder updated!";
-        Task.Run(async () =>
+        try
         {
-            await Task.Delay(2000);
-            StatusMessage = "";
-        });
+            var folder = await ShowFolderPickerAsync();
+            if (!string.IsNullOrEmpty(folder))
+            {
+                DefaultMediaFolder = folder;
+                StatusMessage = "Media folder updated!";
+                await Task.Delay(2000);
+                StatusMessage = "";
+            }
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"Error selecting folder: {ex.Message}";
+            System.Diagnostics.Debug.WriteLine($"Folder selection failed: {ex.Message}");
+        }
+    }
+
+    private async Task<string?> ShowFolderPickerAsync()
+    {
+        // Get the main window from the application
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            var window = desktop.MainWindow;
+            if (window != null)
+            {
+                var folders = await window.StorageProvider.OpenFolderPickerAsync(new Avalonia.Platform.Storage.FolderPickerOpenOptions
+                {
+                    Title = "Select Media Folder",
+                    AllowMultiple = false
+                });
+
+                return folders.Count > 0 ? folders[0].Path.LocalPath : null;
+            }
+        }
+        return null;
     }
 
     [RelayCommand]

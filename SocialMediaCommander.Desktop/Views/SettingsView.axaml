@@ -11,44 +11,162 @@
         <vm:SettingsViewModel />
     </Design.DataContext>
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <StackPanel Margin="20" Spacing="20">
-            
-            <!-- Header Section -->
-            <Border Background="{StaticResource PrimaryBrush}" CornerRadius="12" Padding="20">
-                <StackPanel Orientation="Horizontal" Spacing="15">
-                    <Border Background="{StaticResource BackgroundBrush}" CornerRadius="8" Padding="10">
-                        <TextBlock Text="⚙️" FontSize="24"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Settings &amp; Preferences" 
-                                 Classes="h1" Foreground="{StaticResource InverseTextBrush}"/>
-                        <TextBlock Text="Customize your Social Media Commander experience" 
-                                 Classes="p" Foreground="{StaticResource PrimaryLightBrush}"/>
+    <Grid ColumnDefinitions="200,*">
+        <!-- Settings Sidebar -->
+        <Border Grid.Column="0"
+                Background="{DynamicResource SMC-Muted}"
+                BorderBrush="{DynamicResource SMC-Card-Border}"
+                BorderThickness="0,0,1,0"
+                Padding="12">
+            <StackPanel Spacing="8">
+                <!-- Back Button -->
+                <Button Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).CloseSettingsCommand}" 
+                        Classes="ghost"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="40"
+                        Margin="0,0,0,12"
+                        ToolTip.Tip="Back to Home">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="←" FontSize="16" VerticalAlignment="Center"/>
+                        <TextBlock Text="Back" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
                     </StackPanel>
-                </StackPanel>
-            </Border>
-
-            <!-- Status Message -->
-            <Border Background="{StaticResource InfoBrush}" CornerRadius="8" Padding="12" 
-                    IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-                <TextBlock Text="{Binding StatusMessage}" FontWeight="Medium" Foreground="{StaticResource InfoForegroundBrush}"/>
-            </Border>
-
-            <!-- Settings Tabs -->
-            <TabControl>
+                </Button>
                 
-                <!-- General Tab -->
-                <TabItem Header="🎨 Appearance">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Theme Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="Theme &amp; Appearance" Classes="h2"/>
+                <Separator Margin="0,4"/>
+                
+                <!-- Navigation Items -->
+                <TextBlock Text="SETTINGS" 
+                           FontSize="11" 
+                           FontWeight="Bold" 
+                           Foreground="{DynamicResource SMC-Muted-Foreground}"
+                           Margin="8,8,0,4"/>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Appearance"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🎨" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Appearance" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Notifications"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🔔" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Notifications" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Automation"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🤖" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Automation" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Privacy"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🔒" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Privacy" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Platforms"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="🌐" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Platforms" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="Media"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="📁" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="Media" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Classes="ghost"
+                        Command="{Binding NavigateToSectionCommand}"
+                        CommandParameter="System"
+                        HorizontalAlignment="Stretch"
+                        HorizontalContentAlignment="Left"
+                        Height="36">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="💻" FontSize="14" VerticalAlignment="Center"/>
+                        <TextBlock Text="System" FontSize="13" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Border>
+        
+        <!-- Settings Content -->
+        <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto" Padding="24">
+            <StackPanel Spacing="24" MaxWidth="800">
+                <!-- Page Header -->
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Appearance" 
+                               FontSize="24" 
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource SMC-Foreground}"/>
+                    <TextBlock Text="Customize the look and feel of your workspace" 
+                               FontSize="14" 
+                               Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                </StackPanel>
+                
+                <!-- Status Message -->
+                <Border Background="{DynamicResource SMC-Success-Background}" 
+                        BorderBrush="{DynamicResource SMC-Success-Border}" 
+                        BorderThickness="1"
+                        CornerRadius="8" 
+                        Padding="12"
+                        IsVisible="{Binding StatusMessage, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Text="✓" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource SMC-Success-Foreground}"/>
+                        <TextBlock Text="{Binding StatusMessage}" FontWeight="Medium" Foreground="{DynamicResource SMC-Success-Foreground}"/>
+                    </StackPanel>
+                </Border>
+
+                <!-- Appearance Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Appearance}">
+                    <!-- Theme Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                        <StackPanel Spacing="16">
+                            <TextBlock Text="Theme &amp; Appearance" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <Grid ColumnDefinitions="150,*">
                                             <TextBlock Grid.Column="0" Text="Theme:" VerticalAlignment="Center"/>
                                             <ComboBox Grid.Column="1" 
@@ -82,23 +200,22 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Notifications Tab -->
-                <TabItem Header="🔔 Notifications">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Notification Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <TextBlock Text="Notification Preferences" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- Notifications Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Notifications}">
+                    <!-- Notification Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
+                                        <TextBlock Text="Notification Preferences" FontSize="16" FontWeight="SemiBold"/>
                                         <Button Content="Test" Command="{Binding TestNotificationsCommand}"
-                                              Classes="secondary" Padding="8,4"
-                                              CornerRadius="4" FontSize="12"/>
+                                              Classes="secondary" Padding="6,3"
+                                              CornerRadius="4" FontSize="11" ToolTip.Tip="Send a test notification"/>
                                     </StackPanel>
                                     
                                     <StackPanel Spacing="12">
@@ -124,21 +241,20 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Automation Tab -->
-                <TabItem Header="🤖 Automation">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Automation Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="Automation &amp; Scheduling" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- Automation Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Automation}">
+                    <!-- Automation Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Automation &amp; Scheduling" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <CheckBox Content="Enable Auto Scheduling" 
                                                 IsChecked="{Binding EnableAutoScheduling}"/>
                                         
@@ -166,21 +282,20 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Privacy & Security Tab -->
-                <TabItem Header="🔒 Privacy">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Privacy Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="Privacy &amp; Security" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- Privacy Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Privacy}">
+                    <!-- Privacy Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Privacy &amp; Security" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <CheckBox Content="Enable Analytics" 
                                                 IsChecked="{Binding EnableAnalytics}"/>
                                         
@@ -203,21 +318,20 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Platforms Tab -->
-                <TabItem Header="🌐 Platforms">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Platform Integration Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="Platform Integrations" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- Platforms Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Platforms}">
+                    <!-- Platform Integration Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Platform Integrations" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <CheckBox Content="Twitter Integration" 
                                                 IsChecked="{Binding EnableTwitterIntegration}"/>
                                         
@@ -235,27 +349,26 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- Media Tab -->
-                <TabItem Header="📁 Media">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- Media Settings -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="Media &amp; Storage" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- Media Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=Media}">
+                    <!-- Media Settings -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="Media &amp; Storage" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <Grid ColumnDefinitions="200,*">
                                             <TextBlock Grid.Column="0" Text="Default Folder:" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="10">
                                                 <TextBox Text="{Binding DefaultMediaFolder}" Width="300" IsReadOnly="True"/>
                                                 <Button Content="Browse" Command="{Binding SelectMediaFolderCommand}"
-                                                      Classes="primary" Padding="12,6"/>
+                                                      Classes="primary" ToolTip.Tip="Select media folder"/>
                                             </StackPanel>
                                         </Grid>
                                         
@@ -283,21 +396,20 @@
                                     </StackPanel>
                                 </StackPanel>
                             </Border>
-                        </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-
-                <!-- System Tab -->
-                <TabItem Header="💾 System">
-                    <ScrollViewer Padding="20" VerticalScrollBarVisibility="Auto">
-                        <StackPanel Spacing="20">
-                            
-                            <!-- System Information -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="System Information" Classes="h2"/>
+                </StackPanel>
+                    
+                <!-- System Section -->
+                <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={x:Static ObjectConverters.Equal}, ConverterParameter=System}">
+                    <!-- System Information -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="20">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="System Information" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Spacing="12">
+                                    <StackPanel Spacing="10">
                                         <Grid ColumnDefinitions="150,*">
                                             <TextBlock Grid.Column="0" Text="Version:" FontWeight="Medium"/>
                                             <TextBlock Grid.Column="1" Text="{Binding ApplicationVersion}"/>
@@ -327,53 +439,73 @@
                             </Border>
 
                             <!-- System Actions -->
-                            <Border Classes="card" Padding="20">
-                                <StackPanel Spacing="15">
-                                    <TextBlock Text="System Actions" Classes="h2"/>
+                            <Border Background="{DynamicResource SMC-Card-Background}" 
+                                    BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                                    CornerRadius="8" Padding="16" BoxShadow="0 2 4 0 #10000000"
+                                    Classes="SlideInBottom">
+                                <StackPanel Spacing="12">
+                                    <TextBlock Text="System Actions" FontSize="16" FontWeight="SemiBold"/>
                                     
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <StackPanel Orientation="Horizontal" Spacing="8">
                                         <Button Content="Create Backup" Command="{Binding CreateBackupCommand}"
-                                              Classes="primary" Padding="15,8"
-                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                              Classes="primary"
+                                              IsEnabled="{Binding !IsLoading}"
+                                              ToolTip.Tip="Create a backup of your data"/>
                                         
                                         <Button Content="Clear Cache" Command="{Binding ClearCacheCommand}"
-                                              Classes="secondary" Padding="15,8"
-                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                              Classes="secondary"
+                                              IsEnabled="{Binding !IsLoading}"
+                                              ToolTip.Tip="Clear application cache"/>
                                         
                                         <Button Content="Export Settings" Command="{Binding ExportSettingsCommand}"
-                                              Classes="primary" Padding="15,8"
-                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
+                                              Classes="primary"
+                                              IsEnabled="{Binding !IsLoading}"
+                                              ToolTip.Tip="Export settings to file"/>
                                         
                                         <Button Content="Import Settings" Command="{Binding ImportSettingsCommand}"
-                                              Classes="secondary" Padding="15,8"
-                                              CornerRadius="6" IsEnabled="{Binding !IsLoading}"/>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
+                                              Classes="secondary"
+                                              IsEnabled="{Binding !IsLoading}"
+                                              ToolTip.Tip="Import settings from file"/>
+                            </StackPanel>
                         </StackPanel>
-                    </ScrollViewer>
-                </TabItem>
-            </TabControl>
-
-            <!-- Action Buttons -->
-            <Border Padding="20" Margin="0,10,0,0">
-                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
-                    <Button Content="Save Changes" Command="{Binding SaveSettingsCommand}"
-                          Classes="primary"/>
-                    <Button Content="Reset to Defaults" Command="{Binding ResetSettingsCommand}"
-                          Classes="danger"/>
+                    </Border>
                 </StackPanel>
-            </Border>
-
-            <!-- Loading Indicator -->
-            <Border Background="#f0f9ff" CornerRadius="8" Padding="15"
-                    IsVisible="{Binding IsLoading}">
-                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
-                    <ProgressBar IsIndeterminate="True" Width="20" Height="20"/>
-                    <TextBlock Text="Processing..." VerticalAlignment="Center" Foreground="#0369a1"/>
-                </StackPanel>
-            </Border>
-
-        </StackPanel>
-    </ScrollViewer>
+                    
+                    <!-- Action Buttons -->
+                    <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Right" Margin="0,8,0,0">
+                        <Button Content="Reset to Defaults" 
+                                Command="{Binding ResetSettingsCommand}"
+                                Classes="outline" 
+                                Padding="16,10"
+                                ToolTip.Tip="Reset all settings to default values"/>
+                        <Button Content="Save Changes" 
+                                Command="{Binding SaveSettingsCommand}"
+                                Classes="primary" 
+                                Padding="16,10"
+                                ToolTip.Tip="Save all settings changes"/>
+                    </StackPanel>
+                    
+                    <!-- Loading Indicator -->
+                    <Border Background="{DynamicResource SMC-Card-Background}" 
+                            BorderBrush="{DynamicResource SMC-Card-Border}" 
+                            BorderThickness="1"
+                            CornerRadius="8" 
+                            Padding="16"
+                            IsVisible="{Binding IsLoading}">
+                        <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+                            <Border Background="{DynamicResource SMC-Accent}" 
+                                    CornerRadius="12" 
+                                    Width="24" Height="24"
+                                    Classes="Pulse">
+                                <TextBlock Text="⏳" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <TextBlock Text="Processing..." 
+                                       VerticalAlignment="Center" 
+                                       Foreground="{DynamicResource SMC-Foreground}" 
+                                       FontWeight="Medium"/>
+                        </StackPanel>
+                    </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
 </UserControl> 
