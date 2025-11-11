@@ -4,6 +4,8 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
@@ -373,6 +375,113 @@ public partial class PostEditorViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] RemoveMedia called with null or non-existent media");
         }
+    }
+
+    [RelayCommand]
+    private async Task EditAltText(Media media)
+    {
+        if (media == null) return;
+
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] EditAltText called for: {media.FileName}");
+
+        // Create a simple input dialog
+        var dialog = new Window
+        {
+            Title = "Add Alt Text",
+            Width = 500,
+            Height = 300,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var textBox = new TextBox
+        {
+            Text = media.AltText ?? string.Empty,
+            Watermark = "Describe this image for accessibility...",
+            AcceptsReturn = true,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Height = 150,
+            Margin = new Avalonia.Thickness(0, 0, 0, 12)
+        };
+
+        var saveButton = new Button
+        {
+            Content = "Save",
+            Classes = { "primary" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 0, 8, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            Classes = { "outline" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+        };
+
+        saveButton.Click += (s, e) =>
+        {
+            var newAltText = textBox.Text?.Trim() ?? string.Empty;
+            _logger.Information("=== SAVING ALT TEXT ===");
+            _logger.Information("Media: {FileName}", media.FileName);
+            _logger.Information("TextBox.Text: '{TextBoxText}'", textBox.Text);
+            _logger.Information("New alt text: '{NewAltText}'", newAltText);
+            _logger.Information("Old alt text: '{OldAltText}'", media.AltText);
+
+            media.AltText = newAltText;
+
+            _logger.Information("Alt text after save: '{AltText}'", media.AltText);
+            _logger.Information("=======================");
+            dialog.Close();
+        };
+
+        cancelButton.Click += (s, e) => dialog.Close();
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+            Children = { saveButton, cancelButton }
+        };
+
+        var mainPanel = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(20),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Alt Text for: {media.FileName}",
+                    FontWeight = Avalonia.Media.FontWeight.Bold,
+                    FontSize = 14
+                },
+                new TextBlock
+                {
+                    Text = "Describe this image for screen readers and accessibility tools.",
+                    FontSize = 12,
+                    Opacity = 0.7
+                },
+                textBox,
+                buttonPanel
+            }
+        };
+
+        dialog.Content = mainPanel;
+
+        var parentWindow = GetParentWindow();
+        if (parentWindow != null)
+        {
+            await dialog.ShowDialog(parentWindow);
+        }
+    }
+
+    private Window? GetParentWindow()
+    {
+        // Try to get the parent window from the app
+        return (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
     }
 
     /// <summary>
@@ -919,6 +1028,107 @@ public partial class ThreadPostViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task EditAltText(Media media)
+    {
+        if (media == null) return;
+
+        System.Diagnostics.Debug.WriteLine($"[ThreadPostViewModel] EditAltText called for: {media.FileName}");
+
+        // Create a simple input dialog
+        var dialog = new Window
+        {
+            Title = "Add Alt Text",
+            Width = 500,
+            Height = 300,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var textBox = new TextBox
+        {
+            Text = media.AltText ?? string.Empty,
+            Watermark = "Describe this image for accessibility...",
+            AcceptsReturn = true,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Height = 150,
+            Margin = new Avalonia.Thickness(0, 0, 0, 12)
+        };
+
+        var saveButton = new Button
+        {
+            Content = "Save",
+            Classes = { "primary" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 0, 8, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            Classes = { "outline" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+        };
+
+        saveButton.Click += (s, e) =>
+        {
+            var newAltText = textBox.Text?.Trim() ?? string.Empty;
+            var logger = LoggingService.ForContext<ThreadPostViewModel>();
+            logger.Information("=== SAVING ALT TEXT ===");
+            logger.Information("Media: {FileName}", media.FileName);
+            logger.Information("TextBox.Text: '{TextBoxText}'", textBox.Text);
+            logger.Information("New alt text: '{NewAltText}'", newAltText);
+            logger.Information("Old alt text: '{OldAltText}'", media.AltText);
+
+            media.AltText = newAltText;
+
+            logger.Information("Alt text after save: '{AltText}'", media.AltText);
+            logger.Information("=======================");
+            dialog.Close();
+        };
+
+        cancelButton.Click += (s, e) => dialog.Close();
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+            Children = { saveButton, cancelButton }
+        };
+
+        var mainPanel = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(20),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Alt Text for: {media.FileName}",
+                    FontWeight = Avalonia.Media.FontWeight.Bold,
+                    FontSize = 14
+                },
+                new TextBlock
+                {
+                    Text = "Describe this image for screen readers and accessibility tools.",
+                    FontSize = 12,
+                    Opacity = 0.7
+                },
+                textBox,
+                buttonPanel
+            }
+        };
+
+        dialog.Content = mainPanel;
+
+        var parentWindow = (Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (parentWindow != null)
+        {
+            await dialog.ShowDialog(parentWindow);
+        }
+    }
+
+    [RelayCommand]
     private void UploadMedia()
     {
         // Trigger event for file picker (handled in code-behind)
@@ -935,7 +1145,7 @@ public partial class ThreadPostViewModel : ObservableObject
             return;
         }
 
-        var media = Helpers.MediaHelper.CreateMediaFromFile(filePath);
+        var media = SocialMediaCommander.Desktop.Helpers.MediaHelper.CreateMediaFromFile(filePath);
         Media.Add(media);
     }
 
