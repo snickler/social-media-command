@@ -31,7 +31,7 @@ public class BlueSkyService : IBlueSkyService
     /// <summary>
     /// Gets the aspect ratio from an image file by reading its dimensions
     /// </summary>
-    private static (int width, int height) GetImageDimensions(byte[] imageBytes)
+    private (int width, int height) GetImageDimensions(byte[] imageBytes)
     {
         try
         {
@@ -91,7 +91,7 @@ public class BlueSkyService : IBlueSkyService
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[BlueSkyService] Error reading image dimensions: {ex.Message}");
+            _logger.Warning(ex, "Error reading image dimensions");
         }
 
         // Default fallback
