@@ -119,7 +119,6 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-          dotnet-quality: 'preview'
           # Ensure consistent NuGet behavior across platforms
           source-url: https://api.nuget.org/v3/index.json
 
