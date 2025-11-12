@@ -6,7 +6,7 @@
 
 ## Project Structure & Architecture
 
-Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation frontend:
+Multi-project .NET 10 (Avalonia UI) desktop app + Vite/React documentation frontend:
 - **`SocialMediaCommander.Core/`** — Domain models, core helpers, logging infrastructure
 - **`SocialMediaCommander.Services/`** — Service interfaces & implementations (platform adapters, OAuth, encryption, AI, backups)
 - **`SocialMediaCommander.Desktop/`** — Avalonia UI application (ViewModels, Views, DI wiring, app entry point)
@@ -14,7 +14,7 @@ Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation fronte
 - **`src/`** — Vite/React UI for documentation viewer
 
 **MSBuild Standardization** (CRITICAL):
-- `Directory.Build.props` — common properties (TargetFramework: net9.0, Version, Nullable: enable, TreatWarningsAsErrors in Release)
+- `Directory.Build.props` — common properties (TargetFramework: net10.0, Version, Nullable: enable, TreatWarningsAsErrors in Release)
 - `Directory.Packages.props` — Central Package Management (CPM) for all NuGet versions
 - **Never** add `<PackageReference>` versions directly in `.csproj` files; all package versions centralized in `Directory.Packages.props`
 
@@ -94,7 +94,7 @@ This codebase follows **Microsoft's official async/performance best practices**.
 
 ## Build, Run, Test Commands
 
-**Prerequisites**: .NET 9 SDK, Node.js 18+ (for frontend)
+**Prerequisites**: .NET 10 SDK, Node.js 18+ (for frontend)
 
 From repo root (Windows `cmd.exe` or PowerShell):
 ```cmd

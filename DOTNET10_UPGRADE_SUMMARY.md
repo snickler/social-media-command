@@ -2,12 +2,12 @@
 
 ## Overview
 
-This document summarizes the upgrade of Social Media Commander from .NET 9 to .NET 10 (Preview).
+This document summarizes the upgrade of Social Media Commander from .NET 9 to .NET 10.
 
 **Upgrade Date:** 2025-05-20  
 **Source Branch:** `feature/bluesky-image-compression-thread-fixes`  
 **Target Branch:** `upgrade-to-NET10`  
-**.NET 10 Status:** Preview (LTS when released)
+**.NET 10 Status:** LTS (Long-Term Support)
 
 ## Changes Made
 
@@ -82,9 +82,9 @@ The following packages remain at their current versions as they are already comp
 
 To build and run the upgraded solution, you need:
 
-1. **.NET 10 SDK (Preview)**
+1. **.NET 10 SDK**
    - Download: https://dotnet.microsoft.com/download/dotnet/10.0
-   - Minimum version: 10.0.100 (preview)
+   - Minimum version: 10.0.100
 
 2. **Visual Studio 2022** (version 17.12 or later)
    - OR **Visual Studio Code** with C# Dev Kit
@@ -100,7 +100,7 @@ After installing .NET 10 SDK, verify installation:
 dotnet --list-sdks
 
 # Expected output should include:
-# 10.0.100-preview.x [C:\Program Files\dotnet\sdk]
+# 10.0.100 [C:\Program Files\dotnet\sdk]
 ```
 
 ## Build and Test
@@ -197,14 +197,14 @@ Before merging this upgrade, verify the following:
 
 ## Known Issues / Limitations
 
-### .NET 10 Preview Status
-- ✅ **Stability:** .NET 10 is currently in preview. Production deployment should wait for GA release.
-- ✅ **Package Availability:** Some third-party packages may not have .NET 10-specific versions yet, but should work via compatibility.
-- ✅ **Breaking Changes:** Microsoft may introduce additional breaking changes before final release.
+### .NET 10 GA Status
+- ✅ **Stability:** .NET 10 is now GA (General Availability) and production-ready.
+- ✅ **Package Availability:** All Microsoft packages updated to .NET 10 stable versions.
+- ✅ **LTS Support:** .NET 10 is a Long-Term Support release with 3 years of support.
 
 ### Recommended Actions
 1. **Test thoroughly** before deploying to production
-2. **Monitor .NET 10 release notes** for any new breaking changes
+2. **Monitor .NET 10 release notes** for updates and patches
 3. **Update CI/CD pipelines** to use .NET 10 SDK
 4. **Update documentation** to reflect .NET 10 requirement
 
@@ -219,7 +219,6 @@ Update `.github/workflows/*.yml` files to use .NET 10 SDK:
   uses: actions/setup-dotnet@v4
   with:
     dotnet-version: '10.0.x'
-    dotnet-quality: 'preview'  # Required for preview versions
 ```
 
 ### Files to Update
