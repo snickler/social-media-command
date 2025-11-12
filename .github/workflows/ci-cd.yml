@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   NODE_VERSION: '22.x'
   NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
   # Disable telemetry to prevent network calls during build/test
@@ -119,6 +119,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: 'preview'
           # Ensure consistent NuGet behavior across platforms
           source-url: https://api.nuget.org/v3/index.json
 

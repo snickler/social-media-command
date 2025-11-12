@@ -34,7 +34,7 @@ on:
         type: string
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
 
 jobs:
   pre-release:
@@ -87,6 +87,7 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+          dotnet-quality: 'preview'
 
       - name: Semantic Pre-Release
         id: semantic
