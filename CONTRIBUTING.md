@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Social Media Commander! This guid
 
 ### Prerequisites
 
-- .NET 9.0 SDK
+- .NET 10 SDK
 - Node.js 22.x (for frontend components)
 - Git
 - Visual Studio 2022 or VS Code
