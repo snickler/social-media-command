@@ -93,7 +93,10 @@ public static class ImageCompressionHelper
             _logger.Information("Resizing image from {OrigW}x{OrigH} to {NewW}x{NewH}",
                 originalBitmap.Width, originalBitmap.Height, targetWidth, targetHeight);
 
-            using var resizedBitmap = originalBitmap.Resize(new SKImageInfo(targetWidth, targetHeight), SKFilterQuality.High);
+            using var resizedBitmap = originalBitmap.Resize(
+                new SKImageInfo(targetWidth, targetHeight),
+                new SKSamplingOptions(SKFilterMode.Linear)
+            );
             if (resizedBitmap == null)
             {
                 _logger.Error("Failed to resize image");
