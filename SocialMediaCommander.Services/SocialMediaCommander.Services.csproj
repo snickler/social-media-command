@@ -15,8 +15,10 @@
     <!-- HTTP and Web -->
     <PackageReference Include="idunno.Bluesky" />
     <PackageReference Include="Microsoft.Extensions.Http" />
-    <PackageReference Include="System.Net.Http.Json" />
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    
+    <!-- Image Processing -->
+    <PackageReference Include="SkiaSharp" />
     
     <!-- AI and LLM Integration -->
     <PackageReference Include="OllamaSharp" />
@@ -24,29 +26,26 @@
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" />
     <PackageReference Include="Microsoft.ML.Tokenizers" />
     
-    <!-- Advanced Authentication - Duende IdentityServer -->
-    <PackageReference Include="Duende.IdentityServer" />
-    <PackageReference Include="Duende.IdentityServer.AspNetIdentity" />
+    <!-- Advanced Authentication -->
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <PackageReference Include="IdentityModel" />
-    <PackageReference Include="System.Security.Cryptography.Algorithms" />
     <PackageReference Include="QRCoder" />
     <PackageReference Include="Otp.NET" />
     
     <!-- MCP (Model Context Protocol) -->
     <PackageReference Include="Microsoft.Extensions.Hosting" />
-    <PackageReference Include="System.Text.Json" />
     <PackageReference Include="Grpc.Net.Client" />
-    <PackageReference Include="Grpc.Tools" />
+    <PackageReference Include="Grpc.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Google.Protobuf" />
-    <PackageReference Include="System.IO.Pipelines" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     
     <!-- Windows Integration -->
     <PackageReference Include="System.Management" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="System.Diagnostics.EventLog" />
     <PackageReference Include="Microsoft.Windows.Compatibility" />
     <PackageReference Include="System.Management.Automation" />

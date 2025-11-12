@@ -227,7 +227,7 @@ public class PostModelTests
     }
 
     [Fact]
-    public void FormatForPlatform_WithMedia_ShouldIncludeMediaIndicator()
+    public void FormatForPlatform_WithMedia_ShouldReturnContentOnly()
     {
         // Arrange
         var post = new Post
@@ -243,13 +243,13 @@ public class PostModelTests
         // Act
         var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        Assert.Contains("Post with media", formatted);
-        Assert.Contains("[2 media attachments]", formatted);
+        // Assert - Media indicator removed from content
+        Assert.Equal("Post with media", formatted);
+        Assert.DoesNotContain("media attachments", formatted);
     }
 
     [Fact]
-    public void FormatForPlatform_WithThread_ShouldIncludeThreadIndicator()
+    public void FormatForPlatform_WithThread_ShouldReturnContentOnly()
     {
         // Arrange
         var post = new Post
@@ -266,9 +266,9 @@ public class PostModelTests
         // Act
         var formatted = post.FormatForPlatform(SocialPlatform.BlueSky);
 
-        // Assert
-        Assert.Contains("Thread starter", formatted);
-        Assert.Contains("[Thread with 3 posts]", formatted); // Original + 2 thread posts
+        // Assert - Thread indicator removed from content
+        Assert.Equal("Thread starter", formatted);
+        Assert.DoesNotContain("Thread with", formatted);
     }
 
     [Fact]

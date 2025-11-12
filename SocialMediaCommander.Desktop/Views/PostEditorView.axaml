@@ -7,122 +7,15 @@
              x:Class="SocialMediaCommander.Desktop.Views.PostEditorView"
              x:DataType="vm:PostEditorViewModel">
 
-    <UserControl.Styles>
-        <!-- Platform Toggle Styles -->
-        <Style Selector="ToggleButton.PlatformToggle">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Foreground}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="16,10"/>
-            <Setter Property="Margin" Value="0,0,12,12"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="MinWidth" Value="140"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="ToggleButton.PlatformToggle:checked">
-            <Setter Property="Background" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-        <Style Selector="ToggleButton.PlatformToggle:pointerover">
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="RenderTransform" Value="scale(1.03)"/>
-        </Style>
-        <Style Selector="ToggleButton.PlatformToggle:pressed">
-            <Setter Property="RenderTransform" Value="scale(0.97)"/>
-        </Style>
-        
-        <!-- Tab Button Styles -->
-        <Style Selector="RadioButton.TabButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Foreground}"/>
-            <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="Padding" Value="20,14"/>
-            <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="CornerRadius" Value="8,8,0,0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
-                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="RadioButton.TabButton:checked">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderThickness" Value="0,0,0,3"/>
-        </Style>
-        <Style Selector="RadioButton.TabButton:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="{DynamicResource SMC-Muted}"/>
-        </Style>
-        
-        <!-- Thread Post Card Styles -->
-        <Style Selector="Border.ThreadPostCard">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="0,0,0,16"/>
-            <Setter Property="BoxShadow" Value="0 1 3 0 #10000000"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Border.ThreadPostCard:pointerover">
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BoxShadow" Value="0 2 8 0 #20000000"/>
-        </Style>
-        
-        <!-- Preview Card Styles -->
-        <Style Selector="Border.PreviewCard">
-            <Setter Property="Background" Value="{DynamicResource SMC-Muted}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="0,0,0,20"/>
-            <Setter Property="BoxShadow" Value="0 2 6 0 #10000000"/>
-        </Style>
-        
-        <!-- Loading Animation Style -->
-        <Style Selector="Border.LoadingCard">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="24"/>
-            <Setter Property="Opacity" Value="0.6"/>
-        </Style>
-    </UserControl.Styles>
+    <!-- No custom UserControl.Styles needed - using global App.axaml styles -->
 
     <StackPanel Spacing="0">
         <!-- Header -->
         <Border Background="{DynamicResource SMC-Card-Background}" 
                 BorderBrush="{DynamicResource SMC-Card-Border}" 
                 BorderThickness="1,1,1,0" 
-                CornerRadius="12,12,0,0" 
-                Padding="24,20,24,16">
+                CornerRadius="8,8,0,0" 
+                Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -130,24 +23,26 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBlock Grid.Column="0" Text="Compose Post" 
-                           FontSize="20" FontWeight="SemiBold" 
+                           FontSize="18" FontWeight="SemiBold" 
                            Foreground="{DynamicResource SMC-Accent}"
                            VerticalAlignment="Center"/>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="20">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="16">
                     <!-- Thread Toggle -->
-                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center"
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
                                 IsVisible="{Binding ThreadSupported}">
-                        <TextBlock Text="Thread" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                        <TextBlock Text="Thread" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                         <ToggleSwitch IsChecked="{Binding IsThread}" 
-                                      OnContent="" OffContent=""/>
+                                      OnContent="" OffContent=""
+                                      ToolTip.Tip="Create a multi-post thread"/>
                     </StackPanel>
 
                     <!-- Promo Mode Toggle -->
-                    <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <TextBlock Text="Promo Mode" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <TextBlock Text="Promo Mode" FontSize="13" FontWeight="Medium" VerticalAlignment="Center"/>
                         <ToggleSwitch IsChecked="{Binding PromoMode}" 
-                                      OnContent="" OffContent=""/>
+                                      OnContent="" OffContent=""
+                                      ToolTip.Tip="Include promotional hashtags"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -157,7 +52,7 @@
         <Border Background="{DynamicResource SMC-Card-Background}" 
                 BorderBrush="{DynamicResource SMC-Card-Border}" 
                 BorderThickness="1,0,1,1" 
-                Padding="24,0,24,0">
+                Padding="16,0">
             <StackPanel Orientation="Horizontal">
                 <RadioButton Content="Composer" Classes="TabButton" GroupName="EditorTabs" 
                              IsChecked="True"
@@ -173,15 +68,15 @@
         <Border Background="{DynamicResource SMC-Card-Background}" 
                 BorderBrush="{DynamicResource SMC-Card-Border}" 
                 BorderThickness="1,0,1,0" 
-                Padding="24">
+                Padding="16">
             <StackPanel>
                 <!-- Composer Tab Content -->
                 <StackPanel IsVisible="{Binding IsComposerTabActive}"
-                            Spacing="24">
+                            Spacing="16">
                     
                     <!-- Target Platforms Section -->
-                    <StackPanel Spacing="16">
-                        <TextBlock Text="Target Platforms" FontSize="16" FontWeight="SemiBold"/>
+                    <StackPanel Spacing="12">
+                        <TextBlock Text="Target Platforms" FontSize="15" FontWeight="SemiBold"/>
                         <ItemsControl ItemsSource="{Binding AvailablePlatforms}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
@@ -190,10 +85,12 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <StackPanel Spacing="4" Margin="0,0,12,12">
+                                    <StackPanel Spacing="4" Margin="0,0,8,8">
                                         <!-- Platform Toggle -->
-                                        <ToggleButton Classes="PlatformToggle" 
-                                                      IsChecked="{Binding IsSelected, Mode=TwoWay}">
+                                        <ToggleButton IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      Background="{DynamicResource SMC-Card-Background}"
+                                                      BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                                                      CornerRadius="8" Padding="12,6" MinWidth="120">
                                             <StackPanel Orientation="Horizontal" Spacing="8">
                                                 <TextBlock Text="✓" IsVisible="{Binding IsSelected}" FontWeight="Bold"/>
                                                 <TextBlock Text="{Binding Name}"/>
@@ -240,34 +137,80 @@
                     </StackPanel>
 
                     <!-- Main Post Section -->
-                    <StackPanel Spacing="12">
+                    <StackPanel Spacing="10">
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Main Post" FontSize="16" FontWeight="Medium"/>
+                            <TextBlock Grid.Column="0" Text="Main Post" FontSize="15" FontWeight="Medium"/>
                             <Border Grid.Column="1" 
                                     Background="{DynamicResource SMC-Muted}" 
-                                    CornerRadius="4" Padding="8,4"
+                                    CornerRadius="4" Padding="6,3"
                                     IsVisible="{Binding IsThread}">
-                                <TextBlock Text="First post in thread" FontSize="12" 
+                                <TextBlock Text="First post in thread" FontSize="11" 
                                            Foreground="{DynamicResource SMC-Muted-Foreground}"/>
                             </Border>
                         </Grid>
                         
-                        <TextBox Text="{Binding Content}" 
-                                 Watermark="What would you like to share today?"
-                                 AcceptsReturn="True" 
-                                 TextWrapping="Wrap" 
-                                 MinHeight="120"
-                                 MaxHeight="300"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            
+                            <Border Grid.Row="0"
+                                    BorderBrush="{DynamicResource SMC-Card-Border}"
+                                    BorderThickness="1"
+                                    CornerRadius="6"
+                                    DragDrop.AllowDrop="True">
+                                <Grid>
+                                    <TextBox Name="MainContentTextBox"
+                                             Text="{Binding Content}" 
+                                             Watermark="What would you like to share today?"
+                                             AcceptsReturn="True" 
+                                             TextWrapping="Wrap" 
+                                             MinHeight="120"
+                                             MaxHeight="300"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             Loaded="OnTextBoxLoaded"/>
+                                    
+                                    <!-- Drag-and-drop overlay -->
+                                    <Border Background="{DynamicResource SMC-Accent}"
+                                            Opacity="0.9"
+                                            CornerRadius="6"
+                                            IsVisible="False"
+                                            Name="DragOverlay">
+                                        <StackPanel Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                            <TextBlock Text="📁" FontSize="40" HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Drop media files here" 
+                                                       FontSize="16" 
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                       HorizontalAlignment="Center"/>
+                                            <TextBlock Text="Images, videos, or GIFs" 
+                                                       FontSize="12"
+                                                       Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                       Opacity="0.8"
+                                                       HorizontalAlignment="Center"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            
+                            <!-- Upload Media Button -->
+                            <Button Grid.Row="1"
+                                    Content="📷 Upload Media"
+                                    Classes="outline"
+                                    HorizontalAlignment="Right"
+                                    Margin="0,8,0,0"
+                                    Command="{Binding UploadMediaCommand}"
+                                    IsVisible="{Binding MediaSupported}"
+                                    ToolTip.Tip="Upload images or videos"/>
+                        </Grid>
                         
                         <!-- Media Section -->
-                        <StackPanel Spacing="8" IsVisible="{Binding MediaSupported}">
-                            <TextBlock Text="Media" FontSize="14" FontWeight="Medium"/>
-                            <TextBlock Text="Add up to 4 images or videos to your post" 
+                        <StackPanel Spacing="6" IsVisible="{Binding MediaSupported}">
+                            <TextBlock Text="Media" FontSize="13" FontWeight="Medium"/>
+                            <TextBlock Text="Add up to 4 images or videos (click Upload Media or drag &amp; drop onto text box)" 
                                        FontSize="12" Opacity="0.7"/>
-                            <Button Content="📷 Upload Media" 
-                                    Classes="outline" 
-                                    Command="{Binding UploadMediaCommand}"
-                                    IsEnabled="{Binding !#MediaGrid.IsVisible}"/>
                             
                             <!-- Media Preview Grid -->
                             <Grid Name="MediaGrid" 
@@ -309,6 +252,26 @@
                                                                    TextTrimming="CharacterEllipsis"/>
                                                     </Border>
                                                     
+                                                    <!-- +ALT Button Overlay (Top Left) -->
+                                                    <Button Background="#AA4338CA" 
+                                                            Foreground="White"
+                                                            Width="40" 
+                                                            Height="24" 
+                                                            Padding="0"
+                                                            VerticalAlignment="Top" 
+                                                            HorizontalAlignment="Left"
+                                                            Margin="4"
+                                                            CornerRadius="4"
+                                                            Command="{Binding $parent[UserControl].DataContext.EditAltTextCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            ToolTip.Tip="Add alt text for accessibility">
+                                                        <TextBlock Text="+ALT" 
+                                                                   FontSize="10" 
+                                                                   FontWeight="Bold"
+                                                                   HorizontalAlignment="Center" 
+                                                                   VerticalAlignment="Center"/>
+                                                    </Button>
+                                                    
                                                     <!-- Delete Button Overlay (Top Right) -->
                                                     <Button Background="#AAFF0000" 
                                                             Foreground="White"
@@ -343,53 +306,193 @@
                     </StackPanel>
 
                     <!-- Thread Posts Section -->
-                    <StackPanel Spacing="16" IsVisible="{Binding IsThread}">
+                    <StackPanel Spacing="12" IsVisible="{Binding IsThread}">
                         <Separator Height="1" Background="{DynamicResource SMC-Card-Border}"/>
                         
                         <Grid ColumnDefinitions="*,Auto">
-                            <TextBlock Grid.Column="0" Text="Thread Posts" FontSize="16" FontWeight="Medium"/>
+                            <TextBlock Grid.Column="0" Text="Thread Posts" FontSize="15" FontWeight="Medium"/>
                             <Button Grid.Column="1" Content="➕ Add Post" 
                                     Classes="outline" 
-                                    Command="{Binding AddThreadPostCommand}"/>
+                                    Command="{Binding AddThreadPostCommand}"
+                                    ToolTip.Tip="Add another post to the thread"/>
                         </Grid>
 
                         <!-- Thread Posts List -->
                         <ItemsControl ItemsSource="{Binding ThreadPosts}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Classes="ThreadPostCard">
-                                        <StackPanel Spacing="12">
+                                    <Border Background="{DynamicResource SMC-Card-Background}"
+                                            BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                                            CornerRadius="8" Padding="16" Margin="0,0,0,12"
+                                            BoxShadow="0 1 2 0 #10000000"
+                                            Classes="SlideInBottom">
+                                        <StackPanel Spacing="10">
                                             <Grid ColumnDefinitions="Auto,*,Auto">
                                                 <Border Grid.Column="0" 
                                                         Background="{DynamicResource SMC-Accent}" 
-                                                        CornerRadius="12" 
-                                                        Width="24" Height="24">
+                                                        CornerRadius="10" 
+                                                        Width="20" Height="20">
                                                     <TextBlock Text="{Binding OrderIndex}" 
                                                                Foreground="{DynamicResource SMC-Accent-Foreground}"
-                                                               FontSize="12" FontWeight="Bold"
+                                                               FontSize="11" FontWeight="Bold"
                                                                HorizontalAlignment="Center" 
                                                                VerticalAlignment="Center"/>
                                                 </Border>
 
                                                 <TextBlock Grid.Column="1" Text="{Binding DisplayIndex}" 
                                                            FontWeight="Medium" VerticalAlignment="Center" 
-                                                           Margin="12,0,0,0"/>
+                                                           Margin="8,0,0,0"/>
 
                                                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4">
-                                                    <Button Content="⬆️" Width="32" Height="32" Classes="ghost" 
-                                                            ToolTip.Tip="Move up" FontSize="16"/>
-                                                    <Button Content="⬇️" Width="32" Height="32" Classes="ghost" 
-                                                            ToolTip.Tip="Move down" FontSize="16"/>
-                                                    <Button Content="🗑️" Width="32" Height="32" Classes="ghost" 
-                                                            ToolTip.Tip="Delete post" FontSize="16"/>
+                                                    <Button Content="⬆️" Width="28" Height="28" Classes="ghost" 
+                                                            ToolTip.Tip="Move post up in thread" FontSize="14"/>
+                                                    <Button Content="⬇️" Width="28" Height="28" Classes="ghost" 
+                                                            ToolTip.Tip="Move post down in thread" FontSize="14"/>
+                                                    <Button Content="🗑️" Width="28" Height="28" Classes="ghost" 
+                                                            ToolTip.Tip="Delete this thread post" FontSize="16"/>
                                                 </StackPanel>
                                             </Grid>
 
-                                            <TextBox Text="{Binding Content}" 
-                                                     Watermark="Thread post content..."
-                                                     AcceptsReturn="True" 
-                                                     TextWrapping="Wrap" 
-                                                     MinHeight="80"/>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="*"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
+                                                
+                                                <Border Grid.Row="0"
+                                                        BorderBrush="{DynamicResource SMC-Card-Border}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="6"
+                                                        DragDrop.AllowDrop="True">
+                                                    <Grid>
+                                                        <TextBox Name="ThreadPostTextBox"
+                                                                 Text="{Binding Content}" 
+                                                                 Watermark="Thread post content..."
+                                                                 AcceptsReturn="True" 
+                                                                 TextWrapping="Wrap" 
+                                                                 MinHeight="80"
+                                                                 BorderThickness="0"
+                                                                 Background="Transparent"
+                                                                 Loaded="OnTextBoxLoaded"/>
+                                                        
+                                                        <!-- Drag-and-drop overlay -->
+                                                        <Border Background="{DynamicResource SMC-Accent}"
+                                                                Opacity="0.9"
+                                                                CornerRadius="8"
+                                                                IsVisible="False"
+                                                                Name="ThreadDragOverlay">
+                                                            <StackPanel Spacing="4" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                <TextBlock Text="📁" FontSize="32" HorizontalAlignment="Center"/>
+                                                                <TextBlock Text="Drop media here" 
+                                                                           FontSize="14" 
+                                                                           FontWeight="SemiBold"
+                                                                           Foreground="{DynamicResource SMC-Accent-Foreground}"
+                                                                           HorizontalAlignment="Center"/>
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                                
+                                                <!-- Upload Media Button for thread post -->
+                                                <Button Grid.Row="1"
+                                                        Content="📷 Upload Media"
+                                                        Classes="outline"
+                                                        HorizontalAlignment="Right"
+                                                        Margin="0,8,0,0"
+                                                        FontSize="12"
+                                                        Padding="8,4"
+                                                        Command="{Binding UploadMediaCommand}"/>
+                                            </Grid>
+
+                                            <!-- Thread Post Media Section -->
+                                            <StackPanel Spacing="8" IsVisible="{Binding Media.Count}">
+                                                <TextBlock Text="{Binding Media.Count, StringFormat='Media ({0})'}" 
+                                                           FontSize="12" 
+                                                           FontWeight="Medium"/>
+                                                
+                                                <!-- Media Preview Grid -->
+                                                <ItemsControl ItemsSource="{Binding Media}">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel Orientation="Horizontal" ItemWidth="120" ItemHeight="120"/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Width="120" Height="120" 
+                                                                    CornerRadius="6" 
+                                                                    Margin="0,0,8,8"
+                                                                    BorderBrush="{DynamicResource SMC-Card-Border}" 
+                                                                    BorderThickness="1"
+                                                                    ClipToBounds="True">
+                                                                <Grid>
+                                                                    <!-- Image Preview -->
+                                                                    <Border Background="{DynamicResource SMC-Muted}">
+                                                                        <Image Source="{Binding FilePath}" 
+                                                                               Stretch="UniformToFill"
+                                                                               Width="120" 
+                                                                               Height="120"/>
+                                                                    </Border>
+                                                                    
+                                                                    <!-- File Info Overlay (Bottom) -->
+                                                                    <Border Background="#AA000000" 
+                                                                            VerticalAlignment="Bottom"
+                                                                            Padding="6,3">
+                                                                        <TextBlock Text="{Binding FileName}" 
+                                                                                   Foreground="White"
+                                                                                   FontSize="9"
+                                                                                   TextTrimming="CharacterEllipsis"/>
+                                                                    </Border>
+                                                                    
+                                                                    <!-- +ALT Button Overlay (Top Left) -->
+                                                                    <Button Background="#AA4338CA" 
+                                                                            Foreground="White"
+                                                                            Width="36" 
+                                                                            Height="20" 
+                                                                            Padding="0"
+                                                                            VerticalAlignment="Top" 
+                                                                            HorizontalAlignment="Left"
+                                                                            Margin="3"
+                                                                            CornerRadius="3"
+                                                                            Command="{Binding $parent[ItemsControl].DataContext.EditAltTextCommand}"
+                                                                            CommandParameter="{Binding}"
+                                                                            ToolTip.Tip="Add alt text for accessibility">
+                                                                        <TextBlock Text="+ALT" 
+                                                                                   FontSize="9" 
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Center" 
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Button>
+                                                                    
+                                                                    <!-- Delete Button Overlay (Top Right) -->
+                                                                    <Button Background="#AAFF0000" 
+                                                                            Foreground="White"
+                                                                            Width="20" 
+                                                                            Height="20" 
+                                                                            Padding="0"
+                                                                            VerticalAlignment="Top" 
+                                                                            HorizontalAlignment="Right"
+                                                                            Margin="3"
+                                                                            CornerRadius="10"
+                                                                            Command="{Binding $parent[ItemsControl].DataContext.RemoveMediaCommand}"
+                                                                            CommandParameter="{Binding}">
+                                                                        <TextBlock Text="✕" 
+                                                                                   FontSize="11" 
+                                                                                   FontWeight="Bold"
+                                                                                   HorizontalAlignment="Center" 
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Button>
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                                
+                                                <!-- Media Count Info -->
+                                                <TextBlock Text="{Binding Media.Count, StringFormat='{}{0} of 4 media files'}" 
+                                                           FontSize="11" 
+                                                           Foreground="{DynamicResource SMC-Muted-Foreground}"/>
+                                            </StackPanel>
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
@@ -418,10 +521,10 @@
                     <!-- Hashtags Section (Promo Mode) -->
                     <Border IsVisible="{Binding PromoMode}" 
                             Background="{DynamicResource SMC-Muted}" 
-                            CornerRadius="8" Padding="16">
-                        <StackPanel Spacing="12">
+                            CornerRadius="6" Padding="12">
+                        <StackPanel Spacing="10">
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Hashtags" FontSize="14" FontWeight="Medium"/>
+                                <TextBlock Text="Hashtags" FontSize="13" FontWeight="Medium"/>
                                 <TextBlock Text="Add hashtags to increase discoverability (shown in promo mode only)" 
                                            FontSize="12" Opacity="0.7"/>
                             </StackPanel>
@@ -470,12 +573,16 @@
 
                 <!-- Preview Tab Content -->
                 <StackPanel IsVisible="{Binding IsPreviewTabActive}"
-                            Spacing="16">
+                            Spacing="12">
                     <ItemsControl ItemsSource="{Binding PlatformPreviews}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Classes="PreviewCard">
-                                    <StackPanel Spacing="12">
+                                <Border Background="{DynamicResource SMC-Muted}"
+                                        BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                                        CornerRadius="8" Padding="16" Margin="0,0,0,16"
+                                        BoxShadow="0 2 4 0 #10000000"
+                                        Classes="SlideInBottom">
+                                    <StackPanel Spacing="10">
                                         <!-- Header with Platform Name and Copy Button -->
                                         <Grid ColumnDefinitions="*,Auto">
                                             <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8">
@@ -496,7 +603,8 @@
                                                     Classes="outline" 
                                                     FontSize="12" 
                                                     Padding="8,4"
-                                                    Command="{Binding CopyToClipboardCommand}"/>
+                                                    Command="{Binding CopyToClipboardCommand}"
+                                                    ToolTip.Tip="Copy preview to clipboard"/>
                                         </Grid>
                                         
                                         <!-- Content Preview -->
@@ -569,8 +677,8 @@
         <Border Background="{DynamicResource SMC-Muted}" 
                 BorderBrush="{DynamicResource SMC-Card-Border}" 
                 BorderThickness="1,0,1,1" 
-                CornerRadius="0,0,12,12" 
-                Padding="24,16">
+                CornerRadius="0,0,8,8" 
+                Padding="16,12">
             <Grid ColumnDefinitions="*,Auto">
                 <StackPanel Grid.Column="0" Spacing="4">
                     <TextBlock Text="{Binding StatusMessage}" 
@@ -588,8 +696,7 @@
                         Classes="secondary" 
                         Command="{Binding PostCommand}"
                         IsEnabled="{Binding CanPost}"
-                        FontWeight="SemiBold"
-                        Padding="24,12"/>
+                        FontWeight="SemiBold"/>
             </Grid>
         </Border>
     </StackPanel>

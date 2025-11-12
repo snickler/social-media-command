@@ -12,7 +12,7 @@ This document summarizes the implementation of full macOS support for the Social
 **Status**: ✅ Complete
 
 **Changes**:
-- Enabled macOS x64 builds on `macos-13` runners (Intel)
+- Enabled macOS x64 builds on `macos-latest` runners (Intel)
 - Enabled macOS ARM64 builds on `macos-latest` runners (Apple Silicon)
 - Configured proper app bundle creation with Info.plist
 - Set up artifact upload for both architectures
@@ -83,7 +83,7 @@ This document summarizes the implementation of full macOS support for the Social
 - [x] Tests will run on macOS runners when CI executes
 
 ### ✅ Proper CI/CD Workflow
-- [x] macOS x64 build enabled (macos-13 runner)
+- [x] macOS x64 build enabled (macos-latest runner)
 - [x] macOS ARM64 build enabled (macos-latest runner)
 - [x] App bundle creation configured
 - [x] Artifact upload configured

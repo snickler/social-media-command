@@ -12,131 +12,11 @@
         ExtendClientAreaTitleBarHeightHint="-1">
 
     <Window.Styles>
-        <!-- Header Button Styles -->
-        <Style Selector="Button.HeaderButton">
-            <Setter Property="Background" Value="#5a52d0"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
-                </Transitions>
+        <!-- Page Transition Animations -->
+        <Style Selector="TransitioningContentControl">
+            <Setter Property="PageTransition">
+                <CrossFade Duration="0:0:0.3"/>
             </Setter>
-        </Style>
-        <Style Selector="Button.HeaderButton:pointerover">
-            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="RenderTransform" Value="scale(1.05)"/>
-        </Style>
-        <Style Selector="Button.HeaderButton:pressed">
-            <Setter Property="Background" Value="#f5f6fa"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="RenderTransform" Value="scale(0.95)"/>
-        </Style>
-        <Style Selector="Button.HeaderButton:focus-visible">
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-        </Style>
-        
-        <!-- Toggle Button Styles -->
-        <Style Selector="ToggleButton.ViewToggle">
-            <Setter Property="Background" Value="#5a52d0"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Padding" Value="16,10"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="CornerRadius" Value="8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="Opacity" Value="0.7"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="Background" Duration="0:0:0.2"/>
-                    <BrushTransition Property="Foreground" Duration="0:0:0.2"/>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="ToggleButton.ViewToggle:checked">
-            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Opacity" Value="1"/>
-        </Style>
-        <Style Selector="ToggleButton.ViewToggle:pointerover">
-            <Setter Property="Background" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent-Foreground}"/>
-            <Setter Property="Opacity" Value="1"/>
-        </Style>
-        <Style Selector="ToggleButton.ViewToggle:pressed">
-            <Setter Property="Background" Value="#e8e9f0"/>
-            <Setter Property="Foreground" Value="{DynamicResource SMC-Accent}"/>
-        </Style>
-        <Style Selector="ToggleButton.ViewToggle:focus-visible">
-            <Setter Property="BorderThickness" Value="2"/>
-        </Style>
-        
-        <!-- Card Styles -->
-        <Style Selector="Border.Card">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="24"/>
-            <Setter Property="BoxShadow" Value="0 2 8 0 #10000000"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Border.Card:pointerover">
-            <Setter Property="BoxShadow" Value="0 4 16 0 #20000000"/>
-        </Style>
-        
-        <!-- Success Message Styles -->
-        <Style Selector="Border.SuccessMessage">
-            <Setter Property="Background" Value="{DynamicResource SMC-Success-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Success-Border}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Margin" Value="0,0,0,24"/>
-            <Setter Property="BoxShadow" Value="0 2 12 0 #10059669"/>
-        </Style>
-        
-        <!-- Card with Hover Effect -->
-        <Style Selector="Border.InteractiveCard">
-            <Setter Property="Background" Value="{DynamicResource SMC-Card-Background}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Card-Border}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="20"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Transitions">
-                <Transitions>
-                    <BrushTransition Property="BorderBrush" Duration="0:0:0.2"/>
-                    <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.2"/>
-                    <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.15"/>
-                </Transitions>
-            </Setter>
-        </Style>
-        <Style Selector="Border.InteractiveCard:pointerover">
-            <Setter Property="BorderBrush" Value="{DynamicResource SMC-Accent}"/>
-            <Setter Property="BoxShadow" Value="0 4 20 0 #204338CA"/>
-            <Setter Property="RenderTransform" Value="translateY(-2px)"/>
         </Style>
     </Window.Styles>
 
@@ -147,95 +27,292 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- Header -->
+        <!-- Clean Title Bar -->
         <Border Grid.Row="0" Background="{DynamicResource SMC-Accent}" 
                 BorderBrush="{DynamicResource SMC-Accent}" 
                 BorderThickness="0,0,0,1">
-            <Grid Margin="24,16">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                </Grid.RowDefinitions>
+            <Grid Margin="16,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                <!-- Top Header Row -->
-                <Grid Grid.Row="0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- App Title -->
-                    <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                        <Border Background="{DynamicResource SMC-Accent-Foreground}" 
-                                CornerRadius="6" Padding="6" Opacity="0.1">
-                            <TextBlock Text="🚀" FontSize="20"/>
-                        </Border>
-                        <TextBlock Text="Social Media Management Hub" 
-                                   Foreground="{DynamicResource SMC-Accent-Foreground}" 
-                                   FontWeight="Bold" FontSize="18"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-
-                    <!-- Action Buttons -->
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center" Margin="0,0,120,0">
-                        <Button Content="📖" Classes="HeaderButton" ToolTip.Tip="Documentation"
-                                Command="{Binding ToggleDocumentationCommand}"/>
-                        <Button Content="⚙️" Classes="HeaderButton" ToolTip.Tip="Settings"/>
-                        <Button Content="👤 Manage Accounts" Classes="secondary" 
-                                Command="{Binding ManageAccountsCommand}"/>
-                    </StackPanel>
-                </Grid>
-
-                <!-- Bottom Header Row - View Controls -->
-                <Grid Grid.Row="1" Margin="0,16,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-
-                    <!-- View Mode Toggle -->
-                    <Border Grid.Column="0" Background="Transparent" 
-                            CornerRadius="8" Padding="4">
-                        <StackPanel Orientation="Horizontal">
-                            <ToggleButton Content="Standard View" 
-                                          Classes="ViewToggle"
-                                          IsChecked="{Binding !IsCompactViewActive}"
-                                          Command="{Binding SetStandardViewCommand}"/>
-                            <ToggleButton Content="🔬 Compact View" 
-                                          Classes="ViewToggle"
-                                          IsChecked="{Binding IsCompactViewActive}"
-                                          Command="{Binding SetCompactViewCommand}"/>
-                        </StackPanel>
+                <!-- App Title (Draggable Area) -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                            PointerPressed="OnTitleBarPointerPressed">
+                    <Border Background="{DynamicResource SMC-Accent-Foreground}" 
+                            CornerRadius="6" Padding="4" Opacity="0.1">
+                        <TextBlock Text="🚀" FontSize="20"/>
                     </Border>
+                    <TextBlock Text="Social Media Commander" 
+                               Foreground="{DynamicResource SMC-Accent-Foreground}" 
+                               FontWeight="Bold" FontSize="18"
+                               VerticalAlignment="Center"/>
+                </StackPanel>
 
-                    <!-- Workspace Mode Toggle -->
-                    <Border Grid.Column="2" Background="Transparent" 
-                            CornerRadius="8" Padding="4">
-                        <StackPanel Orientation="Horizontal">
-                            <ToggleButton Content="Single/Thread Posts" 
-                                          Classes="ViewToggle"
-                                          Command="{Binding SetSingleThreadModeCommand}"/>
-                            <ToggleButton Content="📚 Threads Only" 
-                                          Classes="ViewToggle"
-                                          Command="{Binding SetThreadsOnlyModeCommand}"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
+                <!-- Center Draggable Area -->
+                <Border Grid.Column="1" Background="Transparent" 
+                        PointerPressed="OnTitleBarPointerPressed"
+                        Cursor="Hand"
+                        ToolTip.Tip="Drag to move window"/>
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
-        <Grid Grid.Row="1" Margin="24" IsVisible="{Binding !IsAccountManagerVisible}">
+        <!-- Main Content Area with Persistent Sidebar -->
+        <SplitView Grid.Row="1" 
+                   IsPaneOpen="{Binding IsSidebarOpen}"
+                   DisplayMode="CompactInline"
+                   CompactPaneLength="60"
+                   OpenPaneLength="220"
+                   PanePlacement="Left">
+            
+            <!-- Persistent Sidebar Navigation - ALWAYS VISIBLE -->
+            <SplitView.Pane>
+                <Border Background="{DynamicResource SMC-Muted}" 
+                        BorderBrush="{DynamicResource SMC-Card-Border}" 
+                        BorderThickness="0,0,1,0">
+                    <StackPanel Spacing="8" Margin="0,12">
+                        <!-- Toggle Sidebar Button -->
+                        <Button Command="{Binding ToggleSidebarCommand}"
+                                ToolTip.Tip="Toggle Sidebar"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Margin="8,0"
+                                Height="44">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <TextBlock Text="☰" FontSize="18" VerticalAlignment="Center"/>
+                                <TextBlock Text="Menu" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Separator Margin="8,4"/>
+
+                        <!-- Home Navigation Button -->
+                        <Button Command="{Binding NavigateToHomeCommand}"
+                                ToolTip.Tip="Home"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsHomeView}">
+                                    <TextBlock Text="🏠" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="🏠" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsHomeView}"/>
+                                <TextBlock Text="Home" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- AI Assistant Navigation Button -->
+                        <Button Command="{Binding ToggleAIAssistantCommand}"
+                                ToolTip.Tip="AI Assistant"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsAIAssistantVisible}">
+                                    <TextBlock Text="🤖" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="🤖" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsAIAssistantVisible}"/>
+                                <TextBlock Text="AI Assistant" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Scheduler Navigation Button -->
+                        <Button Command="{Binding ToggleSchedulerCommand}"
+                                ToolTip.Tip="Schedule Posts"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsSchedulerVisible}">
+                                    <TextBlock Text="📅" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="📅" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsSchedulerVisible}"/>
+                                <TextBlock Text="Scheduler" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Documentation Navigation Button -->
+                        <Button Command="{Binding ToggleDocumentationCommand}"
+                                ToolTip.Tip="Documentation"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsDocumentationVisible}">
+                                    <TextBlock Text="📖" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="📖" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsDocumentationVisible}"/>
+                                <TextBlock Text="Documentation" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Settings Navigation Button -->
+                        <Button Command="{Binding ToggleSettingsCommand}"
+                                ToolTip.Tip="Settings"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsSettingsVisible}">
+                                    <TextBlock Text="⚙️" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="⚙️" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsSettingsVisible}"/>
+                                <TextBlock Text="Settings" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <!-- Manage Accounts Navigation Button -->
+                        <Button Command="{Binding ManageAccountsCommand}"
+                                ToolTip.Tip="Manage Accounts"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Left"
+                                VerticalContentAlignment="Center"
+                                Classes="ghost"
+                                Height="44"
+                                Margin="8,0">
+                            <StackPanel Orientation="Horizontal" Spacing="12">
+                                <Border Width="28" Height="28" CornerRadius="6"
+                                        Background="{DynamicResource SMC-Accent}"
+                                        IsVisible="{Binding IsAccountManagerVisible}">
+                                    <TextBlock Text="👤" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="👤" FontSize="18" VerticalAlignment="Center" IsVisible="{Binding !IsAccountManagerVisible}"/>
+                                <TextBlock Text="Manage Accounts" 
+                                           FontSize="14" 
+                                           FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           IsVisible="{Binding IsSidebarOpen}"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Separator Margin="8,4"/>
+
+                        <!-- View Mode Section (When Expanded) -->
+                        <StackPanel Spacing="8" IsVisible="{Binding IsSidebarOpen}" Margin="8,4,8,0">
+                            <TextBlock Text="View Mode" 
+                                       FontSize="12" 
+                                       Opacity="0.7" 
+                                       Margin="4,0"/>
+                            <StackPanel Spacing="4">
+                                <ToggleButton Content="Standard View" 
+                                              IsChecked="{Binding !IsCompactViewActive}"
+                                              Command="{Binding SetStandardViewCommand}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Left"
+                                              FontSize="13"
+                                              ToolTip.Tip="Switch to standard view layout"/>
+                                <ToggleButton Content="Compact View" 
+                                              IsChecked="{Binding IsCompactViewActive}"
+                                              Command="{Binding SetCompactViewCommand}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Left"
+                                              FontSize="13"
+                                              ToolTip.Tip="Switch to compact side-by-side view"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- Workspace Mode Section (When Expanded) -->
+                        <StackPanel Spacing="8" IsVisible="{Binding IsSidebarOpen}" Margin="8,4,8,0">
+                            <TextBlock Text="Workspace Mode" 
+                                       FontSize="12" 
+                                       Opacity="0.7" 
+                                       Margin="4,0"/>
+                            <StackPanel Spacing="4">
+                                <ToggleButton Content="Single/Thread Posts" 
+                                              Command="{Binding SetSingleThreadModeCommand}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Left"
+                                              FontSize="13"
+                                              ToolTip.Tip="Compose single posts or threads"/>
+                                <ToggleButton Content="Threads Only" 
+                                              Command="{Binding SetThreadsOnlyModeCommand}"
+                                              HorizontalAlignment="Stretch"
+                                              HorizontalContentAlignment="Left"
+                                              FontSize="13"
+                                              ToolTip.Tip="Focus on thread composition"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </SplitView.Pane>
+
+            <!-- Main Content Area with Page Transitions -->
+            <SplitView.Content>
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Header Bar with Breadcrumbs (hidden on overlay pages with their own headers) -->
+                    <views:HeaderBarView Grid.Row="0" DataContext="{Binding}"
+                                        IsVisible="{Binding IsHomeView}"/>
+                    
+                    <!-- Content Area with Page-Based Rendering -->
+                    <Grid Grid.Row="1">
+                        <!-- Home View -->
+                        <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.Home}}"
+                              Margin="16"
+                              Classes="PageTransition FadeIn">
             <!-- Standard View Layout -->
-            <ScrollViewer IsVisible="{Binding !IsCompactViewActive}" Padding="0,0,12,0">
-                <StackPanel Spacing="24" MaxWidth="1200">
+            <ScrollViewer IsVisible="{Binding !IsCompactViewActive}" Padding="0,0,8,0">
+                <StackPanel Spacing="16" MaxWidth="1200">
                     <!-- Success Message (when visible) -->
-                    <Border Classes="SuccessMessage" IsVisible="False">
-                        <StackPanel Orientation="Horizontal" Spacing="12">
+                    <Border Background="{DynamicResource SMC-Success-Background}"
+                            BorderBrush="{DynamicResource SMC-Success-Border}"
+                            BorderThickness="1" CornerRadius="8" Padding="16" Margin="0,0,0,16"
+                            BoxShadow="0 2 6 0 #10059669" Classes="FadeIn SuccessCheckmark"
+                            IsVisible="False">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
                             <Border Background="{DynamicResource SMC-Success}" 
-                                    CornerRadius="20" Padding="8">
+                                    CornerRadius="16" Padding="6">
                                 <TextBlock Text="🚀" FontSize="16" 
                                            Foreground="{DynamicResource SMC-Success-Foreground}"/>
                             </Border>
@@ -251,7 +328,10 @@
                     </Border>
 
                     <!-- Post Editor Card -->
-                    <Border Classes="Card">
+                    <Border Background="{DynamicResource SMC-Card-Background}"
+                            BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                            CornerRadius="8" Padding="16" BoxShadow="0 2 4 0 #10000000"
+                            Classes="SlideInBottom">
                         <views:PostEditorView DataContext="{Binding PostEditor}"/>
                     </Border>
                 </StackPanel>
@@ -261,79 +341,74 @@
             <Grid IsVisible="{Binding IsCompactViewActive}">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="{Binding PostEditorColumnWidth}"/>
-                    <ColumnDefinition Width="24"/>
+                    <ColumnDefinition Width="16"/>
                     <ColumnDefinition Width="{Binding FeedColumnWidth}"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Post Editor Column -->
-                <ScrollViewer Grid.Column="0" Padding="0,0,12,0">
-                    <Border Classes="Card">
+                <ScrollViewer Grid.Column="0" Padding="0,0,8,0">
+                    <Border Background="{DynamicResource SMC-Card-Background}"
+                            BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                            CornerRadius="8" Padding="16" BoxShadow="0 2 4 0 #10000000"
+                            Classes="SlideInBottom">
                         <views:PostEditorView DataContext="{Binding PostEditor}"/>
                     </Border>
                 </ScrollViewer>
 
                 <!-- Social Feed Column -->
-                <ScrollViewer Grid.Column="2" Padding="12,0,0,0" 
+                <ScrollViewer Grid.Column="2" Padding="8,0,0,0" 
                               IsVisible="{Binding !IsComposeOnlyActive}">
-                    <Border Classes="Card">
+                    <Border Background="{DynamicResource SMC-Card-Background}"
+                            BorderBrush="{DynamicResource SMC-Card-Border}" BorderThickness="1"
+                            CornerRadius="8" Padding="16" BoxShadow="0 2 4 0 #10000000"
+                            Classes="SlideInBottom">
                         <views:SocialFeedView DataContext="{Binding SocialFeed}"/>
-                    </Border>
-                </ScrollViewer>
+                        </Border>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+            
+            <!-- Account Manager Page -->
+            <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.AccountManager}}"
+                  Margin="16"
+                  Classes="PageTransition SlideInRight">
+                <views:AccountManagerView DataContext="{Binding AccountManager}"/>
+            </Grid>
+            
+            <!-- Settings Page -->
+            <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.Settings}}"
+                  Margin="16"
+                  Classes="PageTransition SlideInRight">
+                <views:SettingsView DataContext="{Binding Settings}"/>
+            </Grid>
+            
+            <!-- AI Assistant Page -->
+            <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.AIAssistant}}"
+                  Margin="16"
+                  Classes="PageTransition SlideInRight">
+                <views:AIAssistantView DataContext="{Binding AIAssistant}"/>
+            </Grid>
+            
+            <!-- Scheduler Page -->
+            <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.Scheduler}}"
+                  Margin="16"
+                  Classes="PageTransition SlideInRight">
+                <views:SchedulerView DataContext="{Binding Scheduler}"/>
+            </Grid>
+            
+            <!-- Documentation Page -->
+            <Grid IsVisible="{Binding CurrentPage, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={x:Static vm:NavigationPage.Documentation}}"
+                  Margin="16"
+                  Classes="PageTransition SlideInRight">
+                <views:DocumentationView DataContext="{Binding Documentation}"/>
             </Grid>
         </Grid>
-
-        <!-- Account Manager Overlay -->
-        <Border Grid.Row="1" Grid.RowSpan="2"
-                IsVisible="{Binding IsAccountManagerVisible}">
-            <views:AccountManagerView DataContext="{Binding AccountManager}"/>
-        </Border>
-
-        <!-- Documentation Overlay -->
-        <Border Grid.Row="1" Grid.RowSpan="2"
-                IsVisible="{Binding IsDocumentationVisible}"
-                Background="{DynamicResource SMC-Background}">
-            <Grid>
-                <!-- Header with close button -->
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
-                <Border Grid.Row="0" 
-                        Background="{DynamicResource SMC-Accent}" 
-                        BorderBrush="{DynamicResource SMC-Accent}" 
-                        BorderThickness="0,0,0,1"
-                        Padding="24,16">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        
-                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                            <TextBlock Text="📖" FontSize="20" Foreground="{DynamicResource SMC-Accent-Foreground}"/>
-                            <TextBlock Text="Documentation" 
-                                       Foreground="{DynamicResource SMC-Accent-Foreground}" 
-                                       FontWeight="Bold" FontSize="18"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
-                        
-                        <Button Grid.Column="1" 
-                                Content="✕" 
-                                Classes="HeaderButton"
-                                Command="{Binding CloseDocumentationCommand}"
-                                ToolTip.Tip="Close Documentation"/>
-                    </Grid>
-                </Border>
-                
-                <views:DocumentationView Grid.Row="1" DataContext="{Binding Documentation}"/>
-            </Grid>
-        </Border>
-
-        <!-- Footer -->
-        <Border Grid.Row="2" Background="{DynamicResource SMC-Muted}" 
+                </Grid>
+            </SplitView.Content>
+        </SplitView>        <!-- Footer -->
+        <Border Grid.Row="2" Background="{DynamicResource SMC-Muted}"
                 BorderBrush="{DynamicResource SMC-Card-Border}" 
-                BorderThickness="0,1,0,0" Padding="24,16">
+                BorderThickness="0,1,0,0" Padding="16,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -348,7 +423,7 @@
 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
                     <Button Content="❓" Classes="ghost" 
-                            Width="32" Height="32" 
+                            Width="36" Height="36" 
                             FontSize="16"
                             ToolTip.Tip="Help &amp; Support"/>
                 </StackPanel>

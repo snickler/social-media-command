@@ -4,10 +4,15 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SocialMediaCommander.Core.Models;
 using SocialMediaCommander.Services.Interfaces;
+using SocialMediaCommander.Core.Services;
+using SocialMediaCommander.Desktop.Helpers;
+using Serilog;
 
 namespace SocialMediaCommander.Desktop.ViewModels;
 
@@ -17,6 +22,7 @@ namespace SocialMediaCommander.Desktop.ViewModels;
 /// </summary>
 public partial class PostEditorViewModel : ObservableObject
 {
+    private readonly ILogger _logger = LoggingService.ForContext<PostEditorViewModel>();
     private readonly IPostService _postService;
     private readonly IAccountService _accountService;
     private readonly IMediaService _mediaService;
@@ -171,20 +177,20 @@ public partial class PostEditorViewModel : ObservableObject
     [RelayCommand]
     private async Task PostAsync()
     {
-        System.Diagnostics.Debug.WriteLine("PostAsync command called!");
-        Console.WriteLine("PostAsync command called!");
+        _logger.Information("PostAsync command called");
 
         if (IsPosting) return;
 
         try
         {
             IsPosting = true;
-            System.Diagnostics.Debug.WriteLine("Starting post publishing...");
+            _logger.Information("Starting post publishing...");
 
             var post = CreatePostFromViewModel();
+            _logger.Information("Calling PublishPostAsync with {PlatformCount} platforms", post.TargetPlatforms.Count);
             var result = await _postService.PublishPostAsync(post);
 
-            System.Diagnostics.Debug.WriteLine($"Post published successfully! Results: {result.Count} platforms");
+            _logger.Information("Post published successfully! Results: {ResultCount} platforms", result.Count);
 
             // Reset form after successful post
             Content = string.Empty;
@@ -203,7 +209,7 @@ public partial class PostEditorViewModel : ObservableObject
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"Post publishing failed: {ex.Message}");
+            _logger.Error(ex, "Post publishing failed: {Message}", ex.Message);
             OnError?.Invoke($"Failed to publish post: {ex.Message}");
         }
         finally
@@ -323,7 +329,7 @@ public partial class PostEditorViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private Task UploadMediaAsync()
+    private void UploadMedia()
     {
         System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] UploadMedia command called!");
 
@@ -334,7 +340,7 @@ public partial class PostEditorViewModel : ObservableObject
             {
                 OnError?.Invoke("Maximum of 4 media files reached");
                 System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] Cannot upload - limit reached");
-                return Task.CompletedTask;
+                return;
             }
 
             // Trigger event for UI to handle file dialog
@@ -348,8 +354,6 @@ public partial class PostEditorViewModel : ObservableObject
             System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] Upload media failed: {ex.Message}");
             OnError?.Invoke($"Failed to upload media: {ex.Message}");
         }
-
-        return Task.CompletedTask;
     }
 
     [RelayCommand]
@@ -371,6 +375,113 @@ public partial class PostEditorViewModel : ObservableObject
         {
             System.Diagnostics.Debug.WriteLine("[PostEditorViewModel] RemoveMedia called with null or non-existent media");
         }
+    }
+
+    [RelayCommand]
+    private async Task EditAltText(Media media)
+    {
+        if (media == null) return;
+
+        System.Diagnostics.Debug.WriteLine($"[PostEditorViewModel] EditAltText called for: {media.FileName}");
+
+        // Create a simple input dialog
+        var dialog = new Window
+        {
+            Title = "Add Alt Text",
+            Width = 500,
+            Height = 300,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var textBox = new TextBox
+        {
+            Text = media.AltText ?? string.Empty,
+            Watermark = "Describe this image for accessibility...",
+            AcceptsReturn = true,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Height = 150,
+            Margin = new Avalonia.Thickness(0, 0, 0, 12)
+        };
+
+        var saveButton = new Button
+        {
+            Content = "Save",
+            Classes = { "primary" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 0, 8, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            Classes = { "outline" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+        };
+
+        saveButton.Click += (s, e) =>
+        {
+            var newAltText = textBox.Text?.Trim() ?? string.Empty;
+            _logger.Information("=== SAVING ALT TEXT ===");
+            _logger.Information("Media: {FileName}", media.FileName);
+            _logger.Information("TextBox.Text: '{TextBoxText}'", textBox.Text);
+            _logger.Information("New alt text: '{NewAltText}'", newAltText);
+            _logger.Information("Old alt text: '{OldAltText}'", media.AltText);
+
+            media.AltText = newAltText;
+
+            _logger.Information("Alt text after save: '{AltText}'", media.AltText);
+            _logger.Information("=======================");
+            dialog.Close();
+        };
+
+        cancelButton.Click += (s, e) => dialog.Close();
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+            Children = { saveButton, cancelButton }
+        };
+
+        var mainPanel = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(20),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Alt Text for: {media.FileName}",
+                    FontWeight = Avalonia.Media.FontWeight.Bold,
+                    FontSize = 14
+                },
+                new TextBlock
+                {
+                    Text = "Describe this image for screen readers and accessibility tools.",
+                    FontSize = 12,
+                    Opacity = 0.7
+                },
+                textBox,
+                buttonPanel
+            }
+        };
+
+        dialog.Content = mainPanel;
+
+        var parentWindow = GetParentWindow();
+        if (parentWindow != null)
+        {
+            await dialog.ShowDialog(parentWindow);
+        }
+    }
+
+    private Window? GetParentWindow()
+    {
+        // Try to get the parent window from the app
+        return (Avalonia.Application.Current?.ApplicationLifetime as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)
+            ?.MainWindow;
     }
 
     /// <summary>
@@ -501,6 +612,15 @@ public partial class PostEditorViewModel : ObservableObject
                 Media = new List<Media>(tp.Media)
             }).ToList()
         };
+
+        // Debug logging
+        _logger.Information("CreatePostFromViewModel: IsThread={IsThread}, ThreadPosts.Count={ThreadPostsCount}", post.IsThread, post.ThreadPosts.Count);
+        _logger.Information("  Main post: Content length={ContentLength}, Media count={MediaCount}", post.Content?.Length ?? 0, post.Media.Count);
+        for (int i = 0; i < post.ThreadPosts.Count; i++)
+        {
+            var tp = post.ThreadPosts[i];
+            _logger.Information("  ThreadPost[{Index}]: Content length={ContentLength}, Media count={MediaCount}", i, tp.Content?.Length ?? 0, tp.Media.Count);
+        }
 
         // Populate SelectedAccounts with the user's selected account for each platform
         foreach (var platform in this.SelectedPlatforms)
@@ -709,6 +829,18 @@ public partial class PostEditorViewModel : ObservableObject
         }
     }
 
+    public void AddMediaFile(string filePath)
+    {
+        if (Media.Count >= 4)
+        {
+            // Max 4 media files per post
+            return;
+        }
+
+        var media = Helpers.MediaHelper.CreateMediaFromFile(filePath);
+        Media.Add(media);
+    }
+
     #endregion
 }
 
@@ -896,11 +1028,125 @@ public partial class ThreadPostViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task EditAltText(Media media)
+    {
+        if (media == null) return;
+
+        System.Diagnostics.Debug.WriteLine($"[ThreadPostViewModel] EditAltText called for: {media.FileName}");
+
+        // Create a simple input dialog
+        var dialog = new Window
+        {
+            Title = "Add Alt Text",
+            Width = 500,
+            Height = 300,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var textBox = new TextBox
+        {
+            Text = media.AltText ?? string.Empty,
+            Watermark = "Describe this image for accessibility...",
+            AcceptsReturn = true,
+            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
+            Height = 150,
+            Margin = new Avalonia.Thickness(0, 0, 0, 12)
+        };
+
+        var saveButton = new Button
+        {
+            Content = "Save",
+            Classes = { "primary" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 0, 8, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            Classes = { "outline" },
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+        };
+
+        saveButton.Click += (s, e) =>
+        {
+            var newAltText = textBox.Text?.Trim() ?? string.Empty;
+            var logger = LoggingService.ForContext<ThreadPostViewModel>();
+            logger.Information("=== SAVING ALT TEXT ===");
+            logger.Information("Media: {FileName}", media.FileName);
+            logger.Information("TextBox.Text: '{TextBoxText}'", textBox.Text);
+            logger.Information("New alt text: '{NewAltText}'", newAltText);
+            logger.Information("Old alt text: '{OldAltText}'", media.AltText);
+
+            media.AltText = newAltText;
+
+            logger.Information("Alt text after save: '{AltText}'", media.AltText);
+            logger.Information("=======================");
+            dialog.Close();
+        };
+
+        cancelButton.Click += (s, e) => dialog.Close();
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+            Children = { saveButton, cancelButton }
+        };
+
+        var mainPanel = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(20),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = $"Alt Text for: {media.FileName}",
+                    FontWeight = Avalonia.Media.FontWeight.Bold,
+                    FontSize = 14
+                },
+                new TextBlock
+                {
+                    Text = "Describe this image for screen readers and accessibility tools.",
+                    FontSize = 12,
+                    Opacity = 0.7
+                },
+                textBox,
+                buttonPanel
+            }
+        };
+
+        dialog.Content = mainPanel;
+
+        var parentWindow = (Avalonia.Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow;
+        if (parentWindow != null)
+        {
+            await dialog.ShowDialog(parentWindow);
+        }
+    }
+
+    [RelayCommand]
     private void UploadMedia()
     {
-        // This would typically open a file dialog and handle the upload
-        // For this view model, we can simulate adding a media item
-        // OnMediaUploadRequested?.Invoke(this);
+        // Trigger event for file picker (handled in code-behind)
+        OnMediaUploadRequested?.Invoke();
+    }
+
+    public event Action? OnMediaUploadRequested;
+
+    public void AddMediaFile(string filePath)
+    {
+        if (Media.Count >= 4)
+        {
+            // Max 4 media files per post
+            return;
+        }
+
+        var media = SocialMediaCommander.Desktop.Helpers.MediaHelper.CreateMediaFromFile(filePath);
+        Media.Add(media);
     }
 
     partial void OnContentChanged(string value)

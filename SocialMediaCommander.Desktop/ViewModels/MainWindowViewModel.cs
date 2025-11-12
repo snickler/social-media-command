@@ -20,6 +20,7 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 {
     private static readonly ArrayPool<char> s_charPool = ArrayPool<char>.Shared;
     private volatile bool _disposed = false;
+    private readonly Stack<NavigationPage> _navigationStack = new();
 
     public string Greeting { get; } = "Social Media Commander";
 
@@ -42,13 +43,26 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
     private LayoutMode currentLayoutMode = LayoutMode.SplitView;
 
     [ObservableProperty]
+    private NavigationPage currentPage = NavigationPage.Home;
+
+    [ObservableProperty]
+    private bool isSidebarOpen = true;
+
+    // Legacy properties for backward compatibility - now map to currentPage
+    [ObservableProperty]
     private bool isAccountManagerVisible = false;
 
     [ObservableProperty]
     private bool isAIAssistantVisible = false;
 
     [ObservableProperty]
+    private bool isSchedulerVisible = false;
+
+    [ObservableProperty]
     private bool isDocumentationVisible = false;
+
+    [ObservableProperty]
+    private bool isSettingsVisible = false;
 
     [ObservableProperty]
     private string encryptionStatus = "Initializing...";
@@ -120,6 +134,71 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
 
     #endregion
 
+    #region Navigation Commands - Modern page-based navigation
+
+    [RelayCommand]
+    private void NavigateToHome()
+    {
+        NavigateToPage(NavigationPage.Home);
+    }
+
+    [RelayCommand]
+    private void NavigateBack()
+    {
+        if (_navigationStack.Count > 0)
+        {
+            var previousPage = _navigationStack.Pop();
+            CurrentPage = previousPage;
+            UpdatePageVisibility();
+        }
+        else
+        {
+            NavigateToPage(NavigationPage.Home);
+        }
+    }
+
+    private void NavigateToPage(NavigationPage page)
+    {
+        if (CurrentPage != page && CurrentPage != NavigationPage.Home)
+        {
+            _navigationStack.Push(CurrentPage);
+        }
+
+        CurrentPage = page;
+        UpdatePageVisibility();
+    }
+
+    private void UpdatePageVisibility()
+    {
+        // Update all visibility flags based on current page
+        IsAccountManagerVisible = CurrentPage == NavigationPage.AccountManager;
+        IsAIAssistantVisible = CurrentPage == NavigationPage.AIAssistant;
+        IsSchedulerVisible = CurrentPage == NavigationPage.Scheduler;
+        IsDocumentationVisible = CurrentPage == NavigationPage.Documentation;
+        IsSettingsVisible = CurrentPage == NavigationPage.Settings;
+
+        // Update computed properties
+        OnPropertyChanged(nameof(CurrentViewTitle));
+        OnPropertyChanged(nameof(CanNavigateBack));
+        OnPropertyChanged(nameof(IsHomeView));
+    }
+
+    public bool CanNavigateBack => CurrentPage != NavigationPage.Home || _navigationStack.Count > 0;
+    public bool IsHomeView => CurrentPage == NavigationPage.Home;
+
+    public string CurrentViewTitle => CurrentPage switch
+    {
+        NavigationPage.Home => "Home",
+        NavigationPage.AccountManager => "Account Manager",
+        NavigationPage.Settings => "Settings",
+        NavigationPage.AIAssistant => "AI Assistant",
+        NavigationPage.Scheduler => "Scheduler",
+        NavigationPage.Documentation => "Documentation",
+        _ => "Home"
+    };
+
+    #endregion
+
     #region Account Management Commands - Async optimized
 
     [RelayCommand]
@@ -128,30 +207,27 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Console.WriteLine("ManageAccounts command executed!");
         System.Diagnostics.Debug.WriteLine("Opening Account Management");
 
-        IsAccountManagerVisible = !IsAccountManagerVisible;
+        NavigateToPage(NavigationPage.AccountManager);
 
-        if (IsAccountManagerVisible)
+        // Refresh account data when opening - fire and forget with proper error handling
+        _ = Task.Run(async () =>
         {
-            // Refresh account data when opening - fire and forget with proper error handling
-            _ = Task.Run(async () =>
+            try
             {
-                try
-                {
-                    await AccountManager.RefreshAccountsCommand.ExecuteAsync(null).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error refreshing accounts: {ex.Message}");
-                }
-            });
-        }
+                await AccountManager.RefreshAccountsCommand.ExecuteAsync(null).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error refreshing accounts: {ex.Message}");
+            }
+        });
     }
 
     [RelayCommand]
     private void CloseAccountManager()
     {
         Console.WriteLine("CloseAccountManager command executed!");
-        IsAccountManagerVisible = false;
+        NavigateBack();
     }
 
     #endregion
@@ -164,14 +240,38 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Console.WriteLine("ToggleAIAssistant command executed!");
         System.Diagnostics.Debug.WriteLine("Toggling AI Assistant");
 
-        IsAIAssistantVisible = !IsAIAssistantVisible;
+        NavigateToPage(CurrentPage == NavigationPage.AIAssistant
+            ? NavigationPage.Home
+            : NavigationPage.AIAssistant);
     }
 
     [RelayCommand]
     private void CloseAIAssistant()
     {
         Console.WriteLine("CloseAIAssistant command executed!");
-        IsAIAssistantVisible = false;
+        NavigateBack();
+    }
+
+    #endregion
+
+    #region Scheduler Commands - Memory efficient
+
+    [RelayCommand]
+    private void ToggleScheduler()
+    {
+        Console.WriteLine("ToggleScheduler command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling Scheduler");
+
+        NavigateToPage(CurrentPage == NavigationPage.Scheduler
+            ? NavigationPage.Home
+            : NavigationPage.Scheduler);
+    }
+
+    [RelayCommand]
+    private void CloseScheduler()
+    {
+        Console.WriteLine("CloseScheduler command executed!");
+        NavigateBack();
     }
 
     #endregion
@@ -184,14 +284,50 @@ public partial class MainWindowViewModel : ViewModelBase, IDisposable
         Console.WriteLine("ToggleDocumentation command executed!");
         System.Diagnostics.Debug.WriteLine("Toggling Documentation");
 
-        IsDocumentationVisible = !IsDocumentationVisible;
+        NavigateToPage(CurrentPage == NavigationPage.Documentation
+            ? NavigationPage.Home
+            : NavigationPage.Documentation);
     }
 
     [RelayCommand]
     private void CloseDocumentation()
     {
         Console.WriteLine("CloseDocumentation command executed!");
-        IsDocumentationVisible = false;
+        NavigateBack();
+    }
+
+    #endregion
+
+    #region Settings Commands - Memory efficient
+
+    [RelayCommand]
+    private void ToggleSettings()
+    {
+        Console.WriteLine("ToggleSettings command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling Settings");
+
+        NavigateToPage(CurrentPage == NavigationPage.Settings
+            ? NavigationPage.Home
+            : NavigationPage.Settings);
+    }
+
+    [RelayCommand]
+    private void CloseSettings()
+    {
+        Console.WriteLine("CloseSettings command executed!");
+        NavigateBack();
+    }
+
+    #endregion
+
+    #region Sidebar Commands - Navigation control
+
+    [RelayCommand]
+    private void ToggleSidebar()
+    {
+        Console.WriteLine("ToggleSidebar command executed!");
+        System.Diagnostics.Debug.WriteLine("Toggling Sidebar");
+        IsSidebarOpen = !IsSidebarOpen;
     }
 
     #endregion
@@ -473,4 +609,14 @@ public enum LayoutMode
 {
     SplitView,
     ComposeOnly
+}
+
+public enum NavigationPage
+{
+    Home,
+    AccountManager,
+    Settings,
+    AIAssistant,
+    Scheduler,
+    Documentation
 }

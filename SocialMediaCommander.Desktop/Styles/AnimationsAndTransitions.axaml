@@ -64,7 +64,9 @@
         </Style.Animations>
     </Style>
     
-    <!-- Scale Animation on Hover -->
+    <!-- Scale Animation on Hover - DISABLED (requires RenderTransform animator) -->
+    <!-- Re-enable when animator is properly registered in App.xaml.cs -->
+    <!--
     <Style Selector="Button.ScaleHover">
         <Setter Property="Transitions">
             <Transitions>
@@ -78,14 +80,14 @@
     <Style Selector="Button.ScaleHover:pressed">
         <Setter Property="RenderTransform" Value="scale(0.95)"/>
     </Style>
+    -->
     
-    <!-- Smooth Color Transitions -->
+    <!-- Smooth Color Transitions (Safe - no RenderTransform) -->
     <Style Selector="Border.SmoothTransitions">
         <Setter Property="Transitions">
             <Transitions>
                 <BrushTransition Property="Background" Duration="0:0:0.3"/>
                 <BrushTransition Property="BorderBrush" Duration="0:0:0.3"/>
-                <BoxShadowsTransition Property="BoxShadow" Duration="0:0:0.3"/>
             </Transitions>
         </Setter>
     </Style>
@@ -231,6 +233,56 @@
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="FontSize" Value="11"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
+    </Style>
+    
+    <!-- Page Transition Animations (2025 Modern Style - Opacity only) -->
+    <Style Selector="Grid.PageTransition">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="QuadraticEaseOut"/>
+            </Transitions>
+        </Setter>
+    </Style>
+    
+    <!-- Slide In From Right Animation (Opacity only - no transform animator needed) -->
+    <Style Selector="Grid.SlideInRight">
+        <Style.Animations>
+            <Animation Duration="0:0:0.3" Easing="QuadraticEaseOut" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Slide In From Left Animation (Opacity only - no transform animator needed) -->
+    <Style Selector="Grid.SlideInLeft">
+        <Style.Animations>
+            <Animation Duration="0:0:0.3" Easing="QuadraticEaseOut" FillMode="Forward">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="1"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    
+    <!-- Modern Glassmorphism Effect -->
+    <Style Selector="Border.Glass">
+        <Setter Property="Background">
+            <SolidColorBrush Color="White" Opacity="0.7"/>
+        </Setter>
+        <Setter Property="BoxShadow" Value="0 8 32 0 #14000000"/>
+        <Setter Property="CornerRadius" Value="12"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush">
+            <SolidColorBrush Color="White" Opacity="0.3"/>
+        </Setter>
     </Style>
     
 </Styles>

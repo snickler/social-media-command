@@ -33,6 +33,11 @@ public class Media
     public DateTime CreatedAt { get; set; } = Post.GetSafeUtcNow();
 
     /// <summary>
+    /// Alt text for accessibility (especially important for BlueSky)
+    /// </summary>
+    public string? AltText { get; set; }
+
+    /// <summary>
     /// Gets a formatted file size string
     /// </summary>
     public string FileSizeFormatted
@@ -191,19 +196,6 @@ public class Post
         {
             var hashtagString = string.Join(" ", Hashtags.Select(h => $"#{h}"));
             formattedContent = $"{formattedContent}\n\n{hashtagString}";
-        }
-
-        // Add media indicators if media is present and platform supports media
-        if (Media.Any() && config.MediaSupport)
-        {
-            var mediaCount = Media.Count;
-            formattedContent = $"{formattedContent}\n\n[{mediaCount} media attachment{(mediaCount > 1 ? "s" : "")}]";
-        }
-
-        // Add thread indicator
-        if ((IsThread || ThreadsOnlyMode) && config.ThreadSupport && ThreadPosts.Any())
-        {
-            formattedContent = $"{formattedContent}\n\n[Thread with {ThreadPosts.Count + 1} posts]";
         }
 
         // Truncate if over character limit

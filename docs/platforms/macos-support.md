@@ -31,7 +31,7 @@ Social Media Commander provides full native support for macOS on both Intel (x64
 ### Building from Source
 
 1. **Prerequisites**:
-   - .NET 9.0 SDK or later
+   - .NET 10 SDK or later
    - Xcode Command Line Tools (optional, for code signing)
 
 2. **Clone and build**:
@@ -186,7 +186,7 @@ chmod +x setup-hooks.sh
 
 The GitHub Actions workflow automatically builds and tests macOS binaries:
 
-- **Intel (x64)**: Built on `macos-13` runners
+- **Intel (x64)**: Built on `macos-latest` runners
 - **Apple Silicon (ARM64)**: Built on `macos-latest` runners (Apple Silicon)
 
 Each commit triggers:

@@ -133,18 +133,25 @@ public class AIAnalysis
 
 /// <summary>
 /// AI model configuration for Foundry Local
+/// OpenAI-compatible API endpoint: {BaseUrl}/v1/chat/completions
+/// Use 'foundry service status' to find port, 'foundry cache list' for models
 /// </summary>
 public class AIModelConfig
 {
-    public string ModelName { get; set; } = "llama3.2";
+    // Model name must match exactly - use 'foundry cache list' or 'foundry model list'
+    // Common models: phi-3.5-mini, llama-3.2-1b, llama-3.2-3b
+    // Defaults to empty - user must select model in UI or set via configuration
+    public string ModelName { get; set; } = string.Empty;
 
-    public string BaseUrl { get; set; } = "http://localhost:11434";
+    // Foundry Local base URL (port dynamically assigned - use 'foundry service status')
+    // Example: http://localhost:5273 (no /v1 suffix)
+    public string BaseUrl { get; set; } = "http://localhost:5273";
 
     public double Temperature { get; set; } = 0.7;
 
     public int MaxTokens { get; set; } = 2048;
 
-    public string SystemPrompt { get; set; } = string.Empty;
+    public string SystemPrompt { get; set; } = "You are a helpful AI assistant that generates engaging social media content.";
 
     public Dictionary<string, object> Parameters { get; set; } = new();
 }

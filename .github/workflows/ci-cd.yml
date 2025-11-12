@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '10.0.x'
   NODE_VERSION: '22.x'
   NUGET_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
   # Disable telemetry to prevent network calls during build/test
@@ -72,7 +72,7 @@ jobs:
             rid: linux-arm64
           - os: macos
             arch: x64
-            runner: macos-13
+            runner: macos-latest
             rid: osx-x64
           - os: macos
             arch: arm64

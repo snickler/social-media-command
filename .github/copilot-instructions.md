@@ -6,7 +6,7 @@
 
 ## Project Structure & Architecture
 
-Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation frontend:
+Multi-project .NET 10 (Avalonia UI) desktop app + Vite/React documentation frontend:
 - **`SocialMediaCommander.Core/`** — Domain models, core helpers, logging infrastructure
 - **`SocialMediaCommander.Services/`** — Service interfaces & implementations (platform adapters, OAuth, encryption, AI, backups)
 - **`SocialMediaCommander.Desktop/`** — Avalonia UI application (ViewModels, Views, DI wiring, app entry point)
@@ -14,7 +14,7 @@ Multi-project .NET 9 (Avalonia UI) desktop app + Vite/React documentation fronte
 - **`src/`** — Vite/React UI for documentation viewer
 
 **MSBuild Standardization** (CRITICAL):
-- `Directory.Build.props` — common properties (TargetFramework: net9.0, Version, Nullable: enable, TreatWarningsAsErrors in Release)
+- `Directory.Build.props` — common properties (TargetFramework: net10.0, Version, Nullable: enable, TreatWarningsAsErrors in Release)
 - `Directory.Packages.props` — Central Package Management (CPM) for all NuGet versions
 - **Never** add `<PackageReference>` versions directly in `.csproj` files; all package versions centralized in `Directory.Packages.props`
 
@@ -94,7 +94,7 @@ This codebase follows **Microsoft's official async/performance best practices**.
 
 ## Build, Run, Test Commands
 
-**Prerequisites**: .NET 9 SDK, Node.js 18+ (for frontend)
+**Prerequisites**: .NET 10 SDK, Node.js 18+ (for frontend)
 
 From repo root (Windows `cmd.exe` or PowerShell):
 ```cmd
@@ -193,9 +193,29 @@ npm run dev
 **When modifying UI**:
 1. Use existing button styles via `Classes="PrimaryButton"`, `Classes="SecondaryButton"`, etc.
 2. Apply animations via `Classes="FadeIn SlideInBottom"` or similar
-3. Maintain consistent spacing (8px/16px/24px increments)
-4. Test keyboard navigation and focus states
-5. Run visual regression tests (see "Test infrastructure" section)
+3. Maintain consistent modern spacing (4px/8px/12px/16px increments) — use spacing constants from App.axaml resources: SpacingTiny (4), SpacingSmall (8), SpacingMedium (12), SpacingLarge (16)
+4. Use compact padding: buttons (12,6), cards (16), borders (10-12), corner radius (4-8px)
+5. Test keyboard navigation and focus states
+6. Run visual regression tests (see "Test infrastructure" section)
+
+### Clipboard & Image Handling
+**Clipboard image paste** (PostEditorView.axaml.cs):
+- Wire up TextBox handlers in `OnTextBoxLoaded` using `AddHandler(InputElement.KeyDownEvent, handler, RoutingStrategies.Tunnel)`
+- **CRITICAL**: Mark `e.Handled = true` IMMEDIATELY before async clipboard checks to prevent default paste
+- **Ctrl+V detection**: `OnTextBoxKeyDown` checks `KeyModifiers.Control` and `Key.V`, marks handled, then checks clipboard
+- **Context menu paste**: Custom `MenuFlyout` with `MenuItem` that calls `HandleContextMenuPasteAsync`
+- **Both main and thread posts**: Add `Loaded="OnTextBoxLoaded"` attribute to ALL TextBoxes needing paste support
+- **Clipboard formats**: Check `image/png`, `image/bmp`, `Bitmap`, `PNG`, `DeviceIndependentBitmap`, `CF_DIB`, `CF_DIBV5`
+- **SkiaSharp fallback**: Use `SKImage.FromEncodedData()` for byte[] and Stream clipboard data
+- **Temp storage**: `%TEMP%\SocialMediaCommander\ClipboardImages\clipboard_YYYYMMDD_HHmmss_<guid>.png`
+
+**Alt text for images** (Media model):
+- `Media.AltText` property stores accessibility descriptions
+- **+ALT button overlays**: Indigo background (#AA4338CA), top-left corner of image previews
+- **Dialog pattern**: Create modal `Window` with `TextBox` for alt text input, Save/Cancel buttons
+- **Command binding**: `EditAltTextCommand` in both `PostEditorViewModel` and `ThreadPostViewModel`
+- **Logging**: Use `_logger.Information()` (not `Debug.WriteLine`) for alt text save operations
+- **Important**: Alt text especially critical for BlueSky accessibility compliance
 
 ---
 
@@ -303,15 +323,80 @@ Before proposing changes, **MUST** complete:
 
 For specialized tasks, use dedicated custom agents in `.github/agents/`:
 
-- **`security-specialist.md`** — Encryption, secure storage, cross-platform security
-- **`performance-specialist.md`** — Async patterns, memory optimization, caching strategies
-- **`testing-tdd-specialist.md`** — TDD, xUnit, FluentAssertions, visual regression testing
-- **`ui-ux-avalonia-specialist.md`** — Avalonia UI, XAML styling, animations, accessibility
-- **`cicd-release-specialist.md`** — GitHub Actions, releases, semantic versioning
-- **`git-hooks-quality-specialist.md`** — Pre-commit hooks, code quality enforcement
-- **`documentation-specialist.md`** — Technical writing, documentation maintenance
+### Orchestrator Agent
+
+- **`orchestrator-agent.md`** — **Meta-agent for complex workflows**: Analyzes requests, routes tasks to specialists, coordinates multi-agent workflows, resolves conflicts, and synthesizes results
+
+**When to use orchestrator**:
+- ✅ Multi-domain requests (e.g., "Add secure caching with tests and docs")
+- ✅ New feature implementation (TDD → Implementation → UI → Tests → Docs)
+- ✅ Architecture impact unclear (need analysis before routing)
+- ✅ Potential specialist conflicts (performance vs. security trade-offs)
+- ✅ Complex bug investigation (root cause determines specialist)
+
+**Go directly to specialist when**:
+- ✅ Request clearly scoped to one domain (e.g., "Encrypt this file" → security-specialist)
+- ✅ Single-file change with no architectural impact
+- ✅ Documentation-only updates
+
+### Specialist Agents
+
+- **`security-specialist.md`** — Encryption, secure storage, cross-platform security, OAuth, data integrity
+- **`performance-specialist.md`** — Async patterns, memory optimization, caching strategies, ConfigureAwait
+- **`testing-tdd-specialist.md`** — TDD, xUnit, FluentAssertions, visual regression, 970+ tests
+- **`ui-ux-avalonia-specialist.md`** — Avalonia UI, XAML styling, animations, accessibility (WCAG AA)
+- **`cicd-release-specialist.md`** — GitHub Actions, releases, semantic versioning, multi-platform builds
+- **`git-hooks-quality-specialist.md`** — Pre-commit hooks, code quality enforcement, secrets detection
+- **`documentation-specialist.md`** — Technical writing, documentation maintenance, consolidation
 
 Access agents at: https://github.com/copilot/agents
+
+### Common Orchestration Workflows
+
+**New Feature (Full Workflow)**:
+```
+orchestrator → testing-tdd-specialist (TDD) → [implementation specialist] → 
+testing-tdd-specialist (verify) → documentation-specialist → cicd-release-specialist
+```
+
+**Performance Optimization**:
+```
+orchestrator → performance-specialist (profile) → performance-specialist (optimize) → 
+security-specialist (review if caching sensitive data) → testing-tdd-specialist (benchmarks)
+```
+
+**Security Enhancement**:
+```
+orchestrator → security-specialist (audit) → security-specialist (implement) → 
+testing-tdd-specialist (security tests) → git-hooks-quality-specialist (add checks) → 
+documentation-specialist (update security docs)
+```
+
+**UI Component Creation**:
+```
+orchestrator → ui-ux-avalonia-specialist (design + implement) → 
+testing-tdd-specialist (visual regression + interaction tests) → 
+documentation-specialist (update VISUAL_COMPONENT_GUIDE.md)
+```
+
+**Bug Investigation**:
+```
+orchestrator → testing-tdd-specialist (reproduce + identify root cause) → 
+[appropriate specialist based on cause] → testing-tdd-specialist (regression test) → 
+documentation-specialist (troubleshooting guide)
+```
+
+### Agent Handoff Protocol
+
+When orchestrator routes to specialist, it provides:
+- **Context**: Summary of prior work and current state
+- **Task**: Specific, scoped objective with deliverable
+- **Success Criteria**: Measurable outcomes (3-5 checkpoints)
+- **Dependencies**: Files, services, patterns to review
+- **Constraints**: Security, performance, testing, documentation requirements
+- **Next Agent**: Who receives handoff after completion (if multi-step)
+
+See `orchestrator-agent.md` for complete decision trees, conflict resolution strategies, and workflow patterns.
 
 ---
 

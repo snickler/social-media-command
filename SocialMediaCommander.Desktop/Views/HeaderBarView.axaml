@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:SocialMediaCommander.Desktop.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="60"
+             x:Class="SocialMediaCommander.Desktop.Views.HeaderBarView"
+             x:DataType="vm:MainWindowViewModel">
+
+    <!-- Modern Header Bar with Breadcrumbs and Back Navigation -->
+    <Border Background="{DynamicResource SMC-Card-Background}"
+            BorderBrush="{DynamicResource SMC-Card-Border}"
+            BorderThickness="0,0,0,1"
+            Padding="16,12"
+            Classes="SmoothTransitions">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            
+            <!-- Back Button + Breadcrumbs -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <!-- Back Button (visible when not on Home) -->
+                <Button Classes="ghost"
+                        Width="36" Height="36"
+                        Command="{Binding NavigateBackCommand}"
+                        IsVisible="{Binding CanNavigateBack}"
+                        ToolTip.Tip="Go back">
+                    <TextBlock Text="←" FontSize="18" FontWeight="Bold"/>
+                </Button>
+                
+                <!-- Breadcrumb Navigation -->
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <!-- Home Breadcrumb -->
+                    <Button Classes="ghost"
+                            Padding="8,4"
+                            Command="{Binding NavigateToHomeCommand}"
+                            IsVisible="{Binding !IsHomeView}"
+                            ToolTip.Tip="Home">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="🏠" FontSize="14"/>
+                            <TextBlock Text="Home" FontSize="13" FontWeight="Medium"/>
+                        </StackPanel>
+                    </Button>
+                    
+                    <!-- Breadcrumb Separator -->
+                    <TextBlock Text="/" 
+                               FontSize="14" 
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SMC-Muted-Foreground}"
+                               IsVisible="{Binding !IsHomeView}"/>
+                    
+                    <!-- Current Page -->
+                    <TextBlock Text="{Binding CurrentViewTitle}" 
+                               FontSize="16" 
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource SMC-Foreground}"/>
+                </StackPanel>
+            </StackPanel>
+            
+            <!-- Center Content (Context-specific actions) -->
+            <StackPanel Grid.Column="1" 
+                       Orientation="Horizontal" 
+                       Spacing="8"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center">
+                <!-- This area can be used for view-specific actions -->
+            </StackPanel>
+            
+            <!-- Right Actions -->
+            <StackPanel Grid.Column="2" 
+                       Orientation="Horizontal" 
+                       Spacing="8"
+                       VerticalAlignment="Center">
+                
+                <!-- Connection Status Badge -->
+                <Border Background="{DynamicResource SMC-Success}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        ToolTip.Tip="All systems operational">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <Ellipse Width="8" Height="8" Fill="White"/>
+                        <TextBlock Text="Online" 
+                                   FontSize="11" 
+                                   FontWeight="SemiBold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Data Security Status Badge -->
+                <Border Background="{DynamicResource SMC-Accent}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        IsVisible="{Binding IsDataSecure}"
+                        ToolTip.Tip="{Binding DataIntegrityStatus, StringFormat='Security: {0}'}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="🔒" FontSize="10"/>
+                        <TextBlock Text="{Binding DataIntegrityStatus}" 
+                                   FontSize="11" 
+                                   FontWeight="SemiBold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Security Warning Badge -->
+                <Border Background="{DynamicResource SMC-Destructive}"
+                        CornerRadius="12"
+                        Padding="8,4"
+                        IsVisible="{Binding !IsDataSecure}"
+                        ToolTip.Tip="{Binding DataIntegrityStatus, StringFormat='Security Issue: {0}'}">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="⚠️" FontSize="10"/>
+                        <TextBlock Text="Security Issue" 
+                                   FontSize="11" 
+                                   FontWeight="SemiBold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
+    </Border>
+</UserControl>
